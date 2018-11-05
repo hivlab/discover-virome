@@ -1,9 +1,6 @@
 
 # Global parameters -------------------
 
-# Run virome characterisation (default) or virus discovery workflow (set virome to False)
-virome: True
-
 # Option to save time by not running blastx
 run_blastx: False
 
@@ -26,18 +23,12 @@ vhunter: "/gpfs/software/VirusSeeker/databases/taxdump_300817/vhunter.db"
 names: "/gpfs/software/VirusSeeker/databases/taxdump_300817/names.dmp"
 nodes: "/gpfs/software/VirusSeeker/databases/taxdump_300817/nodes.dmp"
 division: "/gpfs/software/VirusSeeker/databases/taxdump_300817/division.dmp"
-gi_taxid_nucl: "/gpfs/software/VirusSeeker/databases/taxdump_300817/gi_taxid_nucl.dmp"
-gi_taxid_prot: "/gpfs/software/VirusSeeker/databases/taxdump_300817/gi_taxid_prot.dmp"
 
 # Paths to nt and nr blast database to be used for environment variable
 nt: "/gpfs/software/VirusSeeker/databases/nt/nt"
 nr: "/gpfs/software/VirusSeeker/databases/nr/nr"
 
 # Rule parameters ---------------------
-
-# Fastp
-fastp:
-    threads: 4
 
 # fastq-join
 fastq-join:

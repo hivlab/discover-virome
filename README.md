@@ -59,8 +59,6 @@ git clone git@github.com:avilab/vs.git
 
 ## Example
 
-Pay attention to partitition and time arguments in cluster.json. Snakefile has .py extension only to get the code highlighting to work in Rstudio...
-
 ### Dry run
 
 ```
@@ -85,7 +83,7 @@ snakemake -j --use-conda --cluster-config cluster.json  \
              --output {cluster.output}"
 ```
 
-When snakemake starts erroring with "Failed to submit job..." error messages try to decrease the number of jobs submitted per second. You may also need to rerun incomplete jobs, for examle when hitting cluster max wall time limit in the middle of the job. All possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/executable.html) options can be printed by calling `snakemake -h`.
+All possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/executable.html) options can be printed by calling `snakemake -h`.
 
 ```
 --max-jobs-per-second 1 --max-status-checks-per-second 10 --rerun-incomplete
