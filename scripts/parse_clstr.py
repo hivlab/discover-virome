@@ -6,28 +6,35 @@ path = "/Users/taavi/Downloads/SRR5580355_cdhit.fa.clstr_short"
 
 @do_cprofile
 def iterate_clstr(clstr_path, clstr_ids, top_n = 3):
-  reid = compile(r"(?<=[>])\w+.\d+")
-  resim = compile(r"\*$|\d+\.\d+(?=%)")
+  combo = compile(r"(?<=[>])\w+.\d+|\*$|\d+\.\d+(?=%)")
+  clus = compile(r"(>Clus)")
   with open(clstr_path, "r") as clstr_file, open(clstr_ids, "w") as ids_out:
     for line in clstr_file:
-      if match(r"(>Clus)", line):
+      if clus.match(line):
         try:
           cls
         except NameError:
           cls = []
         else:
-          ids = [reid.findall(record)[0] for record in cls]
-          similarity = [resim.findall(record)[0] for record in cls]
-          ids_filtered = [tup for tup in zip(ids, similarity) if tup[1] not in set(["*", "100.00"])]
+          matches = [tuple(combo.findall(record)) for record in cls]
+          ids_filtered = [tup for tup in matches if tup[1] not in ["*", "100.00"]]
           ranks = list(ss.rankdata([tup[1] for tup in ids_filtered], method = "dense"))
           parsed_ids = [tup[0][0] for tup in zip(ids_filtered, ranks) if tup[1] <= top_n]
           ids_out.writelines("%s\n" % k for k in parsed_ids)
           cls = []
-      if match(r"\d+", line):
-        cls.append(line)
+      else:
+        cls += [line]
 
 
 iterate_clstr(path, "/Users/taavi/Downloads/SRR5580355_cdhit.ids")
+
+reid = compile(r"(?<=[>])\w+.\d+")
+resim = compile(r"\*$|\d+\.\d+(?=%)")
+combo = compile(r"(?<=[>])\w+.\d+|\*$|\d+\.\d+(?=%)")
+cls = ['141nt, >SRR5580355.436734... at 141:1:34:174/-/99.29%', '141nt, >SRR5580355.171785... at 141:1:78:218/-/99.29%']
+
+m = [tuple(combo.findall(record)) for record in cls]
+
 
 import cProfile
 
