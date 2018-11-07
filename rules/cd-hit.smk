@@ -15,13 +15,16 @@ rule cd_hit:
     """
     cd-hit-est -i {input} -o {output.repres} -T {threads} {params} > {output.report}
     """
-## Get top n (3) similar sequences to cluster representative
+## Add top n (3) similar sequences to cluster representative sequences
+## outputs file with sequence ids (clstr) to subset refgenome unmapped output
+## fasta file and appends these sequences to cluster representative sequences (repres)
 rule parse_cd_hit:
   input:
-      rules.cd_hit.output.clstr,
-      rules.refgenome_unmapped.output.fa
+      repres = rules.cd_hit.output.repres,
+      clstr = rules.cd_hit.output.clstr,
+      fa = rules.refgenome_unmapped.output.fa
   output:
-      "avasta/cdhit/{sample}_cdhit_clstr.topn",
+      "avasta/cdhit/{sample}_cdhit_topn.clstr",
       "avasta/cdhit/{sample}_cdhit_topn.fa"
   conda:
       "../envs/bioconda.yml"

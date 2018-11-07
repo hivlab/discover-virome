@@ -1,14 +1,16 @@
 
 rule assemble:
     input:
-      "avasta/cdhit/{sample}_cdhit.fa",
-      "avasta/cdhit/{sample}_cdhit_topn.fa"
+        "avasta/cdhit/{sample}_cdhit.fa",
+        "avasta/cdhit/{sample}_cdhit_topn.fa"
     output:
-
+        directory("avasta/assemble/{sample}")
     params:
-      outdir: "avasta/assemble"
+        options = "--meta --only-assembler"
     conda:
       "../envs/spades.yml"
-    script:
-      "../scripts/run_spades.py"
+    shell:
+      """
+      spades.py {params.options} -o {output}
+      """
 
