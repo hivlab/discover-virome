@@ -2,7 +2,7 @@
 from re import match, findall, sub, compile
 import scipy.stats as ss
 
-path = "/Users/taavi/Downloads/SRR5580355_cdhit.fa.clstr_short"
+path = "/Users/taavi/Downloads/SRR5580355_cdhit.fa.clstr"
 
 @do_cprofile
 def iterate_clstr(clstr_path, clstr_ids, top_n = 3):
