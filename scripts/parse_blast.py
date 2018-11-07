@@ -7,6 +7,7 @@ __license__ = "MIT"
 import pandas as pd
 from Bio import SeqIO
 from pandas.io.common import EmptyDataError
+from common.helpers import touch
 
 # Find out whether the BLAST best hit has a e value lower than the cutoff. If
 # yes, output query information. If no, the sequence will be kept for further analysis.

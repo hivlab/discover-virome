@@ -26,6 +26,8 @@ rule blastn_virus:
       show_gis = True,
       num_threads = 8,
       outfmt = rules.megablast_refgenome.params.outfmt
+    conda:
+      "../envs/biopython.yml"
     script:
       "../scripts/blast.py"
 
