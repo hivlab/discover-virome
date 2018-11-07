@@ -47,7 +47,7 @@
     "cd_hit" :
     {
         "mem" : 8000,
-        "time": 240,
+        "time": 480,
         "cpus-per-task" : "{threads}",
         "partition" : "main"
     },
