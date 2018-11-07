@@ -5,9 +5,9 @@ rule refgenome_unmapped:
         config["ref_genome"],
         [rules.merge_reads.output.fa]
     output:
-      bam = "avasta/refgenomefilter/{sample}_refgenome_unmapped_{n}.bam",
-      fq = "avasta/refgenomefilter/{sample}_refgenome_unmapped_{n}.fq",
-      fa = "avasta/refgenomefilter/{sample}_refgenome_unmapped_{n}.fa"
+      bam = "avasta/refgenomefilter/{sample}_refgenome_unmapped.bam",
+      fq = "avasta/refgenomefilter/{sample}_refgenome_unmapped.fq",
+      fa = "avasta/refgenomefilter/{sample}_refgenome_unmapped.fa"
     log:
         "logs/{sample}_bwa_map_refgenome_{n}.log"
     threads: 8
