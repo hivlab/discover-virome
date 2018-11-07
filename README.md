@@ -96,7 +96,7 @@ source deactivate
 ```
 
 ## Workflow graph
-For technical reasons, workflow is split into two parts, virome and taxonomy, that can be run separately, but taxonomy depends on the output of virome. Virome subworkflow (virome.snakefile) munges, masks, and blasts input sequences. Taxonomy subworkflow (Snakefile) merges blast results with taxonomy data and generates report.
+Workflow graph is not updated and shows vs workflow instead.
 
 ![Virome workflow](graph/virome_dag.svg)
 
