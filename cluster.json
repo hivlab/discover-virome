@@ -30,7 +30,7 @@
         "time": 240,
         "cpus-per-task" : "{threads}"
     },
-    "bwa_map_refgenome" :
+    "refgenome_unmapped" :
     {
         "mem" : 32000,
         "time": "02:00:00"
@@ -50,6 +50,11 @@
         "time": 240,
         "cpus-per-task" : "{threads}",
         "partition" : "main"
+    },
+    "parse_cdhit" :
+    {
+        "mem" : 8000,
+        "time": 30
     },
     "blastn_virus" :
     {
