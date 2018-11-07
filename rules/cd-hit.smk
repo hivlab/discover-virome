@@ -29,6 +29,6 @@ rule parse_cdhit:
   params:
       top_n = 3
   conda:
-      "../envs/bioconda.yml"
+      "../envs/biopython.yml"
   script:
       "../scripts/parse_cdhit.py"
