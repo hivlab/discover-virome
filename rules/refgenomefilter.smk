@@ -9,7 +9,7 @@ rule refgenome_unmapped:
       fq = "avasta/refgenomefilter/{sample}_refgenome_unmapped.fq",
       fa = "avasta/refgenomefilter/{sample}_refgenome_unmapped.fa"
     log:
-        "logs/{sample}_bwa_map_refgenome_{n}.log"
+        "logs/avasta/{sample}_bwa_map_refgenome.log"
     threads: 8
     conda:
       "../envs/bwa-sam-bed.yml"
