@@ -85,8 +85,9 @@ snakemake -j --use-conda --cluster-config cluster.json  \
 
 All possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/executable.html) options can be printed by calling `snakemake -h`.
 
+You may want to use following options when running this workflow in cluster.
 ```
---max-jobs-per-second 1 --max-status-checks-per-second 10 --rerun-incomplete
+--max-jobs-per-second 1 --max-status-checks-per-second 10 --rerun-incomplete --keep-going
 ```
 
 ### Exit/deactivate environment
@@ -95,13 +96,3 @@ All possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/ex
 source deactivate
 ```
 
-## Workflow graph
-Workflow graph is not updated and shows vs workflow instead.
-
-![Virome workflow](graph/virome_dag.svg)
-
-Figure 1. **Virome workflow** graph with three example samples split into two (default = 20) for parallel processing. Outputs BLAST results.
-
-![Taxonomy workflow](graph/taxonomy_dag.svg)
-
-Figure 2. **Taxonomy workflow** graph with three example samples. Outputs report in html format and taxonomy table of virus hits.

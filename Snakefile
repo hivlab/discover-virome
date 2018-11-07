@@ -10,18 +10,11 @@ include: "rules/common.smk"
 rule all:
     input:
       expand([
-      "results/{sample}_phages_{n}.csv",
-      "results/{sample}_unassigned_{n}.fa",
-      "results/{sample}_phages_blasted_{n}.csv",
-      "results/{sample}_viruses_blasted_{n}.csv"
-      ],
-      sample = sample_ids,
-      n = list(range(1, n_files + 1, 1))),
-      expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
+      "avasta/cdhit/{sample}_cdhit_topn.clstr",
+      "avasta/cdhit/{sample}_cdhit_topn.fa"
+      ], sample = sample_ids)
 
 ## Modules
 include: "rules/munge.smk"
-include: "rules/cd-hit.smk"
-include: "rules/mask.smk"
 include: "rules/refgenomefilter.smk"
-include: "rules/blast.smk"
+include: "rules/cd-hit.smk"
