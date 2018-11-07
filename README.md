@@ -71,9 +71,11 @@ snakemake -n
 snakemake --dag | dot -Tsvg > graph/dag.svg
 ```
 
-### Real run
+### Run workflow
 
-This workflow is meant to be run in cluster.
+This workflow is designed to be run in cluster. `cluster.json` configuration file may need some customisation, for example partition name. Memory nad maximum runtime limits are optimised for 100 splits. Number of splits can be specified in `config.yaml` file with n_files option (currently n_files is 2). Installation of software dependencies is taken care by conda, hence there is software installation overhead when you run this workflow for the first time in new environment. 
+
+Example workflow submission script for slurm cluster, where values for job name, cluster partition name, time and memory constraints, and slurm log path (output) are taken from cluster.json: 
 ```
 snakemake -j --use-conda --cluster-config cluster.json  \
              --cluster "sbatch -J {cluster.name} \
@@ -83,15 +85,16 @@ snakemake -j --use-conda --cluster-config cluster.json  \
              --output {cluster.output}"
 ```
 
-All possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/executable.html) options can be printed by calling `snakemake -h`.
-
-You may want to use following options when running this workflow in cluster.
+You may want to use also following flags when running this workflow in cluster:
 ```
 --max-jobs-per-second 1 --max-status-checks-per-second 10 --rerun-incomplete --keep-going
 ```
 
+All other possible [snakemake execution](https://snakemake.readthedocs.io/en/stable/executable.html) options can be printed by calling `snakemake -h`.
+
 ### Exit/deactivate environment
 
+Conda environment can be closed with the following command when work is finished:
 ```
 source deactivate
 ```
