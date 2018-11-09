@@ -4,16 +4,19 @@
 #     Runs assembly module only
 rule assemble:
     input:
-        "avasta/cdhit/{sample}_cdhit.fa",
-        "avasta/cdhit/{sample}_cdhit_topn.fa"
+        rules.cd_hit.output.repres,
+        rules.parse_cdhit.output.topn_fa
     output:
-        directory("avasta/assemble/{sample}")
+        temp("avasta/cdhit/{sample}_cdhit_merged.fa"),
+	directory("avasta/assemble/{sample}")
     params:
-        options = "--meta --only-assembler --continue"
+        options = "--meta --only-assembler --continue",
+	outdir = "avasta/assemble/{sample}"
     conda:
-      "../envs/spades.yml"
+      	"../envs/spades.yml"
     shell:
-      """
-      cat {input} | spades.py {params.options} --merged - -o {output}
-      """
+      	"""
+      	cat {input} > {output[0]}
+	spades.py {params.options} --merged {ouput[0]} -o {params.outdir}
+      	"""
 
