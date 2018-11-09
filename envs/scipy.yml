@@ -1,0 +1,10 @@
+name: scipy 
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - python>=3.5
+  - biopython=1.70
+  - scipy 
