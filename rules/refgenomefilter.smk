@@ -2,7 +2,7 @@
 ## Align sequences to reference genome and extract unmapped reads
 rule refgenomefilter:
     input:
-      reads = [rules.fastq_join.output]
+      reads = rules.fastq_join.output
     output:
       merged = "munge/{sample}_merge_reads.fq.gz",
       bam = "avasta/refgenomefilter/{sample}_refgenome_unmapped.bam",
