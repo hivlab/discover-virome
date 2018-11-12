@@ -8,6 +8,11 @@
         "mem" : 2000,
         "output" : "logs/slurm/slurm_%j.log"
     },
+    "assemble" :
+    {   
+        "time": 500,
+        "mem" : 16000,
+    },
     "fastp" :
     {
         "cpus-per-task" : "{threads}"

@@ -1,2 +1,2 @@
 sample fq1 fq2
-test_seq_012 data/reads/test_seq_012_R1.fq.gz data/reads/test_seq_012_R2.fq.gz
+SRR5580016sub reads/SRR5580016sub_1.fastq.gz reads/SRR5580016sub_2.fastq.gz

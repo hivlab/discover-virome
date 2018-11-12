@@ -3,20 +3,17 @@
 # --only-assembler
 #     Runs assembly module only
 rule assemble:
-    input:
-        rules.cd_hit.output.repres,
-        rules.parse_cdhit.output.topn_fa
-    output:
-    	merged = temp("avasta/cdhit/{sample}_cdhit_merged.fa"),
-	outdir = directory("avasta/assemble/{sample}")
+    input: 
+        rules.refgenome_unmapped.output.fa,
+        rules.fastq_join.output[1]
+    output: directory("avasta/assemble/{sample}")
     params:
         options = "--meta --only-assembler"
     conda:
       	"../envs/spades.yml"
     shell:
       	"""
-      	cat {input} > {output.merged}
-	mkdir -p {output.outdir}
-	spades.py {params.options} --merged {output.merged} -o {output.outdir}
+	mkdir -p {output}
+	spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output}
       	"""
 
