@@ -37,12 +37,13 @@ rule fastq_join:
     "munge/{sample}_join.fq.gz"
   params:
     diff = config["fastq-join"]["maximum_difference"],
-    overlap = config["fastq-join"]["minimum_overlap"]
+    overlap = config["fastq-join"]["minimum_overlap"],
+    template = "munge/{sample}_%.fq.gz"
   conda:
     "../envs/fastq-join.yml"
   log:
     "logs/{sample}_fastq_join.log"
   shell:
     """
-    fastq-join -p {params.diff} -m {params.overlap} {input} -o {output} > {log} 2>&1
+    fastq-join -p {params.diff} -m {params.overlap} {input} -o {params.template} > {log} 2>&1
     """
