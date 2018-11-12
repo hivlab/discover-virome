@@ -11,7 +11,7 @@
     "assemble" :
     {   
         "time": 500,
-        "mem" : 16000,
+        "mem" : 16000
     },
     "fastp" :
     {
