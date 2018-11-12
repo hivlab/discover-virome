@@ -24,7 +24,7 @@ rule parse_cdhit:
   input:
       repres = rules.cd_hit.output.repres,
       clstr = rules.cd_hit.output.clstr,
-      fa = rules.refgenome_unmapped.output.fa
+      fa = rules.refgenome_unmapped.output.fq
   output:
       topn_clstr = "avasta/cdhit/{sample}_cdhit_topn.clstr",
       topn_fa = "avasta/cdhit/{sample}_cdhit_topn.fa"

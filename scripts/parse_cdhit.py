@@ -4,10 +4,6 @@ import scipy.stats as ss
 from Bio import SeqIO
 from common.helpers import subset_records
 
-clstr = "/Users/taavi/Downloads/SRR5580355_cdhit.fa.clstr_short"
-topn_clstr = "/Users/taavi/Downloads/SRR5580355_cdhit.ids"
-args = list([clstr, topn_clstr])
-
 def iterate_clstr(clstr, topn_clstr, top_n = 3):
   combo = compile(r"(?<=[>])\w+.\d+|\*$|\d+\.\d+(?=%)")
   clus = compile(r"(>Clus)")
@@ -36,8 +32,7 @@ with open(snakemake.output[0]) as seq_ids:
   topn_ids = seq_ids.read().splitlines()
 
 # Subset sequences using topn ids
-records = subset_records(SeqIO.parse(snakemake.input[2], "fasta"), set(topn_ids))
+records = subset_records(SeqIO.parse(snakemake.input[2], "fastq"), set(topn_ids))
 
 # Write topn subset to file
-count = SeqIO.write(records, snakemake.output[1], 'fasta')
-
+count = SeqIO.write(records, snakemake.output[1], 'fastq')
