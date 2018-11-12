@@ -4,16 +4,15 @@
 #     Runs assembly module only
 rule assemble:
     input: 
-        rules.refgenome_unmapped.output.fq,
-        rules.fastq_join.output[1]
+      rules.refgenomefilter.output.fq,
+      rules.fastq_join.output[1]
     output: directory("avasta/assemble/{sample}")
     params:
-        options = "--meta --only-assembler"
+      options = "--meta --only-assembler"
     conda:
-      	"../envs/spades.yml"
+      "../envs/spades.yml"
     shell:
-      	"""
-	mkdir -p {output}
-	spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output}
-      	"""
-
+      """
+	    mkdir -p {output}
+	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output}
+      """

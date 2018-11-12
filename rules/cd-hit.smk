@@ -1,7 +1,7 @@
 
 ## Run cd-hit to find and munge duplicate reads
 rule cd_hit:
-  input: rules.refgenome_unmapped.output.fq
+  input: rules.refgenomefilter.output.fq
   output:
     fa = "munge/{sample}_merge_reads.fasta",
     repres = "avasta/cdhit/{sample}_cdhit.fa",
@@ -25,7 +25,7 @@ rule parse_cdhit:
   input:
       repres = rules.cd_hit.output.repres,
       clstr = rules.cd_hit.output.clstr,
-      fq = rules.refgenome_unmapped.output.fq
+      fq = rules.refgenomefilter.output.fq
   output:
       topn_clstr = "avasta/cdhit/{sample}_cdhit_topn.clstr",
       topn_fq = "avasta/cdhit/{sample}_cdhit_topn.fq"
