@@ -28,7 +28,7 @@ rule parse_cdhit:
       fq = rules.refgenomefilter.output.fq
   output:
       topn_clstr = "avasta/cdhit/{sample}_cdhit_topn.clstr",
-      topn_fa = "avasta/cdhit/{sample}_cdhit_topn.fa"
+      topn = "avasta/cdhit/{sample}_cdhit_topn.fa"
   params:
       top_n = 3
   conda:

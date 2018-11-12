@@ -32,9 +32,9 @@ rule fastq_join:
     rules.fastp.output.pair1,
     rules.fastp.output.pair2
   output:
+    "munge/{sample}_join.fq.gz",
     "munge/{sample}_un1.fq.gz",
-    "munge/{sample}_un2.fq.gz",
-    "munge/{sample}_join.fq.gz"
+    "munge/{sample}_un2.fq.gz"
   params:
     diff = config["fastq-join"]["maximum_difference"],
     overlap = config["fastq-join"]["minimum_overlap"],
