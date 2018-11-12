@@ -4,8 +4,8 @@
 #     Runs assembly module only
 rule assemble:
     input: 
-      rules.cd_hit.output.join,
-      rules.cd_hit.output.un
+      rules.parse_cdhit.output.join,
+      rules.parse_cdhit.output.un
     output: 
       directory("avasta/assemble/{sample}")
     params:
