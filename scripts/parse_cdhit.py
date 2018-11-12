@@ -35,4 +35,4 @@ with open(snakemake.output[0]) as seq_ids:
 records = subset_records(SeqIO.parse(snakemake.input[2], "fastq"), set(topn_ids))
 
 # Write topn subset to file
-count = SeqIO.write(records, snakemake.output[1], 'fastq')
+count = SeqIO.write(records, snakemake.output[1], 'fasta')

@@ -4,7 +4,7 @@
 #     Runs assembly module only
 rule assemble:
     input: 
-      rules.refgenomefilter.output.fq,
+      rules.refgenomefilter.output.fa,
       rules.fastq_join.output[1]
     output: directory("avasta/assemble/{sample}")
     params:
