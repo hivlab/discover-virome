@@ -50,7 +50,7 @@ with open(snakemake.output[2], "w") as merged:
 joined = SeqIO.parse(gzip.open(snakemake.input[3], "rt"), "fastq")
 joined_ids = get_ids(joined)
 
-with open(snakemake.output[3]) as joned, open(snakemake.output[4]) as un:
+with open(snakemake.output[3]) as joined, open(snakemake.output[4]) as un:
   for record in SeqIO.parse(snakemake.output[2], "fasta"):
         if record.id in joined_ids:
             SeqIO.write(record, joined, 'fasta')
