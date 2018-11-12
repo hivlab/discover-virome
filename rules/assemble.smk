@@ -8,7 +8,7 @@ rule assemble:
       rules.parse_cdhit.output.topn,
       rules.fastq_join.output[0]
     output: 
-      "avasta/cdhit/{sample}_cdhit_merged.fa"
+      "avasta/cdhit/{sample}_cdhit_merged.fa",
       directory("avasta/assemble/{sample}")
     params:
       options = "--meta --only-assembler"
