@@ -2,7 +2,10 @@
 from re import match, findall, compile
 import scipy.stats as ss
 from Bio import SeqIO
+from subprocess import Popen, PIPE
+import gzip
 from common.helpers import subset_records
+from common.helpers import get_ids
 
 def iterate_clstr(clstr, topn_clstr, top_n = 3):
   combo = compile(r"(?<=[>])\w+.\d+|\*$|\d+\.\d+(?=%)")
@@ -36,3 +39,18 @@ records = subset_records(SeqIO.parse(snakemake.input[2], "fastq"), set(topn_ids)
 
 # Write topn subset to file
 count = SeqIO.write(records, snakemake.output[1], 'fasta')
+
+# Concatenate representative sequences and topn
+cmd = "cat {} {} > {}".format(snakemake.input[0], snakemake.output[1], snakemake.output[2])
+process = Popen(cmd.split(' '), stdout = PIPE, stderr = PIPE)
+stdout, stderr = process.communicate()
+
+# Save joined- and unjoined sequences into separate files for spades
+joined = SeqIO.parse(gzip.open(snakemake.input[3], "rt"), "fastq")
+joined_ids = get_ids(joined)
+
+for record in SeqIO.parse(snakemake.output[2], "fasta"):
+        if record.id in joined_ids:
+            SeqIO.write(record, snakemake.output[3], 'fasta')
+        else:
+            SeqIO.write(record, snakemake.output[4], 'fasta')

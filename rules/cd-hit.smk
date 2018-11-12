@@ -25,10 +25,14 @@ rule parse_cdhit:
   input:
       repres = rules.cd_hit.output.repres,
       clstr = rules.cd_hit.output.clstr,
-      fq = rules.refgenomefilter.output.fq
+      fq = rules.refgenomefilter.output.fq,
+      join = rules.fastq_join.output[0]
   output:
       topn_clstr = "avasta/cdhit/{sample}_cdhit_topn.clstr",
-      topn = "avasta/cdhit/{sample}_cdhit_topn.fa"
+      topn = "avasta/cdhit/{sample}_cdhit_topn.fa",
+      merged = "avasta/cdhit/{sample}_cdhit_merged.fa",
+      join = "avasta/cdhit/{sample}_cdhit_join.fa",
+      un = "avasta/cdhit/{sample}_cdhit_un.fa"
   params:
       top_n = 3
   conda:
