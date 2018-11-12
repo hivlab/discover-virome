@@ -14,7 +14,7 @@ rule cd_hit:
     "../envs/cd-hit.yml"
   shell:
     """
-    zcat {input} | sed -n '1~4s/^@/>/p;2~4p' > {output.fa}
+    sed -n '1~4s/^@/>/p;2~4p' {input} > {output.fa}
     cd-hit-est -i {output.fa} -o {output.repres} -T {threads} {params} > {output.report}
     """
 
