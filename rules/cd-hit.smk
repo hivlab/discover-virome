@@ -3,7 +3,7 @@
 rule cd_hit:
   input: rules.refgenomefilter.output.fq
   output:
-    fa = "munge/{sample}_merge_reads.fasta",
+    fa = "avasta/refgenomefilter/{sample}_refgenome_unmapped.fa",
     repres = "avasta/cdhit/{sample}_cdhit.fa",
     clstr = "avasta/cdhit/{sample}_cdhit.fa.clstr",
     report = "avasta/cdhit/{sample}_cdhit.report"
