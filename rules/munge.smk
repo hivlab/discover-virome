@@ -28,36 +28,21 @@ rule fastp:
 
 ## Stitch paired reads
 rule fastq_join:
-  input: rules.fastp.output
+  input:
+    rules.fastp.output.pair1,
+    rules.fastp.output.pair2
   output:
-    "munge/{sample}_join.fq.gz",
     "munge/{sample}_un1.fq.gz",
-    "munge/{sample}_un2.fq.gz"
+    "munge/{sample}_un2.fq.gz",
+    "munge/{sample}_join.fq.gz"
   params:
-    config["fastq-join"]["maximum_difference"],
-    config["fastq-join"]["minimum_overlap"],
-    "munge/{sample}_%.fq.gz"
+    diff = config["fastq-join"]["maximum_difference"],
+    overlap = config["fastq-join"]["minimum_overlap"]
   conda:
     "../envs/fastq-join.yml"
-  log: "logs/{sample}_fastq_join.log"
+  log:
+    "logs/{sample}_fastq_join.log"
   shell:
     """
-    fastq-join \
-    -p {params[0]} \
-    -m {params[1]} \
-    {input[0]} \
-    {input[1]} \
-    -o {params[2]} > {log} 2>&1
-    """
-
-## Merge stitched reads
-rule merge_reads:
-  input: rules.fastq_join.output
-  output:
-    fq = "munge/{sample}_merge_reads.fq.gz",
-    fa = "munge/{sample}_merge_reads.fasta"
-  shell:
-    """
-    cat {input} > {output.fq}
-    zcat {output.fq} | sed -n '1~4s/^@/>/p;2~4p' > {output.fa}
+    fastq-join -p {params.diff} -m {params.overlap} {input} -o {output} > {log} 2>&1
     """

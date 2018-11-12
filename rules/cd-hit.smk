@@ -1,8 +1,9 @@
 
 ## Run cd-hit to find and munge duplicate reads
 rule cd_hit:
-  input: rules.refgenome_unmapped.output.fa
+  input: rules.refgenome_unmapped.output.fq
   output:
+    fa = "munge/{sample}_merge_reads.fasta",
     repres = "avasta/cdhit/{sample}_cdhit.fa",
     clstr = "avasta/cdhit/{sample}_cdhit.fa.clstr",
     report = "avasta/cdhit/{sample}_cdhit.report"
@@ -13,7 +14,8 @@ rule cd_hit:
     "../envs/cd-hit.yml"
   shell:
     """
-    cd-hit-est -i {input} -o {output.repres} -T {threads} {params} > {output.report}
+    zcat {input} | sed -n '1~4s/^@/>/p;2~4p' > {output.fa}
+    cd-hit-est -i {output.fa} -o {output.repres} -T {threads} {params} > {output.report}
     """
 ## Add top n (3) similar sequences to cluster representative sequences
 ## outputs file with sequence ids (clstr) to subset refgenome unmapped output
