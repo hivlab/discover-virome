@@ -4,7 +4,7 @@
 #     Runs assembly module only
 rule assemble:
     input: 
-        rules.refgenome_unmapped.output.fa,
+        rules.refgenome_unmapped.output.fq,
         rules.fastq_join.output[1]
     output: directory("avasta/assemble/{sample}")
     params:
