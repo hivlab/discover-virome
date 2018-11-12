@@ -52,6 +52,7 @@ source activate snakemake
 
 ```
 git clone git@github.com:avilab/vs.git
+cd vs
 ```
 
 ## 
