@@ -11,7 +11,8 @@ rule all:
     input:
       expand([
       "avasta/cdhit/{sample}_cdhit_join.fa",
-      "avasta/cdhit/{sample}_cdhit_un.fa"
+      "avasta/cdhit/{sample}_cdhit_un.fa",
+      "avasta/assemble/{sample}"
       ], sample = sample_ids)
 
 ## Modules
