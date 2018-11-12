@@ -41,9 +41,10 @@ records = subset_records(SeqIO.parse(snakemake.input[2], "fastq"), set(topn_ids)
 count = SeqIO.write(records, snakemake.output[1], 'fasta')
 
 # Concatenate representative sequences and topn
-cmd = "cat {} {} > {}".format(snakemake.input[0], snakemake.output[1], snakemake.output[2])
-process = Popen(cmd.split(' '), stdout = PIPE, stderr = PIPE)
-stdout, stderr = process.communicate()
+cmd = "cat {} {}".format(snakemake.input[0], snakemake.output[1])
+with open(snakemake.output[2], "w") as merged:
+  process = Popen(cmd.split(' '), stdout = merged, stderr = PIPE)
+  stdout, stderr = process.communicate()
 
 # Save joined- and unjoined sequences into separate files for spades
 joined = SeqIO.parse(gzip.open(snakemake.input[3], "rt"), "fastq")
