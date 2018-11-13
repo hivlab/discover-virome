@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - biopython=1.70
-  - pandas=0.23.4
-  - blast=2.7.1
+  - python>=3.5
+  - biopython
+  - pandas
+  - blast

@@ -1,13 +1,27 @@
+
+# Split refgenome-filtered reads to joined and unjoined for spades
+rule spades_input:
+    input:
+      rules.fastq_join.output[0],
+      rules.refgenomefilter.output.fq
+    output:
+      join = "avasta/refgenomefilter/{sample}_refgenome_unmapped_join.fq",
+      un = "avasta/refgenomefilter/{sample}_refgenome_unmapped_un.fq"
+    conda:
+      "../envs/biopython.yml"
+    script:
+      "../scripts/spades_input.py"
+
 # --meta   (same as metaspades.py)
 #     This flag is recommended when assembling metagenomic data sets
 # --only-assembler
 #     Runs assembly module only
 rule assemble:
     input: 
-      rules.parse_cdhit.output.join,
-      rules.parse_cdhit.output.un
+      rules.spades_input.output.join,
+      rules.spades_input.output.un
     output: 
-      directory("avasta/assemble/{sample}")
+      directory("avasta/assemblerg/{sample}")
     params:
       options = "--meta --only-assembler"
     conda:
