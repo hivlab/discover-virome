@@ -21,7 +21,8 @@ rule assemble:
       rules.spades_input.output.join,
       rules.spades_input.output.un
     output: 
-      directory("avasta/assemble/{sample}")
+      scaffolds = "avasta/assemble/{sample}/scaffolds.fasta",
+      dir = directory("avasta/assemble/{sample})
     params:
       options = "--meta --only-assembler"
     conda:
@@ -29,13 +30,13 @@ rule assemble:
     shell:
       """
 	    mkdir -p {output}
-	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output}
+	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output.dir}
       """
 
 # Keep only >=500 nt contigs with >=2 coverage
 rule filter_contigs:
   input: 
-    "avasta/assemble/{sample}/scaffolds.fasta"
+    rules.assemble.output.scaffolds
   output: 
     "avasta/assemble/{sample}_good_contigs.fasta"
   params:
