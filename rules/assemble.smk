@@ -21,16 +21,16 @@ rule assemble:
       rules.spades_input.output.join,
       rules.spades_input.output.un
     output: 
-      scaffolds = "avasta/assemble/{sample}/scaffolds.fasta",
-      dir = directory("avasta/assemble/{sample}")
+      scaffolds = "avasta/assemble/{sample}/scaffolds.fasta"
     params:
-      options = "--meta --only-assembler"
+      options = "--meta --only-assembler",
+      dir = "avasta/assemble/{sample}"
     conda:
       "../envs/spades.yml"
     shell:
       """
 	    mkdir -p {output}
-	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {output.dir}
+	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {params.dir}
       """
 
 # Keep only >=500 nt contigs with >=2 coverage
