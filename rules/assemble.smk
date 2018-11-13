@@ -21,7 +21,7 @@ rule assemble:
       rules.spades_input.output.join,
       rules.spades_input.output.un
     output: 
-      directory("avasta/assemblerg/{sample}")
+      directory("avasta/assemble/{sample}")
     params:
       options = "--meta --only-assembler"
     conda:

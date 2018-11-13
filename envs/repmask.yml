@@ -1,9 +1,0 @@
-name: repeatmasker
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - rmblast=2.2.28=3
-  - trf=4.09=0
-  - repeatmasker=4.0.7=pl5.22.0_10
