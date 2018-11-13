@@ -37,7 +37,7 @@ rule filter_contigs:
   input:
     "avasta/assemble/{sample}/scaffolds.fasta"
   output:
-    "avasta/assemble/{sample, [[:alnum:]]+}_good_scaffolds.fasta"
+    "avasta/assemble/{sample}_good_scaffolds.fasta"
   params:
     min_length = 500,
     min_coverage = 2
