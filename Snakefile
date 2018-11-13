@@ -6,11 +6,14 @@ __license__ = "MIT"
 
 include: "rules/common.smk"
 
+wildcard_constraints:
+    dataset = "[[:alnum:]]+"
+
 ## Target rules
 rule all:
     input:
       expand([
-      "avasta/assemble/{sample, [[:alnum:]]+}_good_scaffolds.fasta"
+      "avasta/assemble/{sample}_good_scaffolds.fasta"
       ], sample = sample_ids)
 
 ## Modules
