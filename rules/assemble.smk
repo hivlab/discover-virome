@@ -39,7 +39,7 @@ rule filter_contigs:
   output:
     "avasta/assemble/{sample}_good_contigs.fasta"
   wildcard_constraints:
-    sample = "[[:alnum:]]+"
+    sample = "[^_]"
   params:
     min_length = 500,
     min_coverage = 2
