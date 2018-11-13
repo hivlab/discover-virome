@@ -18,5 +18,4 @@ rule all:
 ## Modules
 include: "rules/munge.smk"
 include: "rules/refgenomefilter.smk"
-include: "rules/cd-hit.smk"
 include: "rules/assemble.smk"
