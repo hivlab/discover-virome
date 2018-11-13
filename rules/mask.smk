@@ -1,7 +1,8 @@
 
 ## Tantan mask of low complexity DNA sequences [6]
 rule tantan:
-  input: rules.cd_hit.output.clusters
+  input: 
+    rules.filter_contigs.output
   output:
     "mask/{sample}_tantan.fasta"
   conda:

@@ -42,7 +42,7 @@ filter_ns:
 
 # Split fasta
 split_fasta:
-    n_files: 2
+    n_files: 1
 
 # MegaBlast against reference genome to remove more host sequences
 megablast_ref_genome:

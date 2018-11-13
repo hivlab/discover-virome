@@ -12,9 +12,14 @@ wildcard_constraints:
 ## Target rules
 rule all:
     input:
-      expand("avasta/assemble/{sample}_good_contigs.fasta", sample = sample_ids)
+      expand([
+      "mask/{sample}_repmaskedgood_{n}.fa",
+      "mask/{sample}_unmaskedgood_{n}.fa"
+      ], sample = sample_ids)
 
 ## Modules
 include: "rules/munge.smk"
 include: "rules/refgenomefilter.smk"
 include: "rules/assemble.smk"
+include: "rules/mask.smk"
+
