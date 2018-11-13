@@ -12,7 +12,7 @@ rule all:
       expand([
       "avasta/refgenomefilter/{sample}_refgenome_unmapped_join.fq",
       "avasta/refgenomefilter/{sample}_refgenome_unmapped_un.fq",
-      "avasta/assemblegr/{sample}"
+      "avasta/assemblerg/{sample}"
       ], sample = sample_ids)
 
 ## Modules
