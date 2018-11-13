@@ -7,7 +7,7 @@ __license__ = "MIT"
 include: "rules/common.smk"
 
 wildcard_constraints:
-    sample = "[[:alnum:]]+"
+    sample = "[^_/]+"
 
 ## Target rules
 rule all:

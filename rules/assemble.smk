@@ -34,9 +34,9 @@ rule assemble:
 
 # Keep only >=500 nt contigs with >=2 coverage
 rule filter_contigs:
-  input:
-    "avasta/assemble/{sample}/scaffolds.fasta"
-  output:
+  input: 
+    lambda wildcards: expand("avasta/assemble/{sample}/scaffolds.fasta", sample = wildcards.sample)
+  output: 
     "avasta/assemble/{sample}_good_contigs.fasta"
   params:
     min_length = 500,
