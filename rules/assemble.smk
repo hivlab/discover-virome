@@ -22,7 +22,7 @@ rule assemble:
       rules.spades_input.output.un
     output: 
       scaffolds = "avasta/assemble/{sample}/scaffolds.fasta",
-      dir = directory("avasta/assemble/{sample})
+      dir = directory("avasta/assemble/{sample}")
     params:
       options = "--meta --only-assembler"
     conda:
