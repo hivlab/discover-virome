@@ -6,6 +6,9 @@ __license__ = "MIT"
 
 include: "rules/common.smk"
 
+wildcard_constraints:
+    sample = "[[:alnum:]]+"
+
 ## Target rules
 rule all:
     input:
