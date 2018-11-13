@@ -35,7 +35,7 @@
         "time": 240,
         "cpus-per-task" : "{threads}"
     },
-    "refgenome_unmapped" :
+    "refgenomefilter" :
     {
         "mem" : 32000,
         "time": "02:00:00"
