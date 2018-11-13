@@ -10,9 +10,7 @@ include: "rules/common.smk"
 rule all:
     input:
       expand([
-      "avasta/refgenomefilter/{sample}_refgenome_unmapped_join.fq",
-      "avasta/refgenomefilter/{sample}_refgenome_unmapped_un.fq",
-      "avasta/assemble/{sample}"
+      "avasta/assemble/{sample}_good_scaffolds.fasta"
       ], sample = sample_ids)
 
 ## Modules
