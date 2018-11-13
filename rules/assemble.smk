@@ -29,7 +29,7 @@ rule assemble:
       "../envs/spades.yml"
     shell:
       """
-	    mkdir -p {output}
+	    mkdir -p {params.dir}
 	    spades.py {params.options} --merged {input[0]} -s {input[1]} -o {params.dir}
       """
 
