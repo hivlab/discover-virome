@@ -18,3 +18,5 @@ rule all:
 include: "rules/munge.smk"
 include: "rules/refgenomefilter.smk"
 include: "rules/assemble.smk"
+include: "rules/mask.smk"
+
