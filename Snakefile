@@ -9,7 +9,7 @@ include: "rules/common.smk"
 ## Target rules
 rule all:
     input:
-      expand("avasta/assemble/{sample}_good_contigs.fasta", sample = sample_ids)
+      expand("avasta/fuck/{sample}_good_contigs.fasta", sample = sample_ids)
 
 ## Modules
 include: "rules/munge.smk"

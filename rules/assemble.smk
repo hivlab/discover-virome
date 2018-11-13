@@ -37,9 +37,7 @@ rule filter_contigs:
   input:
     "avasta/assemble/{sample}/scaffolds.fasta"
   output:
-    "avasta/assemble/{sample}_good_contigs.fasta"
-  wildcard_constraints:
-    sample = "[^_]"
+    "avasta/fuck/{sample}_good_contigs.fasta"
   params:
     min_length = 500,
     min_coverage = 2
