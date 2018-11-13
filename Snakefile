@@ -10,7 +10,7 @@ include: "rules/common.smk"
 rule all:
     input:
       expand([
-      "avasta/assemble/{sample}_good_scaffolds.fasta"
+      "avasta/assemble/{sample, [[:alnum:]]+}_good_scaffolds.fasta"
       ], sample = sample_ids)
 
 ## Modules
