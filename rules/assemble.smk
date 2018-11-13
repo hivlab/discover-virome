@@ -35,7 +35,7 @@ rule assemble:
 # Keep only >=500 nt contigs with >=2 coverage
 rule filter_contigs:
   input:
-    "avasta/assemble/{sample}/scaffolds.fasta"
+    "avasta/assemble/{sample, [[:alnum:]]+}/scaffolds.fasta"
   output:
     "avasta/assemble/{sample}_good_scaffolds.fasta"
   params:
