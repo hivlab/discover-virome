@@ -6,13 +6,10 @@ __license__ = "MIT"
 
 include: "rules/common.smk"
 
-wildcard_constraints:
-    dataset="[[:alnum:]]+"
-
 ## Target rules
 rule all:
     input:
-      expand("avasta/assemble/{sample}_good_scaffolds.fasta", sample = sample_ids)
+      expand("avasta/assemble/{sample}_filteredcontigs.fasta", sample = sample_ids)
 
 ## Modules
 include: "rules/munge.smk"
