@@ -25,7 +25,7 @@ rule blastn_virus:
       max_hsps = config["blastn_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = "'6 qseqid sgi pident length mismatch gapopen qstart qend sstart send evalue bitscore'"
     conda:
       "../envs/biopython.yaml"
     script:
@@ -40,8 +40,8 @@ rule parse_blastn_virus:
       unmapped = "avasta/blast/{sample}_blastn_virus_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-5,
-      query = rules.parse_megablast.output.unmapped,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      query = rules.repeatmasker_good.output.masked_filt,
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -61,7 +61,7 @@ rule blastx_virus:
       max_hsps = config["blastx_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -77,7 +77,7 @@ rule parse_blastx_virus:
     params:
       e_cutoff = 1e-3,
       query = rules.blastx_virus.input.query,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -116,7 +116,7 @@ if config["zenodo"]["deposition_id"]:
 rule unmasked_viral:
     input:
       rules.filter_viruses.output.viruses,
-      rules.refgenome_unmapped.output.fa
+      rules.repeatmasker_good.output.original_filt
     output:
       "avasta/blast/{sample}_candidate_viruses_{n}_unmasked.fa"
     conda:
@@ -181,7 +181,7 @@ rule megablast_nt:
       max_hsps = config["megablast_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -197,7 +197,7 @@ rule parse_megablast_nt:
     params:
       e_cutoff = 1e-10,
       query = rules.refbac_unmapped_masked.output,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -216,7 +216,7 @@ rule blastn_nt:
       max_hsps = config["blastn_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -232,7 +232,7 @@ rule parse_blastn_nt:
     params:
       e_cutoff = 1e-10,
       query = rules.blastn_nt.input.query,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -251,7 +251,7 @@ rule blastx_nr:
       max_hsps = config["blastx_nr"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
@@ -267,7 +267,7 @@ rule parse_blastx_nr:
     params:
       e_cutoff = 1e-3,
       query = rules.blastx_nr.input.query,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     conda:
       "../envs/biopython.yaml"
     script:
