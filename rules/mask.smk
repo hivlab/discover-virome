@@ -46,8 +46,8 @@ rule repeatmasker_good:
     masked = rules.repeatmasker.output.masked,
     original = rules.repeatmasker.input
   output:
-    masked_filt = "mask/{sample}_repmaskedgood_{n}.fa",
-    original_filt = "mask/{sample}_unmaskedgood_{n}.fa"
+    masked_filt = "avasta/mask/{sample}_repmaskedgood_{n}.fa",
+    original_filt = "avasta/mask/{sample}_unmaskedgood_{n}.fa"
   params:
     min_length = 50,
     por_n = 40
