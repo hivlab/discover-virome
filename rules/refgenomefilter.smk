@@ -13,7 +13,7 @@ rule refgenomefilter:
       "logs/avasta/{sample}_bwa_map_refgenome.log"
     threads: 8
     conda:
-      "../envs/bwa-sam-bed.yml"
+      "../envs/bwa-sam-bed.yaml"
     shell:
       """
       cat {input.reads} > {output.merged}

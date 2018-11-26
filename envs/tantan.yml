@@ -1,7 +1,0 @@
-name: tantan
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - tantan=13=0

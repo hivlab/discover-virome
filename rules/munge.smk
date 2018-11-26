@@ -1,6 +1,6 @@
 
-def get_fastq(wildcards, read_pair = 'fq1'):
- return samples.loc[wildcards.sample, [read_pair]].dropna()[0]
+def get_fastq(wildcards):
+ return SAMPLES.loc[wildcards.sample, ['fq1', 'fq2']].dropna()
 
 ## Preprocessing for fastq files
 # Adapter trimming
@@ -8,8 +8,7 @@ def get_fastq(wildcards, read_pair = 'fq1'):
 # Replaces AdapteRemoval, prinseq and fastqc
 rule fastp:
     input:
-      fq1 = lambda wildcards: get_fastq(wildcards, 'fq1'),
-      fq2 = lambda wildcards: get_fastq(wildcards, 'fq2')
+      get_fastq
     output:
       pair1 = "munge/{sample}_pair1_trimmed.gz",
       pair2 = "munge/{sample}_pair2_trimmed.gz",
@@ -19,11 +18,11 @@ rule fastp:
       "-f 5 -t 5 -l 50 -y -Y 8"
     threads: 8
     conda:
-      "../envs/fastp.yml"
+      "../envs/fastp.yaml"
     log: "logs/{sample}_fastp.log"
     shell:
       """
-      fastp -i {input.fq1} -I {input.fq2} -o {output.pair1} -O {output.pair2} {params} -h {output.html} -j {output.json} -w {threads} > {log} 2>&1
+      fastp -i {input[0]} -I {input[1]} -o {output.pair1} -O {output.pair2} {params} -h {output.html} -j {output.json} -w {threads} > {log} 2>&1
       """
 
 ## Stitch paired reads
@@ -40,7 +39,7 @@ rule fastq_join:
     overlap = config["fastq-join"]["minimum_overlap"],
     template = "munge/{sample}_%.fq.gz"
   conda:
-    "../envs/fastq-join.yml"
+    "../envs/fastq-join.yaml"
   log:
     "logs/{sample}_fastq_join.log"
   shell:

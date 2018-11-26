@@ -8,7 +8,7 @@ rule split_fasta:
   params:
     config["split_fasta"]["n_files"]
   conda:
-    "../envs/biopython.yml"
+    "../envs/biopython.yaml"
   script:
     "../scripts/split_fasta.py"
 
@@ -28,7 +28,7 @@ rule repeatmasker:
   params:
     outdir = "avasta/mask"
   threads: 8
-  conda: "../envs/repeatmasker.yml"
+  conda: "../envs/repeatmasker.yaml"
   shell:
     """
     RepeatMasker -qq -pa {threads} {input} -dir {params.outdir}
@@ -52,6 +52,6 @@ rule repeatmasker_good:
     min_length = 50,
     por_n = 40
   conda:
-    "../envs/biopython.yml"
+    "../envs/biopython.yaml"
   script:
     "../scripts/filter_masked.py"

@@ -8,7 +8,7 @@ rule spades_input:
       join = "avasta/refgenomefilter/{sample}_refgenome_unmapped_join.fq",
       un = "avasta/refgenomefilter/{sample}_refgenome_unmapped_un.fq"
     conda:
-      "../envs/biopython.yml"
+      "../envs/biopython.yaml"
     script:
       "../scripts/spades_input.py"
 
@@ -26,7 +26,7 @@ rule assemble:
       options = "--meta --only-assembler",
       dir = "avasta/assemble/{sample}"
     conda:
-      "../envs/spades.yml"
+      "../envs/spades.yaml"
     shell:
       """
 	    mkdir -p {params.dir}
@@ -43,6 +43,6 @@ rule filter_contigs:
     min_length = 500,
     min_coverage = 2
   conda:
-    "../envs/biopython.yml"
+    "../envs/biopython.yaml"
   script:
     "../scripts/filter_contigs.py"

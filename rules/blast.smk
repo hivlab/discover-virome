@@ -14,9 +14,9 @@ rule prepare_taxonomy_data:
 ## Blast against NT virus database
 rule blastn_virus:
     input:
-      query = rules.parse_megablast.output.unmapped
+      query = rules.repeatmasker_good.output.masked_filt
     output:
-      out = "blast/{sample}_blastn_virus_{n,\d+}.tsv"
+      out = "avasta/blast/{sample}_blastn_virus_{n,\d+}.tsv"
     params:
       db = config["virus_nt"],
       task = "blastn",
@@ -36,8 +36,8 @@ rule parse_blastn_virus:
     input:
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = "blast/{sample}_blastn_virus_{n,\d+}_known-viral.tsv",
-      unmapped = "blast/{sample}_blastn_virus_{n,\d+}_unmapped.fa"
+      mapped = "avasta/blast/{sample}_blastn_virus_{n,\d+}_known-viral.tsv",
+      unmapped = "avasta/blast/{sample}_blastn_virus_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-5,
       query = rules.parse_megablast.output.unmapped,
@@ -52,7 +52,7 @@ rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped
     output:
-      out = "blast/{sample}_blastx_virus_{n}.tsv"
+      out = "avasta/blast/{sample}_blastx_virus_{n}.tsv"
     params:
       db = config["virus_nr"],
       word_size = 6,
@@ -72,8 +72,8 @@ rule parse_blastx_virus:
     input:
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = "blast/{sample}_blastx_virus_{n}_known-viral.tsv",
-      unmapped = "blast/{sample}_blastx_virus_{n}_unmapped.fa"
+      mapped = "avasta/blast/{sample}_blastx_virus_{n}_known-viral.tsv",
+      unmapped = "avasta/blast/{sample}_blastx_virus_{n}_unmapped.fa"
     params:
       e_cutoff = 1e-3,
       query = rules.blastx_virus.input.query,
@@ -91,8 +91,8 @@ rule filter_viruses:
     taxdb = config["vhunter"],
     nodes = "taxonomy/nodes.csv"
   output:
-    phages = "results/{sample}_phages_{n}.csv",
-    viruses = "blast/{sample}_candidate_viruses_{n}.csv"
+    phages = "avasta/results/{sample}_phages_{n}.csv",
+    viruses = "avasta/blast/{sample}_candidate_viruses_{n}.csv"
   conda:
     "../envs/tidyverse.yaml"
   script:
@@ -102,9 +102,9 @@ rule filter_viruses:
 if config["zenodo"]["deposition_id"]:
     rule upload_phages:
         input:
-          expand("results/{{sample}}_phages_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_phages_{n}.csv", n = N)
         output:
-          temp("results/{sample}_phages.csv.tar.gz")
+          temp("avasta/results/{sample}_phages.csv.tar.gz")
         params:
           config["zenodo"]["deposition_id"]
         conda:
@@ -118,7 +118,7 @@ rule unmasked_viral:
       rules.filter_viruses.output.viruses,
       rules.refgenome_unmapped.output.fa
     output:
-      "blast/{sample}_candidate_viruses_{n}_unmasked.fa"
+      "avasta/blast/{sample}_candidate_viruses_{n}_unmasked.fa"
     conda:
       "../envs/biopython.yaml"
     script:
@@ -130,7 +130,7 @@ rule bwa_map_refbac:
       config["ref_bacteria"],
       [rules.unmasked_viral.output]
     output:
-      "blast/{sample}_bac_mapped_{n}.sam"
+      "avasta/blast/{sample}_bac_mapped_{n}.sam"
     log:
       "logs/{sample}_bwa_map_refbac_{n}.log"
     threads: 8
@@ -143,9 +143,9 @@ rule bwa_map_refbac:
 rule refbac_unmapped:
     input: rules.bwa_map_refbac.output
     output:
-      bam = "blast/{sample}_bac_unmapped_{n}.bam",
-      fq = "blast/{sample}_bac_unmapped_{n}.fq",
-      fa = "blast/{sample}_bac_unmapped_{n}.fa"
+      bam = "avasta/blast/{sample}_bac_unmapped_{n}.bam",
+      fq = "avasta/blast/{sample}_bac_unmapped_{n}.fq",
+      fa = "avasta/blast/{sample}_bac_unmapped_{n}.fa"
     conda:
       "../envs/bwa-sam-bed.yaml"
     shell:
@@ -161,7 +161,7 @@ rule refbac_unmapped_masked:
       rules.refbac_unmapped.output.fa,
       rules.repeatmasker_good.output.masked_filt
     output:
-      "blast/{sample}_bac_unmapped_{n}_masked.fa"
+      "avasta/blast/{sample}_bac_unmapped_{n}_masked.fa"
     conda:
       "../envs/biopython.yaml"
     script:
@@ -172,7 +172,7 @@ rule megablast_nt:
     input:
       query = rules.refbac_unmapped_masked.output
     output:
-      out = "blast/{sample}_megablast_nt_{n,\d+}.tsv"
+      out = "avasta/blast/{sample}_megablast_nt_{n,\d+}.tsv"
     params:
       db = config["nt"],
       task = "megablast",
@@ -192,8 +192,8 @@ rule parse_megablast_nt:
     input:
       blast_result = rules.megablast_nt.output.out
     output:
-      mapped = "blast/{sample}_megablast_nt_{n,\d+}_mapped.tsv",
-      unmapped = "blast/{sample}_megablast_nt_{n,\d+}_unmapped.fa"
+      mapped = "avasta/blast/{sample}_megablast_nt_{n,\d+}_mapped.tsv",
+      unmapped = "avasta/blast/{sample}_megablast_nt_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-10,
       query = rules.refbac_unmapped_masked.output,
@@ -208,7 +208,7 @@ rule blastn_nt:
     input:
       query = rules.parse_megablast_nt.output.unmapped
     output:
-      out = "blast/{sample}_blastn_nt_{n,\d+}.tsv"
+      out = "avasta/blast/{sample}_blastn_nt_{n,\d+}.tsv"
     params:
       db = config["nt"],
       task = "blastn",
@@ -227,8 +227,8 @@ rule parse_blastn_nt:
     input:
       blast_result = rules.blastn_nt.output.out
     output:
-      mapped = "blast/{sample}_blastn_nt_{n,\d+}_mapped.tsv",
-      unmapped = "blast/{sample}_blastn_nt_{n,\d+}_unmapped.fa" if config["run_blastx"] else "results/{sample}_unassigned_{n,\d+}.fa"
+      mapped = "avasta/blast/{sample}_blastn_nt_{n,\d+}_mapped.tsv",
+      unmapped = "avasta/blast/{sample}_blastn_nt_{n,\d+}_unmapped.fa" if config["run_blastx"] else "avasta/results/{sample}_unassigned_{n,\d+}.fa"
     params:
       e_cutoff = 1e-10,
       query = rules.blastn_nt.input.query,
@@ -243,7 +243,7 @@ rule blastx_nr:
     input:
       query = rules.parse_blastn_nt.output.unmapped
     output:
-      out = "blast/{sample}_blastx_nr_{n,\d+}.tsv"
+      out = "avasta/blast/{sample}_blastx_nr_{n,\d+}.tsv"
     params:
       db = config["nr"],
       word_size = 6,
@@ -262,8 +262,8 @@ rule parse_blastx_nr:
     input:
       blast_result = rules.blastx_nr.output.out
     output:
-      mapped = "blast/{sample}_blastx_nr_{n,\d+}_mapped.tsv",
-      unmapped = "results/{sample}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{sample}_None_{n}"
+      mapped = "avasta/blast/{sample}_blastx_nr_{n,\d+}_mapped.tsv",
+      unmapped = "avasta/results/{sample}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{sample}_None_{n}"
     params:
       e_cutoff = 1e-3,
       query = rules.blastx_nr.input.query,
@@ -280,8 +280,8 @@ rule filter_blasted_viruses:
     taxdb = config["vhunter"],
     nodes = "taxonomy/nodes.csv"
   output:
-    phages = "results/{sample}_phages_blasted_{n}.csv",
-    viruses = "results/{sample}_viruses_blasted_{n}.csv"
+    phages = "avasta/results/{sample}_phages_blasted_{n}.csv",
+    viruses = "avasta/results/{sample}_viruses_blasted_{n}.csv"
   conda:
     "../envs/tidyverse.yaml"
   script:
@@ -291,9 +291,9 @@ rule filter_blasted_viruses:
 if config["zenodo"]["deposition_id"]:
     rule upload_phages_blasted:
         input:
-          expand("results/{{sample}}_phages_blasted_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_phages_blasted_{n}.csv", n = N)
         output:
-          temp("results/{sample}_phages_blasted.csv.tar.gz")
+          temp("avasta/results/{sample}_phages_blasted.csv.tar.gz")
         params:
           config["zenodo"]["deposition_id"]
         conda:
@@ -303,9 +303,9 @@ if config["zenodo"]["deposition_id"]:
 
     rule upload_viruses_blasted:
         input:
-          expand("results/{{sample}}_viruses_blasted_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_viruses_blasted_{n}.csv", n = N)
         output:
-          temp("results/{sample}_viruses_blasted.csv.tar.gz")
+          temp("avasta/results/{sample}_viruses_blasted.csv.tar.gz")
         params:
           config["zenodo"]["deposition_id"]
         conda:
