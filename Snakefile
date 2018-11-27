@@ -18,15 +18,15 @@ configfile: "config.yaml"
 SAMPLES = pd.read_table(config["samples"], sep = "\s+").set_index("sample", drop=False)
 validate(SAMPLES, "schemas/samples.schema.yaml")
 SAMPLE_IDS = SAMPLES.index.values.tolist()
-N_FILES = config["split_fasta"]["n_files"]
-N = list(range(1, N_FILES + 1, 1))
+N = 5
+N_FILES = list(range(1, N + 1, 1))
 
 ## Create slurm logs dir
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
 
 ## Main output files and Target rules
-OUTPUTS = expand(["avasta/results/{sample}_phages_{n}.csv", "avasta/results/{sample}_unassigned_{n}.fa", "avasta/results/{sample}_phages_blasted_{n}.csv", "avasta/results/{sample}_viruses_blasted_{n}.csv"], sample = SAMPLE_IDS, n = N) + expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
+OUTPUTS = expand(["avasta/results/{sample}_phages_{n}.csv", "avasta/results/{sample}_unassigned_{n}.fa", "avasta/results/{sample}_phages_blasted_{n}.csv", "avasta/results/{sample}_viruses_blasted_{n}.csv"], sample = SAMPLE_IDS, n = N_FILES) + expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 
 rule all:
     input:

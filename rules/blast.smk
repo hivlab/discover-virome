@@ -102,7 +102,7 @@ rule filter_viruses:
 if config["zenodo"]["deposition_id"]:
     rule upload_phages:
         input:
-          expand("avasta/results/{{sample}}_phages_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_phages_{n}.csv", n = N_FILES)
         output:
           temp("avasta/results/{sample}_phages.csv.tar.gz")
         params:
@@ -291,7 +291,7 @@ rule filter_blasted_viruses:
 if config["zenodo"]["deposition_id"]:
     rule upload_phages_blasted:
         input:
-          expand("avasta/results/{{sample}}_phages_blasted_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_phages_blasted_{n}.csv", n = N_FILES)
         output:
           temp("avasta/results/{sample}_phages_blasted.csv.tar.gz")
         params:
@@ -303,7 +303,7 @@ if config["zenodo"]["deposition_id"]:
 
     rule upload_viruses_blasted:
         input:
-          expand("avasta/results/{{sample}}_viruses_blasted_{n}.csv", n = N)
+          expand("avasta/results/{{sample}}_viruses_blasted_{n}.csv", n = N_FILES)
         output:
           temp("avasta/results/{sample}_viruses_blasted.csv.tar.gz")
         params:
