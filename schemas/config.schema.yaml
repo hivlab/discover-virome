@@ -1,0 +1,87 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: snakemake configuration file
+properties:
+  seed:
+    type: integer
+    default: 11
+    description: an integer, seed for fastq sample
+  samples:
+    type: string
+    description: path to samples.tsv file
+  remote:
+    type: boolean
+    default: false
+    description: boolean that indicates whether to download remote files via FTP
+  username:
+    type: string
+    description: username for remote file FTP download
+  password:
+    type: string
+    description: password for remote file FTP download
+  run_blastx:
+    type: boolean
+    default: false
+    description: boolean that switches in/out option to save time by not running blastx
+  zenodo:
+    type: object
+    properties:
+    deposition_id:
+      type: ["string", "null"]
+      default: null
+  split_fasta:
+    type: object
+    properties:
+    n_files:
+      type: integer
+      default: 20
+      description: number of files to split fasta file before repeatmasker, defaults to 2
+    required:
+      - n_files
+  repbase_file:
+    type: string
+    description: path to RepeatMasker Repbase file (path/to/RMRBSeqs.embl)
+  ref_genome:
+    type: string
+    description:  path to host reference genome database
+  ref_bacteria:
+    type: string
+    description:  path to bacterial reference genome database
+  virus_nt:
+    type: string
+    description:  path to virus nucleotide sequence database
+  virus_nr:
+    type: string
+    description:  path to virus protein database
+  vhunter:
+    type: string
+    description:  path to virus taxonomy database
+  names:
+    type: string
+    description:  path to species names database
+  nodes:
+    type: string
+    description:  path to taxonomy nodes database
+  division:
+    type: string
+    description:  path to taxonomic division database
+  nt:
+    type: string
+    description: path to nt blast database
+  nr:
+    type: string
+    description: path to nr blast database
+
+required:
+  - samples
+  - split_fasta
+  - repbase_file
+  - ref_genome
+  - ref_bacteria
+  - virus_nt
+  - virus_nr
+  - vhunter
+  - names
+  - nodes
+  - division
+  - nt
+  - nr
