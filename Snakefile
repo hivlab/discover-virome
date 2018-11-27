@@ -15,7 +15,6 @@ shell.executable("bash")
 
 ## Load configuration file with sample and path info
 configfile: "config.yaml"
-validate(config, "schemas/config.schema.yaml")
 SAMPLES = pd.read_table(config["samples"], sep = "\s+").set_index("sample", drop=False)
 validate(SAMPLES, "schemas/samples.schema.yaml")
 SAMPLE_IDS = SAMPLES.index.values.tolist()
