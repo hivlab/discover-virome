@@ -4,7 +4,7 @@ rule split_fasta:
   input:
     rules.cd_hit.output.repres
   output:
-    expand("avasta/mask/{{sample}}_repeatmasker_{n}.fa", n = list(range(1, n_files + 1, 1)))
+    expand("avasta/mask/{{sample}}_repeatmasker_{n}.fa", n = N)
   params:
     config["split_fasta"]["n_files"]
   conda:
