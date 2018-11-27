@@ -5,8 +5,8 @@ rule split_fasta:
     rules.cd_hit.output.repres
   output:
     expand("avasta/mask/{{sample}}_repeatmasker_{n}.fa", n = N)
-  params:
-    config["split_fasta"]["n_files"]
+  params: 
+    n_files = 5
   conda:
     "../envs/biopython.yaml"
   script:
