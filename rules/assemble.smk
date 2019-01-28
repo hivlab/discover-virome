@@ -6,7 +6,7 @@ rule assemble:
     output: 
       contigs = "assemble/{sample}/contigs.fa"
     params:
-      options = ""
+      options = "--min-contig-len 500"
     threads: 8
     log: "logs/{sample}_assemble.log"
     wrapper:
