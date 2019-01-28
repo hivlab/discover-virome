@@ -1,7 +1,8 @@
 # Runs spades metagenome+assembly module
 rule assemble:
     input: 
-      rules.fastp.output
+      pe1 = rules.fastp.output[0],
+      pe2 = rules.fastp.output[1]
     output: 
       contigs = "assemble/{sample}.contigs.fa"
     params:
