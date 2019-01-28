@@ -4,9 +4,9 @@ rule assemble:
       pe1 = rules.fastp.output[0],
       pe2 = rules.fastp.output[1]
     output: 
-      contigs = "assemble/{sample}.contigs.fa"
+      contigs = "assemble/{sample}/contigs.fa"
     params:
-      options = "--out-prefix {sample} --min-contig-len 500"
+      options = ""
     threads: 8
     log: "logs/{sample}_assemble.log"
     wrapper:
