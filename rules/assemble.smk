@@ -24,10 +24,11 @@ rule align:
       options = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbwrap"
-      
+
+# 
 rule coverage:
     input: 
-      in1 = rules.align.output.out
+      "in" = rules.align.output.out
     output:
       out = "align/{sample}/coverage.txt"
     wrapper:
