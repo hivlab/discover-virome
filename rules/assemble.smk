@@ -12,17 +12,26 @@ rule assemble:
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/assembly/megahit"
 
-rule coverage:
+rule align:
     input: 
       ref = rules.assemble.output.contigs,
       in1 = rules.fastp.output[0],
       in2 = rules.fastp.output[1]
     output:
-      aln = temp("assemble/{sample}/aln.sam.gz"),
-      cov = "assemble/{sample}/coverage.txt"
-    params: 
+      out = "align/{sample}/aln.sam.gz",
+      path = directory("index/{sample}")
+    params:
       options = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/assembly/coverage"
+      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbwrap"
+      
+rule coverage:
+    input: 
+      in = rules.align.output.out
+    output:
+      out = "align/{sample}/coverage.txt"
+    wrapper:
+      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/pileup"
+
     
     
