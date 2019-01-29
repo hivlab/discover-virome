@@ -15,7 +15,7 @@ rule assemble:
 rule coverage:
     input: 
       ref = rules.assemble.output.contigs,
-      in = rules.fastp.output[0],
+      in1 = rules.fastp.output[0],
       in2 = rules.fastp.output[1]
     output:
       aln = temp("assemble/{sample}/aln.sam.gz"),
