@@ -27,7 +27,7 @@ rule align:
       
 rule coverage:
     input: 
-      in = rules.align.output.out
+      in = "align/{sample}/aln.sam.gz"
     output:
       out = "align/{sample}/coverage.txt"
     wrapper:
