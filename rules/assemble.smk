@@ -23,7 +23,7 @@ rule align:
     params:
       options = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbwrap"
+      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbmap/bbwrap"
 
 rule coverage:
     input: 
@@ -31,7 +31,7 @@ rule coverage:
     output:
       out = "align/{sample}/coverage.txt"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/pileup"
+      "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbmap/pileup"
 
     
     
