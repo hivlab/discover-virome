@@ -11,6 +11,3 @@ rule assemble:
     log: "logs/{sample}_assemble.log"
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/assembly/megahit"
-
-rule coverage:
-    
