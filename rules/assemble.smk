@@ -25,10 +25,9 @@ rule align:
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbwrap"
 
-# 
 rule coverage:
     input: 
-      "in" = rules.align.output.out
+      rules.align.output.out
     output:
       out = "align/{sample}/coverage.txt"
     wrapper:
