@@ -48,7 +48,7 @@ rule samtools_sort:
     input:
         rules.samtools_view.output
     output:
-        "mapped/{sample}.sorted.bam"
+        "mapped/sorted_{sample}.bam"
     params:
         "-n"
     threads: 8
