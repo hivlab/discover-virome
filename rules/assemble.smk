@@ -46,7 +46,7 @@ rule view:
 
 rule sort:
     input:
-        rules.samtools_view.output
+        rules.view.output[0]
     output:
         "align/{sample}/sorted.bam"
     params:
