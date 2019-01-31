@@ -38,7 +38,7 @@ rule samtools_view:
     input:
         rules.align.output.out
     output:
-        "mapped/{sample}_raw.bam"
+        "align/{sample}/raw.bam"
     params:
         "-b -F 4 -q 10"
     wrapper:
@@ -48,7 +48,7 @@ rule samtools_sort:
     input:
         rules.samtools_view.output
     output:
-        "mapped/{sample}_sorted.bam"
+        "align/{sample}/sorted.bam"
     params:
         "-n"
     threads: 8
