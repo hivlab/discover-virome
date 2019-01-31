@@ -29,7 +29,7 @@ rule coverage:
     input: 
       rules.align.output.out
     output:
-      out = "align/{sample}/coverage.txt"
+      out = "align/{sample}/coverage.tsv"
     log: "logs/{sample}_coverage.log"
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbmap/pileup"
