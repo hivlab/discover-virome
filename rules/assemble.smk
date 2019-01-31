@@ -36,7 +36,7 @@ rule coverage:
 
 rule view:
     input:
-        rules.align.output.out
+        pipe(rules.align.output.out)
     output:
         "align/{sample}_raw.bam"
     params:
