@@ -38,7 +38,7 @@ rule view:
     input:
         rules.align.output.out
     output:
-        "align/{sample}/raw.bam"
+        "align/{sample}_raw.bam"
     params:
         "-b -F 4 -q 10"
     wrapper:
@@ -48,7 +48,7 @@ rule sort:
     input:
         rules.view.output[0]
     output:
-        "align/{sample}/sorted.bam"
+        "align/{sample}_sorted.bam"
     params:
         "-n"
     threads: 8
