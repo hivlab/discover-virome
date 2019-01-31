@@ -34,5 +34,24 @@ rule coverage:
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbmap/pileup"
 
-    
-    
+rule samtools_view:
+    input:
+        rules.align.output.out
+    output:
+        "mapped/{sample}.bam"
+    params:
+        "-b -F 4 -q 10"
+    wrapper:
+        "0.31.1/bio/samtools/view"
+
+rule samtools_sort:
+    input:
+        rules.samtools_view.output
+    output:
+        "mapped/{sample}_sorted.bam"
+    params:
+        "-n"
+    threads: 8
+    wrapper:
+        "0.31.1/bio/samtools/sort"
+
