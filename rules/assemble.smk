@@ -34,7 +34,7 @@ rule coverage:
     wrapper:
       "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/bbmap/pileup"
 
-rule samtools_view:
+rule view:
     input:
         rules.align.output.out
     output:
@@ -44,7 +44,7 @@ rule samtools_view:
     wrapper:
         "0.31.1/bio/samtools/view"
 
-rule samtools_sort:
+rule sort:
     input:
         rules.samtools_view.output
     output:
