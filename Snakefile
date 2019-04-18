@@ -4,7 +4,7 @@ __copyright__ = "Copyright 2018, Avilab"
 __email__ = "taavi.pall@ut.ee"
 __license__ = "MIT"
 
-## Load libraries
+# Load libraries
 import os
 import json
 import glob
@@ -13,29 +13,27 @@ from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 from snakemake.utils import validate
 shell.executable("bash")
 
-## Load configuration file with sample and path info
+# Load configuration file with sample and path info
 configfile: "config.yaml"
+validate(config, "schemas/config.schema.yaml")
 SAMPLES = pd.read_table(config["samples"], sep = "\s+").set_index("sample", drop=False)
 validate(SAMPLES, "schemas/samples.schema.yaml")
 SAMPLE_IDS = SAMPLES.index.values.tolist()
-N = 5
-N_FILES = list(range(1, N + 1, 1))
+SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 
-## Create slurm logs dir
+# Create slurm logs dir
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
 
-## Main output files and Target rules
-OUTPUTS = expand(["avasta/results/{sample}_phages_{n}.csv", "avasta/results/{sample}_unassigned_{n}.fa", "avasta/results/{sample}_phages_blasted_{n}.csv", "avasta/results/{sample}_viruses_blasted_{n}.csv"], sample = SAMPLE_IDS, n = N_FILES) + expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-
 rule all:
     input:
-        OUTPUTS, expand("avasta/results/{sample}_phages.csv.tar.gz", sample = SAMPLE_IDS) if config["zenodo"]["deposition_id"] else OUTPUTS
+        expand(["assemble/{sample}/final.contigs.fa", 
+                "align/{sample}/aln.sam.gz", 
+                "align/{sample}/coverage.tsv",
+                "align/{sample}_sorted.bam",
+                "network/{sample}/network.txt"], sample = SAMPLE_IDS)
 
-## Modules
-include: "rules/munge.smk"
-include: "rules/refgenomefilter.smk"
+# Modules
+include: "rules/trim.smk"
 include: "rules/assemble.smk"
-include: "rules/cd-hit.smk"
-include: "rules/mask.smk"
-include: "rules/blast.smk"
+include: "rules/network.smk"
