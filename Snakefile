@@ -16,7 +16,7 @@ configfile: "config.yaml"
 #validate(config, "schemas/config.schema.yaml")
 SAMPLES = pd.read_csv(config["samples"], sep = "\\s+").set_index("run", drop = False)
 #validate(SAMPLES, "schemas/samples.schema.yaml")
-SAMPLE_IDS, RUN_IDS = SAMPLES.sample.to_list(), SAMPLES.run.to_list()
+SAMPLE_IDS, RUN_IDS = list(SAMPLES["sample"]), SAMPLES.run.to_list()
 SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 
 # Create slurm logs dir
