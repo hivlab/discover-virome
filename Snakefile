@@ -30,4 +30,5 @@ rule all:
 # Modules
 include: "rules/trim.smk"
 include: "rules/assemble.smk"
+include: "rules/mask.smk"
 
