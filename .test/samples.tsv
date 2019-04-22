@@ -1,2 +1,2 @@
-sample fq1 fq2
-SRR5580016sub reads/SRR5580016sub_1.fastq.gz reads/SRR5580016sub_2.fastq.gz
+sample run fq1 fq2
+A SRR5580016sub2 reads/SRR5580016sub2_1.fastq.gz reads/SRR5580016sub2_2.fastq.gz

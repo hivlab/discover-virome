@@ -1,7 +1,7 @@
 
 # Global parameters -------------------
 
-#
+# Option to save time by not running blastx
 run_blastx: False
 
 # path or URL to sample sheet (CSV format, columns: sample, condition, ...)
@@ -30,10 +30,6 @@ nr: "/gpfs/software/VirusSeeker/databases/nr/nr"
 
 # Rule parameters ---------------------
 
-# Fastp
-fastp:
-    threads: 4
-
 # fastq-join
 fastq-join:
     maximum_difference: 5
@@ -46,7 +42,7 @@ filter_ns:
 
 # Split fasta
 split_fasta:
-    n_files: 2
+    n_files: 1
 
 # MegaBlast against reference genome to remove more host sequences
 megablast_ref_genome:
@@ -60,6 +56,7 @@ megablast_nt:
     evalue: 1e-8
     word_size: 16
     max_hsps: 50
+    max_target_seqs: 5
 
 # Blastn against virus nucleotide database
 blastn_virus:
