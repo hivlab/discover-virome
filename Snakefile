@@ -25,7 +25,10 @@ if not os.path.exists("logs/slurm"):
 
 rule all:
     input:
-        expand(["assemble/{run}/final.contigs.fa", "assemble/{run}/coverage.txt"], run = RUN_IDS)
+        expand(["assemble/{run}/final.contigs.fa", 
+        "assemble/{run}/coverage.txt",
+        "mask/{run}_repmaskedgood.fa",
+        "mask/{run}_unmaskedgood.fa"], run = RUN_IDS)
 
 # Modules
 include: "rules/trim.smk"
