@@ -21,28 +21,39 @@ rule fastp:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/fastp"
 
 # Align sequences to reference genome and extract unmapped reads.
-rule refgenome_unmapped:
+rule bwa_mem:
   input:
-    index = config["ref_genome"],
-    reads = rules.fastp.output
+    reads = [rules.fastp.output]
   output:
-    "trim/{run}_refgenome_unmapped.bam"
+    "mapped/{run}_refgenome_mapped.bam"
   params:
-    sort = "unmapped",
+    index = config["ref_genome"],
+    extra = " -u",
+    sort = "samtools",
     sort_order = "queryname"
   log:
-    "logs/{run}_bwa_map_refgenome.log"
+    "logs/{run}_bwa_mem_refgenome.log"
   threads: 2
   wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bwa/mem"
+    "0.32.0/bio/bwa/mem"
+
+rule samtools_view:
+  input:
+    rules.bwa_mem.output
+  output:
+    "mapped/{run}_refgenome_unmapped.bam"
+  params:
+    "-b -f 4" # bam output
+  wrapper:
+    "0.32.0/bio/samtools/view"
 
 # Convert bam file to fastq files.
 rule bamtofastq:
   input:
-    rules.refgenome_unmapped.output
+    rules.samtools_view.output
   output:
-    "trim/{run}_unmapped_1.fq",
-    "trim/{run}_unmapped_2.fq"
+    "mapped/{run}_unmapped_1.fq",
+    "mapped/{run}_unmapped_2.fq"
   log: 
     "logs/{run}_bamtofastq.log"
   wrapper:
