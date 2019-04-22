@@ -10,3 +10,4 @@
 !.test/reads
 scripts/.snakemake*
 scripts/common/__pycache__
+.vscode/settings.json

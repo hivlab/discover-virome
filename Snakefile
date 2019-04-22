@@ -1,6 +1,5 @@
-
 __author__ = "Taavi Päll"
-__copyright__ = "Copyright 2018, Avilab"
+__copyright__ = "Copyright 2019, Avilab"
 __email__ = "taavi.pall@ut.ee"
 __license__ = "MIT"
 
@@ -11,13 +10,12 @@ import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 from snakemake.utils import validate
-shell.executable("bash")
 
 # Load configuration file with sample and path info
 configfile: "config.yaml"
-validate(config, "schemas/config.schema.yaml")
+#validate(config, "schemas/config.schema.yaml")
 SAMPLES = pd.read_table(config["samples"], sep = "\s+").set_index("sample", drop=False)
-validate(SAMPLES, "schemas/samples.schema.yaml")
+#validate(SAMPLES, "schemas/samples.schema.yaml")
 SAMPLE_IDS = SAMPLES.index.values.tolist()
 SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 
@@ -27,13 +25,9 @@ if not os.path.exists("logs/slurm"):
 
 rule all:
     input:
-        expand(["assemble/{sample}/final.contigs.fa", 
-                "align/{sample}/aln.sam.gz", 
-                "align/{sample}/coverage.tsv",
-                "align/{sample}_sorted.bam",
-                "network/{sample}/network.txt"], sample = SAMPLE_IDS)
+        expand(["munge/{sample}_un1.fq.gz", "munge/{sample}_un2.fq.gz", "munge/{sample}_join.fq.gz"], sample = SAMPLE_IDS)
 
 # Modules
 include: "rules/trim.smk"
-include: "rules/assemble.smk"
-include: "rules/network.smk"
+#include: "rules/assemble.smk"
+#include: "rules/network.smk"

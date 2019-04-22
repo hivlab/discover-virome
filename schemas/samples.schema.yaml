@@ -5,18 +5,18 @@ properties:
   sample:
     type: string
     description: sample name/identifier
+  run:
+    type: string
+    description: sequencing run
   fq1:
     type: string
     description: path to fastq(.gz) pair 1 file
   fq2:
     type: string
     description: path to fastq(.gz) pair 2 file
-  frac:
-    type: number
-    default: 1
-    description: a number between 0 and 1 that indicates proportion of reads to sample from fastq file. No subsampling with 0 or >=1
 
 required:
   - sample
+  - run
   - fq1
   - fq2
