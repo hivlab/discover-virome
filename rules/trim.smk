@@ -28,7 +28,6 @@ rule bwa_mem:
     "mapped/{run}_refgenome_mapped.bam"
   params:
     index = config["ref_genome"],
-    extra = " -u",
     sort = "samtools",
     sort_order = "queryname"
   log:
