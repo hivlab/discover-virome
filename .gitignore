@@ -7,6 +7,6 @@
 !.test/config.yml
 !.test/samples.tsv
 !.test/cluster.json
-!.test/data
+!.test/reads
 scripts/.snakemake*
 scripts/common/__pycache__
