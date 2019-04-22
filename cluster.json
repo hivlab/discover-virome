@@ -8,6 +8,12 @@
         "mem" : 2000,
         "output" : "logs/slurm/slurm_%j.log"
     },
+    "bwa_mem" :
+    {   
+        "partition" : "main",
+        "time": 60,
+        "mem" : 16000
+    },
     "assemble" :
     {   
         "partition" : "main",
