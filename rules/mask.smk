@@ -35,9 +35,9 @@ rule repeatmasker:
   input:
     fa = rules.tantan_good.output
   output:
-    masked = "mask/{run}_repeatmasker.fa.masked",
-    out = "mask/{run}_repeatmasker.fa.out",
-    tbl = "mask/{run}_repeatmasker.fa.tbl"
+    masked = "mask/{run}_tantangood.fa.masked",
+    out = "mask/{run}_tantangood.fa.out",
+    tbl = "mask/{run}_tantangood.fa.tbl"
   params:
     outdir = "mask"
   threads: 8
