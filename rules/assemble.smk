@@ -10,7 +10,7 @@ rule assemble:
     threads: 2
     log: "logs/{run}_assemble.log"
     wrapper:
-      "https://bitbucket.org/tpall/snakemake-wrappers/raw/99269f6f66af772fd045a05435915d6d7c9c3533/bio/assembly/megahit"
+      "https://bitbucket.org/tpall/snakemake-wrappers/raw/77183b4bdef5103a2c3e60d4d6c3825a17d5debc/bio/assembly/megahit/wrapper.py"
 
 rule coverage:
     input: 
