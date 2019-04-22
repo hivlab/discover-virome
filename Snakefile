@@ -14,9 +14,9 @@ from snakemake.utils import validate
 # Load configuration file with sample and path info
 configfile: "config.yaml"
 #validate(config, "schemas/config.schema.yaml")
-SAMPLES = pd.read_table(config["samples"], sep = "\s+").set_index("sample", drop=False)
+SAMPLES = pd.read_csv(config["samples"], sep = "\\s+").set_index("run", drop = False)
 #validate(SAMPLES, "schemas/samples.schema.yaml")
-SAMPLE_IDS = SAMPLES.index.values.tolist()
+SAMPLE_IDS, RUN_IDS = SAMPLES.sample.to_list(), SAMPLES.run.to_list()
 SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 
 # Create slurm logs dir
@@ -25,9 +25,9 @@ if not os.path.exists("logs/slurm"):
 
 rule all:
     input:
-        expand(["munge/{sample}_un1.fq.gz", "munge/{sample}_un2.fq.gz", "munge/{sample}_join.fq.gz"], sample = SAMPLE_IDS)
+        expand(["assemble/{run}/final.contigs.fa", "assemble/{run}/coverage.txt"], run = RUN_IDS)
 
 # Modules
 include: "rules/trim.smk"
-#include: "rules/assemble.smk"
-#include: "rules/network.smk"
+include: "rules/assemble.smk"
+

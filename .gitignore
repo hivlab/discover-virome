@@ -4,7 +4,7 @@
 .Ruserdata
 .snakemake
 .test
-!.test/config.yml
+!.test/config.yaml
 !.test/samples.tsv
 !.test/cluster.json
 !.test/reads
