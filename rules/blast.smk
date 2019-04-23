@@ -119,7 +119,7 @@ rule bwa_map_refbac:
     "0.32.0/bio/bwa/mem"
 
 # Extract unmapped reads.
-rule samtools_view:
+rule unmapped_refbak:
   input:
     rules.bwa_map_refbac.output
   output:
@@ -130,9 +130,9 @@ rule samtools_view:
     "0.32.0/bio/samtools/view"
 
 # Convert bam file to fastq file.
-rule bamtofastq:
+rule unmapped_refbaktofastq:
   input:
-    rules.samtools_view.output
+    rules.unmapped_refbak.output
   output:
     temp("assemble/blast/{run}_bac_unmapped.fq")
   log: 
@@ -141,9 +141,9 @@ rule bamtofastq:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bedtools/bamtofastq"
 
 # Convert fastq file to fasta file.
-rule fastqtofasta:
+rule unmapped_refbaktofasta:
   input:
-    rules.bamtofastq.output
+    rules.unmapped_refbaktofastq.output
   output:
     "assemble/blast/{run}_bac_unmapped.fa"
   shell:
@@ -152,7 +152,7 @@ rule fastqtofasta:
 # Subset repeatmasker masked reads using unmapped reads.
 rule refbac_unmapped_masked:
     input:
-      rules.fastqtofasta.output,
+      rules.unmapped_refbaktofasta.output,
       rules.repeatmasker_good.output.masked_filt
     output:
       temp("assemble/blast/{run}_bac_unmapped_masked.fa")
