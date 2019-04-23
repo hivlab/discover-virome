@@ -1,5 +1,5 @@
 
-## Prepare names and nodes tables for taxonomy annotation
+# Prepare taxonomy annotation tables.
 rule prepare_taxonomy_data:
   input: config["names"], config["nodes"], config["division"]
   output:
@@ -9,14 +9,13 @@ rule prepare_taxonomy_data:
   script:
     "../scripts/prepare_taxonomy_data.R"
 
-## Blast input, output, and params keys must match commandline blast option names https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a
-
-## Blast against NT virus database
+# Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
+# Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = rules.repeatmasker_good.output.masked_filt
+      query = rules.parse_megablast.output.unmapped
     output:
-      out = "avasta/blast/{sample}_blastn_virus_{n,\d+}.tsv"
+      out = "assemble/blast/{run}_blastn_virus_{n,\d+}.tsv"
     params:
       db = config["virus_nt"],
       task = "blastn",
@@ -25,34 +24,30 @@ rule blastn_virus:
       max_hsps = config["blastn_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = "'6 qseqid sgi pident length mismatch gapopen qstart qend sstart send evalue bitscore'"
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["blast"]
 
-## Filter blastn records for the cutoff value
+# Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
+      query = rules.parse_megablast.output.unmapped,
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = "avasta/blast/{sample}_blastn_virus_{n,\d+}_known-viral.tsv",
-      unmapped = "avasta/blast/{sample}_blastn_virus_{n,\d+}_unmapped.fa"
+      mapped = "assemble/blast/{run}_blastn_virus_{n,\d+}_known-viral.tsv",
+      unmapped = "assemble/blast/{run}_blastn_virus_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-5,
-      query = rules.repeatmasker_good.output.masked_filt,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/parse_blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["parse_blast"]
 
-## Blastx unmapped sequences against NR virus database
+# Blastx unmapped reads against nr virus database.
 rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped
     output:
-      out = "avasta/blast/{sample}_blastx_virus_{n}.tsv"
+      out = "assemble/blast/{run}_blastx_virus_{n}.tsv"
     params:
       db = config["virus_nr"],
       word_size = 6,
@@ -61,76 +56,59 @@ rule blastx_virus:
       max_hsps = config["blastx_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["blast"]
 
-## Filter blastn records for the cutoff value
+# Filter blastn hits for the cutoff value.
 rule parse_blastx_virus:
     input:
+      query = rules.blastx_virus.input.query,
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = "avasta/blast/{sample}_blastx_virus_{n}_known-viral.tsv",
-      unmapped = "avasta/blast/{sample}_blastx_virus_{n}_unmapped.fa"
+      mapped = "assemble/blast/{run}_blastx_virus_{n}_known-viral.tsv",
+      unmapped = "assemble/blast/{run}_blastx_virus_{n}_unmapped.fa"
     params:
       e_cutoff = 1e-3,
-      query = rules.blastx_virus.input.query,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/parse_blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["parse_blast"]
 
-## Filter out phage sequences
-rule filter_viruses:
+# Filter sequences by division id.
+# Saves hits with division id
+rule classify_phages:
   input:
     [rules.parse_blastn_virus.output.mapped,
     rules.parse_blastx_virus.output.mapped] if config["run_blastx"] else rules.parse_blastn_virus.output.mapped,
-    taxdb = config["vhunter"],
     nodes = "taxonomy/nodes.csv"
   output:
-    phages = "avasta/results/{sample}_phages_{n}.csv",
-    viruses = "avasta/blast/{sample}_candidate_viruses_{n}.csv"
-  conda:
-    "../envs/tidyverse.yaml"
-  script:
-    "../scripts/filter_viruses.R"
+    division = "assemble/results/{run}_phages_{n}.csv",
+    other = "assemble/blast/{run}_candidate_viruses_{n}.csv"
+  params:
+    taxdb = config["vhunter"],
+    division_id = 3
+  wrapper:
+    config["wrappers"]["blast_taxonomy"]
 
-## Upload phage data to Zenodo
-if config["zenodo"]["deposition_id"]:
-    rule upload_phages:
-        input:
-          expand("avasta/results/{{sample}}_phages_{n}.csv", n = N_FILES)
-        output:
-          temp("avasta/results/{sample}_phages.csv.tar.gz")
-        params:
-          config["zenodo"]["deposition_id"]
-        conda:
-          "../envs/upload.yaml"
-        script:
-          "../scripts/zenodo_upload.py"
-
-## Get unmasked candidate viral sequences
-rule unmasked_viral:
+# Filter unmasked candidate virus reads.
+rule unmasked_other:
     input:
-      rules.filter_viruses.output.viruses,
-      rules.repeatmasker_good.output.original_filt
+      rules.classify_phages.output.other,
+      rules.refgenome_unmapped.output.fa
     output:
-      "avasta/blast/{sample}_candidate_viruses_{n}_unmasked.fa"
+      "assemble/blast/{run}_candidate_viruses_{n}_unmasked.fa"
     conda:
       "../envs/biopython.yaml"
     script:
       "../scripts/unmasked_viral.py"
 
-## Map against bacterial genomes
+# Map reads against bacterial genomes.
 rule bwa_map_refbac:
     input:
       config["ref_bacteria"],
-      [rules.unmasked_viral.output]
+      [rules.unmasked_other.output]
     output:
-      "avasta/blast/{sample}_bac_mapped_{n}.sam"
+      temp("assemble/blast/{run}_bac_mapped_{n}.sam")
     log:
       "logs/{sample}_bwa_map_refbac_{n}.log"
     threads: 8
@@ -139,13 +117,13 @@ rule bwa_map_refbac:
     shell:
       "bwa mem -k 15 -t {threads} {input} > {output} 2> {log}"
 
-## Extract unmapped reads
+# Extract unmapped reads.
 rule refbac_unmapped:
     input: rules.bwa_map_refbac.output
     output:
-      bam = "avasta/blast/{sample}_bac_unmapped_{n}.bam",
-      fq = "avasta/blast/{sample}_bac_unmapped_{n}.fq",
-      fa = "avasta/blast/{sample}_bac_unmapped_{n}.fa"
+      bam = temp("assemble/blast/{run}_bac_unmapped_{n}.bam"),
+      fq = temp("assemble/blast/{run}_bac_unmapped_{n}.fq"),
+      fa = "assemble/blast/{run}_bac_unmapped_{n}.fa"
     conda:
       "../envs/bwa-sam-bed.yaml"
     shell:
@@ -155,24 +133,24 @@ rule refbac_unmapped:
       cat {output.fq} | sed -n '1~4s/^@/>/p;2~4p' > {output.fa}
       """
 
-## Subset repeatmasker masked reads using unmapped ids
+# Subset repeatmasker masked reads using unmapped reads.
 rule refbac_unmapped_masked:
     input:
       rules.refbac_unmapped.output.fa,
       rules.repeatmasker_good.output.masked_filt
     output:
-      "avasta/blast/{sample}_bac_unmapped_{n}_masked.fa"
+      temp("assemble/blast/{run}_bac_unmapped_{n}_masked.fa")
     conda:
       "../envs/biopython.yaml"
     script:
       "../scripts/unmapped_masked_ids.py"
 
-## MegaBlast against NT to remove host sequences
+# Megablast against nt database.
 rule megablast_nt:
     input:
       query = rules.refbac_unmapped_masked.output
     output:
-      out = "avasta/blast/{sample}_megablast_nt_{n,\d+}.tsv"
+      out = "assemble/blast/{run}_megablast_nt_{n,\d+}.tsv"
     params:
       db = config["nt"],
       task = "megablast",
@@ -181,34 +159,30 @@ rule megablast_nt:
       max_hsps = config["megablast_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["blast"]
 
-## Filter megablast records for the cutoff value
+# Filter megablast hits for the cutoff value.
 rule parse_megablast_nt:
     input:
+      query = rules.refbac_unmapped_masked.output,
       blast_result = rules.megablast_nt.output.out
     output:
-      mapped = "avasta/blast/{sample}_megablast_nt_{n,\d+}_mapped.tsv",
-      unmapped = "avasta/blast/{sample}_megablast_nt_{n,\d+}_unmapped.fa"
+      mapped = "assemble/blast/{run}_megablast_nt_{n,\d+}_mapped.tsv",
+      unmapped = "assemble/blast/{run}_megablast_nt_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-10,
-      query = rules.refbac_unmapped_masked.output,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/parse_blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["parse_blast"]
 
-## Blastn against NT database
+# Blastn against nt database.
 rule blastn_nt:
     input:
       query = rules.parse_megablast_nt.output.unmapped
     output:
-      out = "avasta/blast/{sample}_blastn_nt_{n,\d+}.tsv"
+      out = "assemble/blast/{run}_blastn_nt_{n,\d+}.tsv"
     params:
       db = config["nt"],
       task = "blastn",
@@ -216,34 +190,30 @@ rule blastn_nt:
       max_hsps = config["blastn_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["blast"]
 
-## Filter blastn records for the cutoff value
+# Filter blastn records for the cutoff value.
 rule parse_blastn_nt:
     input:
+      query = rules.blastn_nt.input.query,
       blast_result = rules.blastn_nt.output.out
     output:
-      mapped = "avasta/blast/{sample}_blastn_nt_{n,\d+}_mapped.tsv",
-      unmapped = "avasta/blast/{sample}_blastn_nt_{n,\d+}_unmapped.fa" if config["run_blastx"] else "avasta/results/{sample}_unassigned_{n,\d+}.fa"
+      mapped = "assemble/blast/{run}_blastn_nt_{n,\d+}_mapped.tsv",
+      unmapped = "assemble/blast/{run}_blastn_nt_{n,\d+}_unmapped.fa" if config["run_blastx"] else "assemble/results/{run}_unassigned_{n,\d+}.fa"
     params:
       e_cutoff = 1e-10,
-      query = rules.blastn_nt.input.query,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/parse_blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["parse_blast"]
 
-## Blastx unmapped sequences against NR virus database
+# Blastx unmapped sequences against nr database.
 rule blastx_nr:
     input:
       query = rules.parse_blastn_nt.output.unmapped
     output:
-      out = "avasta/blast/{sample}_blastx_nr_{n,\d+}.tsv"
+      out = "assemble/blast/{run}_blastx_nr_{n,\d+}.tsv"
     params:
       db = config["nr"],
       word_size = 6,
@@ -251,64 +221,47 @@ rule blastx_nr:
       max_hsps = config["blastx_nr"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["blast"]
 
-## Filter blastn records for the cutoff value
+# Filter blastx records for the cutoff value.
 rule parse_blastx_nr:
     input:
+      query = rules.blastx_nr.input.query,
       blast_result = rules.blastx_nr.output.out
     output:
-      mapped = "avasta/blast/{sample}_blastx_nr_{n,\d+}_mapped.tsv",
-      unmapped = "avasta/results/{sample}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{sample}_None_{n}"
+      mapped = "assemble/blast/{run}_blastx_nr_{n,\d+}_mapped.tsv",
+      unmapped = "assemble/results/{run}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{sample}_None_{n}"
     params:
       e_cutoff = 1e-3,
-      query = rules.blastx_nr.input.query,
-      outfmt = rules.blastn_virus.params.outfmt
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/parse_blast.py"
+      outfmt = rules.megablast_refgenome.params.outfmt
+    wrapper:
+      config["wrappers"]["parse_blast"]
 
-## Filter out virus and phage sequences
-rule filter_blasted_viruses:
+# Filter sequences by division id.
+# Saves hits with division id
+rule classify_phages_viruses:
   input:
-    [rules.parse_blastn_nt.output.mapped, rules.parse_blastx_nr.output.mapped] if config["run_blastx"] else rules.parse_blastn_nt.output.mapped,
-    taxdb = config["vhunter"],
+    [rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped, rules.parse_blastx_nr.output.mapped] if config["run_blastx"] else [rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped],
     nodes = "taxonomy/nodes.csv"
   output:
-    phages = "avasta/results/{sample}_phages_blasted_{n}.csv",
-    viruses = "avasta/results/{sample}_viruses_blasted_{n}.csv"
-  conda:
-    "../envs/tidyverse.yaml"
-  script:
-    "../scripts/filter_viruses.R"
+    division = "assemble/results/{run}_phages_viruses_{n}.csv",
+    other = "assemble/results/{run}_non_viral_{n}.csv"
+  params:
+    taxdb = config["vhunter"],
+    division_id = [3, 9] # pool phages and viruses
+  wrapper:
+    config["wrappers"]["blast_taxonomy"]
 
-## Upload blasted phages and viruses to Zenodo
+# Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
-    rule upload_phages_blasted:
+    rule upload:
         input:
-          expand("avasta/results/{{sample}}_phages_blasted_{n}.csv", n = N_FILES)
+          expand("results/{{sample}}_{{result}}_{n}.{{ext}}", n = N)
         output:
-          temp("avasta/results/{sample}_phages_blasted.csv.tar.gz")
+          "results/{sample, [^_]+}_{result}.{ext}.tar.gz"
         params:
           config["zenodo"]["deposition_id"]
-        conda:
-          "../envs/upload.yaml"
-        script:
-          "../scripts/zenodo_upload.py"
-
-    rule upload_viruses_blasted:
-        input:
-          expand("avasta/results/{{sample}}_viruses_blasted_{n}.csv", n = N_FILES)
-        output:
-          temp("avasta/results/{sample}_viruses_blasted.csv.tar.gz")
-        params:
-          config["zenodo"]["deposition_id"]
-        conda:
-          "../envs/upload.yaml"
-        script:
-          "../scripts/zenodo_upload.py"
+        wrapper:
+          config["wrappers"]["upload"]
