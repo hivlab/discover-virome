@@ -113,7 +113,7 @@ rule bwa_mem_refbac:
     sort = "samtools",
     sort_order = "queryname"
   log:
-    "logs/{run}_bwa_map_refbac.log"
+    "logs/{run}_bwa_mem_refbac.log"
   threads: 2
   wrapper:
     "0.32.0/bio/bwa/mem"

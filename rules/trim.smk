@@ -53,7 +53,5 @@ rule bamtofastq:
   output:
     "trim/{run}_unmapped_1.fq",
     "trim/{run}_unmapped_2.fq"
-  log: 
-    "logs/{run}_bamtofastq.log"
   wrapper:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bedtools/bamtofastq"
