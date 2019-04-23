@@ -13,7 +13,7 @@ rule prepare_taxonomy_data:
 # Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = rules.parse_megablast.output.unmapped
+      query = rules.repeatmasker_good.output.masked_filt
     output:
       out = "assemble/blast/{run}_blastn_virus_{n,\d+}.tsv"
     params:
@@ -24,21 +24,21 @@ rule blastn_virus:
       max_hsps = config["blastn_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = "'6 qseqid sgi pident length mismatch gapopen qstart qend sstart send evalue bitscore'"
     wrapper:
       config["wrappers"]["blast"]
 
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-      query = rules.parse_megablast.output.unmapped,
+      query = rules.repeatmasker_good.output.masked_filt,
       blast_result = rules.blastn_virus.output.out
     output:
       mapped = "assemble/blast/{run}_blastn_virus_{n,\d+}_known-viral.tsv",
       unmapped = "assemble/blast/{run}_blastn_virus_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-5,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
@@ -56,7 +56,7 @@ rule blastx_virus:
       max_hsps = config["blastx_virus"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
 
@@ -70,7 +70,7 @@ rule parse_blastx_virus:
       unmapped = "assemble/blast/{run}_blastx_virus_{n}_unmapped.fa"
     params:
       e_cutoff = 1e-3,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
@@ -94,7 +94,7 @@ rule classify_phages:
 rule unmasked_other:
     input:
       rules.classify_phages.output.other,
-      rules.refgenome_unmapped.output.fa
+      rules.repeatmasker_good.output.original_filt
     output:
       "assemble/blast/{run}_candidate_viruses_{n}_unmasked.fa"
     conda:
@@ -104,39 +104,55 @@ rule unmasked_other:
 
 # Map reads against bacterial genomes.
 rule bwa_map_refbac:
-    input:
-      config["ref_bacteria"],
-      [rules.unmasked_other.output]
-    output:
-      temp("assemble/blast/{run}_bac_mapped_{n}.sam")
-    log:
-      "logs/{sample}_bwa_map_refbac_{n}.log"
-    threads: 8
-    conda:
-      "../envs/bwa-sam-bed.yaml"
-    shell:
-      "bwa mem -k 15 -t {threads} {input} > {output} 2> {log}"
+  input:
+    reads = [rules.unmasked_other.output]
+  output:
+    temp("assemble/blast/{run}_bac_mapped_{n}.sam")
+  params:
+    index = config["ref_bacteria"],
+    sort = "samtools",
+    sort_order = "queryname"
+  log:
+    "logs/{run}_bwa_map_refbac_{n}.log"
+  threads: 2
+  wrapper:
+    "0.32.0/bio/bwa/mem"
 
 # Extract unmapped reads.
-rule refbac_unmapped:
-    input: rules.bwa_map_refbac.output
-    output:
-      bam = temp("assemble/blast/{run}_bac_unmapped_{n}.bam"),
-      fq = temp("assemble/blast/{run}_bac_unmapped_{n}.fq"),
-      fa = "assemble/blast/{run}_bac_unmapped_{n}.fa"
-    conda:
-      "../envs/bwa-sam-bed.yaml"
-    shell:
-      """
-      samtools view -b -S -f 4 {input} > {output.bam}
-      bedtools bamtofastq -i {output.bam} -fq {output.fq}
-      cat {output.fq} | sed -n '1~4s/^@/>/p;2~4p' > {output.fa}
-      """
+rule samtools_view:
+  input:
+    rules.bwa_map_refbac.output
+  output:
+    "assemble/blast/{run}_refgenome_unmapped.bam"
+  params:
+    "-b -f 4" # bam output
+  wrapper:
+    "0.32.0/bio/samtools/view"
+
+# Convert bam file to fastq file.
+rule bamtofastq:
+  input:
+    rules.samtools_view.output
+  output:
+    temp("assemble/blast/{run}_bac_unmapped_{n}.fq")
+  log: 
+    "logs/{run}_bamtofastq.log"
+  wrapper:
+    "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bedtools/bamtofastq"
+
+# Convert fastq file to fasta file.
+rule fastqtofasta:
+  input:
+    rules.bamtofastq.output
+  output:
+    "assemble/blast/{run}_bac_unmapped_{n}.fa"
+  shell:
+    "cat {input} | sed -n '1~4s/^@/>/p;2~4p' > {output}"
 
 # Subset repeatmasker masked reads using unmapped reads.
 rule refbac_unmapped_masked:
     input:
-      rules.refbac_unmapped.output.fa,
+      rules.fastqtofasta.output,
       rules.repeatmasker_good.output.masked_filt
     output:
       temp("assemble/blast/{run}_bac_unmapped_{n}_masked.fa")
@@ -159,7 +175,7 @@ rule megablast_nt:
       max_hsps = config["megablast_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
 
@@ -173,7 +189,7 @@ rule parse_megablast_nt:
       unmapped = "assemble/blast/{run}_megablast_nt_{n,\d+}_unmapped.fa"
     params:
       e_cutoff = 1e-10,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
@@ -190,7 +206,7 @@ rule blastn_nt:
       max_hsps = config["blastn_nt"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
 
@@ -204,7 +220,7 @@ rule parse_blastn_nt:
       unmapped = "assemble/blast/{run}_blastn_nt_{n,\d+}_unmapped.fa" if config["run_blastx"] else "assemble/results/{run}_unassigned_{n,\d+}.fa"
     params:
       e_cutoff = 1e-10,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
@@ -221,7 +237,7 @@ rule blastx_nr:
       max_hsps = config["blastx_nr"]["max_hsps"],
       show_gis = True,
       num_threads = 8,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
 
@@ -232,10 +248,10 @@ rule parse_blastx_nr:
       blast_result = rules.blastx_nr.output.out
     output:
       mapped = "assemble/blast/{run}_blastx_nr_{n,\d+}_mapped.tsv",
-      unmapped = "assemble/results/{run}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{sample}_None_{n}"
+      unmapped = "assemble/results/{run}_unassigned_{n,\d+}.fa" if config["run_blastx"] else "{run}_None_{n}"
     params:
       e_cutoff = 1e-3,
-      outfmt = rules.megablast_refgenome.params.outfmt
+      outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
@@ -254,14 +270,11 @@ rule classify_phages_viruses:
   wrapper:
     config["wrappers"]["blast_taxonomy"]
 
-# Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
-    rule upload:
-        input:
-          expand("results/{{sample}}_{{result}}_{n}.{{ext}}", n = N)
-        output:
-          "results/{sample, [^_]+}_{result}.{ext}.tar.gz"
-        params:
-          config["zenodo"]["deposition_id"]
-        wrapper:
-          config["wrappers"]["upload"]
+  rule upload:
+    input: 
+      expand("assemble/results/{{run}}_{{result}}_{n}.{{ext}}", n = N)
+    output: 
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}.tar.gz", deposition_id = config["zenodo"]["deposition_id"]))
+    shell: 
+      "tar -czvf {output} {input}"

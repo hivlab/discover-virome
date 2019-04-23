@@ -23,15 +23,20 @@ SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
 
+## Main output files and target rules
+RESULTS = ["phages", "phages_viruses", "non_viral"]
+TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
+OUTPUTS = expand("assemble/results/{run}_{result}_{n}.csv", run = RUN_IDS, n = N, result = RESULTS) + expand("assemble/results/{run}_unassigned_{n}.fa", run = RUN_IDS, n = N) + TAXONOMY
+
 rule all:
     input:
-        expand(["assemble/{run}/final.contigs.fa", 
-        "assemble/{run}/coverage.txt",
-        "mask/{run}_repmaskedgood.fasta",
-        "mask/{run}_unmaskedgood.fasta"], run = RUN_IDS)
+        OUTPUTS, 
+        ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}.tar.gz", run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"]))
+        if config["zenodo"]["deposition_id"] else OUTPUTS
 
 # Modules
 include: "rules/trim.smk"
 include: "rules/assemble.smk"
 include: "rules/mask.smk"
+include: "rules/blast.smk"
 

@@ -14,8 +14,8 @@ rule fastp:
     "trim/{run}_read2_trimmed.fq.gz"
   params:
     options = "--trim_front1 5 --trim_tail1 5 --length_required 50 --low_complexity_filter --complexity_threshold 8",
-    html = temp("munge/{run}_fastp_report.html"),
-    json = "munge/{run}_fastp_report.json"
+    html = temp("trim/{run}_fastp_report.html"),
+    json = "trim/{run}_fastp_report.json"
   threads: 2
   wrapper:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/fastp"
@@ -25,7 +25,7 @@ rule bwa_mem:
   input:
     reads = [rules.fastp.output]
   output:
-    "mapped/{run}_refgenome_mapped.bam"
+    "trim/{run}_refgenome_mapped.bam"
   params:
     index = config["ref_genome"],
     sort = "samtools",
@@ -40,7 +40,7 @@ rule samtools_view:
   input:
     rules.bwa_mem.output
   output:
-    "mapped/{run}_refgenome_unmapped.bam"
+    "trim/{run}_refgenome_unmapped.bam"
   params:
     "-b -f 4" # bam output
   wrapper:
@@ -51,8 +51,8 @@ rule bamtofastq:
   input:
     rules.samtools_view.output
   output:
-    "mapped/{run}_unmapped_1.fq",
-    "mapped/{run}_unmapped_2.fq"
+    "trim/{run}_unmapped_1.fq",
+    "trim/{run}_unmapped_2.fq"
   log: 
     "logs/{run}_bamtofastq.log"
   wrapper:
