@@ -1,8 +1,8 @@
 # Metagenome assembly
 rule assemble:
     input: 
-      pe1 = rules.bamtofastq.output[0],
-      pe2 = rules.bamtofastq.output[1]
+      pe1 = rules.refgenome_unmapped_bam2fq.output[0],
+      pe2 = rules.refgenome_unmapped_bam2fq.output[1]
     output: 
       contigs = "assemble/{run}/final.contigs.fa"
     params:
@@ -15,8 +15,8 @@ rule assemble:
 rule coverage:
     input: 
       ref = rules.assemble.output.contigs,
-      in1 = rules.bamtofastq.output[0],
-      in2 = rules.bamtofastq.output[1]
+      in1 = rules.refgenome_unmapped_bam2fq.output[0],
+      in2 = rules.refgenome_unmapped_bam2fq.output[1]
     output:
       aln = temp("assemble/{run}/aln.sam.gz"),
       cov = "assemble/{run}/coverage.txt"

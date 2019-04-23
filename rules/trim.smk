@@ -10,8 +10,8 @@ rule fastp:
   input:
     lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close = True) if config["remote"] else get_fastq(wildcards)
   output:
-    "trim/{run}_read1_trimmed.fq.gz",
-    "trim/{run}_read2_trimmed.fq.gz"
+    "trim/{run}_trimmed_1.fq.gz",
+    "trim/{run}_trimmed_2.fq.gz"
   params:
     options = "--trim_front1 5 --trim_tail1 5 --length_required 50 --low_complexity_filter --complexity_threshold 8",
     html = temp("trim/{run}_fastp_report.html"),
@@ -28,30 +28,35 @@ rule bwa_mem_refgenome:
     "trim/{run}_refgenome_mapped.bam"
   params:
     index = config["ref_genome"],
-    sort = "samtools",
-    sort_order = "queryname"
+    sort = "none"
   log:
     "logs/{run}_bwa_mem_refgenome.log"
   threads: 2
   wrapper:
     "0.32.0/bio/bwa/mem"
 
-rule samtools_view:
-  input:
-    rules.bwa_mem_refgenome.output
-  output:
-    "trim/{run}_refgenome_unmapped.bam"
-  params:
-    "-b -f 4" # bam output
-  wrapper:
-    "0.32.0/bio/samtools/view"
+rule refgenome_unmapped_bam2fq:
+    input:
+      rules.bwa_mem_refgenome.output
+    output:
+      "trim/{run}_unmapped_1.fq",
+      "trim/{run}_unmapped_2.fq"
+    params:
+      sort = "",
+      bam2fq = "-n -f 4"
+    threads: 2
+    wrapper:
+      "0.32.0/bio/samtools/bam2fq/separate"
 
-# Convert bam file to fastq files.
-rule bamtofastq:
-  input:
-    rules.samtools_view.output
-  output:
-    "trim/{run}_unmapped_1.fq",
-    "trim/{run}_unmapped_2.fq"
-  wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bedtools/bamtofastq"
+rule refgenome_stats:
+    input:
+      "trim/{run}_refgenome_mapped.bam"
+    output:
+      "trim/{run}_refgenome_stats.txt"
+    params:
+      extra = "-f 4",
+      region = ""
+    log:
+      "logs/{run}_refgenome_stats.log"
+    wrapper:
+        "0.32.0/bio/samtools/stats"
