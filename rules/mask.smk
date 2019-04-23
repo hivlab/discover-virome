@@ -18,7 +18,7 @@ rule tantan_good:
   input:
     masked = rules.tantan.output
   output:
-    masked_filt = "mask/{run}_tantangood.fasta"
+    masked_filt = "mask/{run}_filtered.fasta"
   params:
     min_length = 50,
     por_n = 40
@@ -35,9 +35,9 @@ rule repeatmasker:
   input:
     fa = rules.tantan_good.output
   output:
-    masked = "mask/{run}_tantangood.fa.masked",
-    out = "mask/{run}_tantangood.fa.out",
-    tbl = "mask/{run}_tantangood.fa.tbl"
+    masked = "mask/{run}_filtered.fasta.masked",
+    out = "mask/{run}_filtered.fasta.out",
+    tbl = "mask/{run}_filtered.fasta.tbl"
   params:
     outdir = "mask"
   threads: 8
@@ -60,8 +60,8 @@ rule repeatmasker_good:
     masked = rules.repeatmasker.output.masked,
     original = rules.repeatmasker.input.fa
   output:
-    masked_filt = "mask/{run}_repmaskedgood.fa",
-    original_filt = "mask/{run}_unmaskedgood.fa"
+    masked_filt = "mask/{run}_repmaskedgood.fasta",
+    original_filt = "mask/{run}_unmaskedgood.fasta"
   params:
     min_length = 50,
     por_n = 40
