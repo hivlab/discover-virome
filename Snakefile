@@ -26,12 +26,12 @@ if not os.path.exists("logs/slurm"):
 ## Main output files and target rules
 RESULTS = ["phages", "phages_viruses", "non_viral"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-OUTPUTS = expand("assemble/results/{run}_{result}_{n}.csv", run = RUN_IDS, n = N, result = RESULTS) + expand("assemble/results/{run}_unassigned_{n}.fa", run = RUN_IDS, n = N) + TAXONOMY
+OUTPUTS = expand("assemble/results/{run}_{result}.csv", run = RUN_IDS, result = RESULTS) + expand("assemble/results/{run}_unassigned.fa", run = RUN_IDS) + TAXONOMY
 
 rule all:
     input:
         OUTPUTS, 
-        ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}.tar.gz", run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"]))
+        ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"]))
         if config["zenodo"]["deposition_id"] else OUTPUTS
 
 # Modules
