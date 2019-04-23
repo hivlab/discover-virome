@@ -107,52 +107,55 @@ rule bwa_mem_refbac:
   input:
     reads = [rules.unmasked_other.output]
   output:
-    temp("assemble/blast/{run}_bac_mapped.sam")
+    "assemble/blast/{run}_bac_mapped.bam"
   params:
     index = config["ref_bacteria"],
-    sort = "samtools",
-    sort_order = "queryname"
+    sort = "none"
   log:
     "logs/{run}_bwa_mem_refbac.log"
   threads: 2
   wrapper:
     "0.32.0/bio/bwa/mem"
 
-# Extract unmapped reads.
-rule unmapped_refbak:
-  input:
-    rules.bwa_mem_refbac.output
-  output:
-    "assemble/blast/{run}_refgenome_unmapped.bam"
-  params:
-    "-b -f 4" # bam output
-  wrapper:
-    "0.32.0/bio/samtools/view"
-
-# Convert bam file to fastq file.
-rule unmapped_refbaktofastq:
-  input:
-    rules.unmapped_refbak.output
-  output:
-    temp("assemble/blast/{run}_bac_unmapped.fq")
-  log: 
-    "logs/{run}_bamtofastq.log"
-  wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/bedtools/bamtofastq"
+# Extract unmapped reads and convert bam file to fastq file.
+rule refbak_unmapped:
+    input:
+      rules.bwa_mem_refbac.output
+    output:
+      temp("assemble/blast/{run}_bak_unmapped.fq")
+    params:
+      "-n -f 4"
+    threads: 2
+    wrapper:
+      "0.32.0/bio/samtools/bam2fq/interleaved"
 
 # Convert fastq file to fasta file.
-rule unmapped_refbaktofasta:
+rule refbak_unmapped_fasta:
   input:
-    rules.unmapped_refbaktofastq.output
+    rules.refbak_unmapped.output
   output:
     "assemble/blast/{run}_bac_unmapped.fa"
   shell:
     "cat {input} | sed -n '1~4s/^@/>/p;2~4p' > {output}"
 
+# Calculate bam file stats
+rule refbak_stats:
+    input:
+      rules.bwa_mem_refbac.output
+    output:
+      "assemble/blast/{run}_bak_stats.txt"
+    params:
+      extra = "-f 4",
+      region = ""
+    log:
+      "logs/{run}_bak_stats.log"
+    wrapper:
+        "0.32.0/bio/samtools/stats"
+
 # Subset repeatmasker masked reads using unmapped reads.
 rule refbac_unmapped_masked:
     input:
-      rules.unmapped_refbaktofasta.output,
+      rules.refbak_unmapped_fasta.output,
       rules.repeatmasker_good.output.masked_filt
     output:
       temp("assemble/blast/{run}_bac_unmapped_masked.fa")

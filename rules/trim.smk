@@ -35,6 +35,7 @@ rule bwa_mem_refgenome:
   wrapper:
     "0.32.0/bio/bwa/mem"
 
+# Convert bam to fastq files
 rule refgenome_unmapped_bam2fq:
     input:
       rules.bwa_mem_refgenome.output
@@ -48,6 +49,7 @@ rule refgenome_unmapped_bam2fq:
     wrapper:
       "0.32.0/bio/samtools/bam2fq/separate"
 
+# Calculate bam stats
 rule refgenome_stats:
     input:
       "trim/{run}_refgenome_mapped.bam"
