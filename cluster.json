@@ -3,7 +3,7 @@
     {
         "name" : "{rule}",
         "time" : 10,
-        "partition" : "testing",
+        "partition" : "main",
         "cpus-per-task" : 1,
         "mem" : 2000,
         "output" : "logs/slurm/slurm_%j.log"
@@ -11,19 +11,60 @@
     "bwa_mem_refgenome" :
     {   
         "partition" : "main",
-        "time": 60,
-        "mem" : 8000
+        "time": 120,
+        "mem" : 32000
     },
     "bwa_mem_refbac" :
     {   
         "partition" : "main",
         "time": 60,
-        "mem" : 8000
+        "mem" : 16000
     },
     "assemble" :
     {   
         "partition" : "main",
         "time": 600,
         "mem" : 16000
+    },
+    "repeatmasker" :
+    {
+        "time": 750,
+        "mem" : 8000,
+        "partition" : "main"
+    },
+    "blastn_virus" :
+    {
+        "time": 70,
+        "partition" : "main"
+    },
+    "blastx_virus" :
+    {
+        "mem" : 4000,
+        "time": 480,
+        "partition" : "main"
+    },
+    "taxonomy_names" : {
+        "mem" : 8000,
+        "time": 30
+    },
+    "filter_viruses" : {
+        "mem" : 4000,
+        "time": 120
+    },
+    "blastn_nt" :
+    {
+        "mem" : 40000,
+        "time": 120,
+        "partition" : "main"
+    },
+    "blastx_nr" :
+    {
+        "mem" : 40000,
+        "time": 240,
+        "partition" : "main"
+    },
+    "filter_blasted_viruses" : {
+        "mem" : 4000,
+        "time": 30
     }
 }
