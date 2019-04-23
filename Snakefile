@@ -27,8 +27,8 @@ rule all:
     input:
         expand(["assemble/{run}/final.contigs.fa", 
         "assemble/{run}/coverage.txt",
-        "mask/{run}_repmaskedgood.fa",
-        "mask/{run}_unmaskedgood.fa"], run = RUN_IDS)
+        "mask/{run}_repmaskedgood.fasta",
+        "mask/{run}_unmaskedgood.fasta"], run = RUN_IDS)
 
 # Modules
 include: "rules/trim.smk"
