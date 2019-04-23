@@ -103,7 +103,7 @@ rule unmasked_other:
       "../scripts/unmasked_viral.py"
 
 # Map reads against bacterial genomes.
-rule bwa_map_refbac:
+rule bwa_mem_refbac:
   input:
     reads = [rules.unmasked_other.output]
   output:
@@ -121,7 +121,7 @@ rule bwa_map_refbac:
 # Extract unmapped reads.
 rule unmapped_refbak:
   input:
-    rules.bwa_map_refbac.output
+    rules.bwa_mem_refbac.output
   output:
     "assemble/blast/{run}_refgenome_unmapped.bam"
   params:

@@ -21,7 +21,7 @@ rule fastp:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/8e23fd260cdbed02450a7eb1796dce984d2e1f8f/bio/fastp"
 
 # Align sequences to reference genome and extract unmapped reads.
-rule bwa_mem:
+rule bwa_mem_refgenome:
   input:
     reads = [rules.fastp.output]
   output:
@@ -38,7 +38,7 @@ rule bwa_mem:
 
 rule samtools_view:
   input:
-    rules.bwa_mem.output
+    rules.bwa_mem_refgenome.output
   output:
     "trim/{run}_refgenome_unmapped.bam"
   params:

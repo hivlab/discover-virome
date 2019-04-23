@@ -8,11 +8,17 @@
         "mem" : 2000,
         "output" : "logs/slurm/slurm_%j.log"
     },
-    "bwa_mem" :
+    "bwa_mem_refgenome" :
     {   
         "partition" : "main",
         "time": 60,
-        "mem" : 16000
+        "mem" : 8000
+    },
+    "bwa_mem_refbac" :
+    {   
+        "partition" : "main",
+        "time": 60,
+        "mem" : 8000
     },
     "assemble" :
     {   
