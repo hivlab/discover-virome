@@ -17,7 +17,7 @@
     "bwa_mem_refbac" :
     {   
         "partition" : "main",
-        "time": 60,
+        "time": 120,
         "mem" : 16000
     },
     "assemble" :
@@ -25,6 +25,12 @@
         "partition" : "main",
         "time": 600,
         "mem" : 16000
+    },
+    "coverage" :
+    {   
+        "partition" : "main",
+        "mem" : 8000,
+        "time": 300
     },
     "repeatmasker" :
     {
@@ -34,7 +40,7 @@
     },
     "blastn_virus" :
     {
-        "time": 70,
+        "time": 1440,
         "partition" : "main"
     },
     "blastx_virus" :

@@ -110,6 +110,7 @@ rule bwa_mem_refbac:
     "assemble/blast/{run}_bac_mapped.bam"
   params:
     index = config["ref_bacteria"],
+    extra = "-k 15",
     sort = "none"
   log:
     "logs/{run}_bwa_mem_refbac.log"
