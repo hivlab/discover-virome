@@ -18,7 +18,7 @@
     {   
         "partition" : "main",
         "time": 120,
-        "mem" : 16000
+        "mem" : 32000
     },
     "assemble" :
     {   
