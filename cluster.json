@@ -63,6 +63,13 @@
         "time": 120,
         "partition" : "main"
     },
+    "megablast_nt" :
+    {
+        "mem" : 40000,
+        "time": 240,
+        "partition" : "main"
+    },
+
     "blastx_nr" :
     {
         "mem" : 40000,
