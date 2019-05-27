@@ -72,8 +72,7 @@ rule assemble:
 # Calculate assembly coverage stats
 rule bbwrap:
     input:
-      ref = rules.assemble.output.contigs,
-      r"in" = rules.unmapped_refgenome.output.fastq
+      {"ref":rules.assemble.output.contigs, "in":rules.unmapped_refgenome.output.fastq}
     output:
       out = pipe("assemble/{run}/aln.sam")
     wrapper:
