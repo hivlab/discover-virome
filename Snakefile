@@ -26,7 +26,7 @@ if not os.path.exists("logs/slurm"):
 # Main output files and target rules
 RESULTS = ["phages", "phages_viruses", "non_viral"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_refbak_stats.txt", "assemble/stats/{run}/coverage.txt"], run = RUN_IDS)
+STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_refbak_stats.txt", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand("assemble/results/{run}_{result}.csv", run = RUN_IDS, result = RESULTS) + expand("assemble/results/{run}_unassigned.fa", run = RUN_IDS) + TAXONOMY + STATS
 
 rule all:
