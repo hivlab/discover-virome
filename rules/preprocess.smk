@@ -53,8 +53,8 @@ rule unmapped_refgenome:
     fastq = temp("preprocess/{run}_unmapped.fq"),
     fasta = temp("preprocess/{run}_unmapped.fa")
   params:
-    reformat_fastq_extra = "-Xmx8000m",
-    reformat_fasta_extra = "uniquenames"
+    reformat_fastq_extra = "-Xmx2000m",
+    reformat_fasta_extra = "uniquenames -Xmx2000m"
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
 
