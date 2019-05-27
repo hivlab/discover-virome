@@ -72,7 +72,8 @@ rule assemble:
 # Calculate assembly coverage stats
 rule bbwrap:
     input:
-      {"ref":rules.assemble.output.contigs, "in":rules.unmapped_refgenome.output.fq}
+      ref = rules.assemble.output.contigs, 
+      input = rules.unmapped_refgenome.output.fq # input will be parsed to 'in', input1 to in1 etc.
     output:
       out = pipe("assemble/{run}/aln.sam")
     wrapper:
@@ -80,7 +81,7 @@ rule bbwrap:
 
 rule coverage:
     input: 
-      in = "assemble/{run}/aln.sam"
+      input = "assemble/{run}/aln.sam" # input will be parsed to 'in', input1 to in1 etc.
     output:
       cov = "assemble/stats/{run}_coverage.txt"
     params: 
