@@ -76,13 +76,13 @@ rule bbwrap:
       ref = rules.assemble.output.contigs, 
       input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
-      out = pipe("assemble/{run}/aln.sam")
+      out = temp("assemble/{run}/aln.sam")
     wrapper:
       "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
 
 rule coverage:
     input: 
-      input = "assemble/{run}/aln.sam" # input will be parsed to 'in', input1 to in1 etc.
+      input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
     output:
       cov = "assemble/stats/{run}_coverage.txt"
     params: 
