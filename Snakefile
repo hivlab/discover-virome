@@ -35,7 +35,5 @@ rule all:
         ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"])) if config["zenodo"]["deposition_id"] else OUTPUTS
 
 # Modules
-include: "rules/trim.smk"
-include: "rules/assemble.smk"
-include: "rules/mask.smk"
+include: "rules/preprocess.smk"
 include: "rules/blast.smk"

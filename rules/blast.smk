@@ -144,12 +144,12 @@ rule refbak_stats:
     input:
       rules.bwa_mem_refbac.output
     output:
-      "assemble/blast/{run}_bak_stats.txt"
+      "assemble/stats/{run}_refbak_stats.txt"
     params:
       extra = "-f 4",
       region = ""
     log:
-      "logs/{run}_bak_stats.log"
+      "logs/{run}_refbak_stats.log"
     wrapper:
         "0.32.0/bio/samtools/stats"
 
