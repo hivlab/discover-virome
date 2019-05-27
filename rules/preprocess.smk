@@ -68,7 +68,7 @@ rule assemble:
     threads: 2
     log: "logs/{run}_assemble.log"
     wrapper:
-      "https://bitbucket.org/tpall/snakemake-wrappers/raw/e5bf3b452664e11e834764b6cd82bab41b00dac8/bio/assembly/megahit"
+      "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
 
 # Calculate assembly coverage stats
 rule bbwrap:
