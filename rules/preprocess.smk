@@ -195,7 +195,6 @@ rule preprocess_stats:
     rules.preprocess.output.trimmed,
     rules.unmapped_refgenome.output,
     rules.parse_megablast.output.unmapped,
-    rules.cd_hit.output.repres,
     rules.tantan.output,
     rules.tantan_good.output,
     rules.repeatmasker_good.output
