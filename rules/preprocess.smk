@@ -50,8 +50,8 @@ rule unmapped_refgenome:
   input:
     rules.bwa_mem_refgenome.output
   output:
-    fq = temp("preprocess/{run}_unmapped.fq"),
-    fa = temp("preprocess/{run}_unmapped.fa")
+    fastq = temp("preprocess/{run}_unmapped.fq"),
+    fasta = temp("preprocess/{run}_unmapped.fa")
   params:
     reformat_fasta_extra = "uniquenames"
   wrapper:
@@ -59,7 +59,7 @@ rule unmapped_refgenome:
 
 rule assemble:
     input: 
-      pe12 = rules.unmapped_refgenome.output.fq,
+      pe12 = rules.unmapped_refgenome.output.fastq,
     output: 
       contigs = "assemble/{run}/final.contigs.fa"
     params:
@@ -73,7 +73,7 @@ rule assemble:
 rule bbwrap:
     input:
       ref = rules.assemble.output.contigs, 
-      input = rules.unmapped_refgenome.output.fq # input will be parsed to 'in', input1 to in1 etc.
+      input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
       out = pipe("assemble/{run}/aln.sam")
     wrapper:
@@ -92,7 +92,7 @@ rule coverage:
 # Tantan mask of low complexity DNA sequences
 rule tantan:
   input:
-    rules.assemble.output.contigs
+    rules.assemble.output
   output:
     temp("assemble/mask/{run}_tantan.fasta")
   params:
