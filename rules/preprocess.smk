@@ -50,8 +50,8 @@ rule unmapped_refgenome:
   input:
     rules.bwa_mem_refgenome.output
   output:
-    fastq = temp("preprocess/{sample}_unmapped.fq"),
-    fasta = temp("preprocess/{sample}_unmapped.fa")
+    fq = temp("preprocess/{sample}_unmapped.fq"),
+    fa = temp("preprocess/{sample}_unmapped.fa")
   params:
     reformat_fasta_extra = "uniquenames"
   wrapper:
@@ -72,7 +72,7 @@ rule assemble:
 # Calculate assembly coverage stats
 rule bbwrap:
     input:
-      {"ref":rules.assemble.output.contigs, "in":rules.unmapped_refgenome.output.fastq}
+      {"ref":rules.assemble.output.contigs, "in":rules.unmapped_refgenome.output.fq}
     output:
       out = pipe("assemble/{run}/aln.sam")
     wrapper:
