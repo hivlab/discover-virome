@@ -80,7 +80,7 @@ rule bbwrap:
 
 rule coverage:
     input: 
-      {"in": "assemble/{run}/aln.sam"}
+      in = "assemble/{run}/aln.sam"
     output:
       cov = "assemble/stats/{run}_coverage.txt"
     params: 
