@@ -15,12 +15,12 @@ rule preprocess:
   input:
     sample = lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
   output:
-    adapters = temp("preprocess/{sample}_adapters.fa"),
-    merged = temp("preprocess/{sample}_merged.fq"),
-    unmerged = temp("preprocess/{sample}_unmerged.fq"),
-    reads = temp("preprocess/{sample}_reads.fq"),
-    trimmed = temp("preprocess/{sample}_trimmed.fq"),
-    sampled = temp("preprocess/{sample}_sample.fq")
+    adapters = temp("preprocess/{run}_adapters.fa"),
+    merged = temp("preprocess/{run}_merged.fq"),
+    unmerged = temp("preprocess/{run}_unmerged.fq"),
+    reads = temp("preprocess/{run}_reads.fq"),
+    trimmed = temp("preprocess/{run}_trimmed.fq"),
+    sampled = temp("preprocess/{run}_sample.fq")
   params:
     bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
     frac = lambda wildcards: get_frac(wildcards),
@@ -34,13 +34,13 @@ rule bwa_mem_refgenome:
   input:
     reads = [rules.preprocess.output.sampled]
   output:
-    temp("mapped/{sample}_refgenome.bam")
+    temp("mapped/{run}_refgenome.bam")
   params:
     index = config["ref_genome"],
     extra = "-L 100,100 -k 15",
     sort = "none"
   log:
-    "logs/{sample}_bwa_map_refgenome.log"
+    "logs/{run}_bwa_map_refgenome.log"
   threads: 2
   wrapper:
     "0.32.0/bio/bwa/mem"
@@ -50,8 +50,8 @@ rule unmapped_refgenome:
   input:
     rules.bwa_mem_refgenome.output
   output:
-    fq = temp("preprocess/{sample}_unmapped.fq"),
-    fa = temp("preprocess/{sample}_unmapped.fa")
+    fq = temp("preprocess/{run}_unmapped.fq"),
+    fa = temp("preprocess/{run}_unmapped.fa")
   params:
     reformat_fasta_extra = "uniquenames"
   wrapper:
@@ -93,7 +93,7 @@ rule tantan:
   input:
     rules.assemble.output.contigs
   output:
-    temp("assemble/mask/{sample}_tantan.fasta")
+    temp("assemble/mask/{run}_tantan.fasta")
   params:
     extra = "-x N" # mask low complexity using N
   wrapper:
@@ -106,23 +106,12 @@ rule tantan_good:
   input:
     masked = rules.tantan.output
   output:
-    masked_filt = temp("assemble/mask/{sample}_tantangood.fasta")
+    masked_filt = temp("assemble/mask/{run}_repeatmasker.fa")
   params:
     min_length = 50,
     por_n = 40
   wrapper:
     "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
-
-# Split reads to smaller chunks for Repeatmasker
-rule split_fasta:
-  input:
-    rules.tantan_good.output
-  output:
-    temp(expand("assemble/mask/{{sample}}_repeatmasker_{n}.fa", n = N))
-  params:
-    config["split_fasta"]["n_files"]
-  wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/7e681180a5607f20594b3070f8eced7ccd245a89/bio/split-fasta"
 
 # Repeatmasker
 # Outputs are generated from input file names by RepeatMasker
@@ -130,12 +119,12 @@ rule split_fasta:
 # If no repetitive sequences were detected symlink output to input file
 rule repeatmasker:
   input:
-    fa = "assemble/mask/{sample}_repeatmasker_{n}.fa"
+    rules.tantan_good.output
   output:
-    masked = temp("assemble/mask/{sample}_repeatmasker_{n}.fa.masked"),
-    out = temp("assemble/mask/{sample}_repeatmasker_{n}.fa.out"),
-    cat = temp("assemble/mask/{sample}_repeatmasker_{n}.fa.cat"),
-    tbl = "assemble/mask/{sample}_repeatmasker_{n}.fa.tbl"
+    masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
+    out = temp("assemble/mask/{run}_repeatmasker.fa.out"),
+    cat = temp("assemble/mask/{run}_repeatmasker.fa.cat"),
+    tbl = "assemble/mask/{run}_repeatmasker.fa.tbl"
   params:
     outdir = "assemble/mask"
   threads: 2
@@ -143,9 +132,9 @@ rule repeatmasker:
     "shub://tpall/repeatmasker-singularity"
   shell:
     """
-    RepeatMasker -qq -pa {threads} {input.fa} -dir {params.outdir}
+    RepeatMasker -qq -pa {threads} {input} -dir {params.outdir}
     if head -n 1 {output.out} | grep -q "There were no repetitive sequences detected"
-      then ln -sr {input.fa} {output.masked} \
+      then ln -sr {input} {output.masked} \
            && touch {output.tbl}
     fi
     """
@@ -157,10 +146,10 @@ rule repeatmasker:
 rule repeatmasker_good:
   input:
     masked = rules.repeatmasker.output.masked,
-    original = rules.repeatmasker.input.fa
+    original = rules.tantan_good.output
   output:
-    masked_filt = temp("assemble/mask/{sample}_repmaskedgood_{n}.fa"),
-    original_filt = temp("assemble/mask/{sample}_unmaskedgood_{n}.fa")
+    masked_filt = temp("assemble/mask/{run}_repmaskedgood.fa"),
+    original_filt = temp("assemble/mask/{run}_unmaskedgood.fa")
   params:
     min_length = 50,
     por_n = 40
@@ -172,7 +161,7 @@ rule megablast_refgenome:
     input:
       query = rules.repeatmasker_good.output.masked_filt
     output:
-      out = temp("assemble/blast/{sample}_megablast_{n}.tsv")
+      out = temp("assemble/blast/{run}_megablast.tsv")
     params:
       db = config["ref_genome"],
       task = "megablast",
@@ -192,8 +181,8 @@ rule parse_megablast:
       blast_result = rules.megablast_refgenome.output.out,
       query = rules.repeatmasker_good.output.masked_filt
     output:
-      mapped = temp("assemble/blast/{sample}_refgenome_megablast_{n}_known-host.tsv"),
-      unmapped = temp("assemble/blast/{sample}_refgenome_megablast_{n}_unmapped.fa")
+      mapped = temp("assemble/blast/{run}_refgenome_megablast_known-host.tsv"),
+      unmapped = temp("assemble/blast/{run}_refgenome_megablast_unmapped.fa")
     params:
       e_cutoff = 1e-10,
       outfmt = rules.megablast_refgenome.params.outfmt
@@ -205,13 +194,13 @@ rule preprocess_stats:
   input:
     rules.preprocess.output.trimmed,
     rules.unmapped_refgenome.output,
-    expand("assemble/blast/{{sample}}_refgenome_megablast_{n}_unmapped.fa", n = N),
+    rules.parse_megablast.output.unmapped,
     rules.cd_hit.output.repres,
     rules.tantan.output,
     rules.tantan_good.output,
-    expand(["assemble/mask/{{sample}}_repmaskedgood_{n}.fa", "assemble/mask/{{sample}}_unmaskedgood_{n}.fa"], n = N)
+    rules.repeatmasker_good.output
   output:
-    "assemble/stats/{sample}_preprocess.tsv"
+    "assemble/stats/{run}_preprocess.tsv"
   params:
     extra = "-T"
   wrapper:
@@ -222,7 +211,7 @@ rule refgenome_bam_stats:
     input:
       rules.bwa_mem_refgenome.output
     output:
-      "assemble/stats/{sample}_refgenome_stats.txt"
+      "assemble/stats/{run}_refgenome_stats.txt"
     params:
       extra = "-f 4",
       region = ""
