@@ -59,41 +59,53 @@ rule unmapped_refgenome:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
 
 rule assemble:
-    input: 
-      se = rules.unmapped_refgenome.output.fastq,
-    output: 
-      contigs = "assemble/{run}/final.contigs.fa"
-    params:
-      options = "--min-contig-len 500"
-    threads: 2
-    log: "logs/{run}_assemble.log"
-    wrapper:
-      "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
+  input: 
+    se = rules.unmapped_refgenome.output.fastq,
+  output: 
+    contigs = "assemble/{run}/final.contigs.fa"
+  params:
+    options = "--min-contig-len 500"
+  threads: 2
+  log: "logs/{run}_assemble.log"
+  wrapper:
+    "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
 
 # Calculate assembly coverage stats
 rule bbwrap:
-    input:
-      ref = rules.assemble.output.contigs, 
-      input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
-    output:
-      out = temp("assemble/{run}/aln.sam")
-    params: 
-      extra = "kfilter=22 subfilter=15 maxindel=80"
-    wrapper:
-      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
+  input:
+    ref = rules.assemble.output.contigs, 
+    input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
+  output:
+    out = temp("assemble/{run}/aln.sam")
+  params: 
+    extra = "kfilter=22 subfilter=15 maxindel=80"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
 
 rule coverage:
-    input: 
-      input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
-    output:
-      out = "assemble/stats/{run}_coverage.txt"
-    wrapper:
-      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
+  input: 
+    input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
+  output:
+    out = "assemble/stats/{run}_coverage.txt"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
+
+# Filter contigs by setting minimum threshold for average coverage
+rule coverage_good:
+  input:
+    contigs = rules.assemble.output,
+    coverage = rules.coverage.output
+  output:
+    "assemble/{run}/good_contigs.fa"
+  params:
+    avg_coverage = 8
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/filter_coverage"
 
 # Tantan mask of low complexity DNA sequences
 rule tantan:
   input:
-    rules.assemble.output
+    rules.coverage_good.output
   output:
     temp("assemble/mask/{run}_tantan.fasta")
   params:
