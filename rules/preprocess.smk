@@ -124,7 +124,7 @@ rule repeatmasker:
     rules.tantan_good.output
   output:
     masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
-    out = temp("assemble/mask/{run}_repeatmasker.fa.out"),
+    out = temp("assemble/mask/{run}_repeatmasker.fa.out")
     tbl = "assemble/mask/{run}_repeatmasker.fa.tbl"
   params:
     outdir = "assemble/mask"
