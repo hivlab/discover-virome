@@ -206,6 +206,8 @@ rule parse_megablast:
 rule preprocess_stats:
   input:
     rules.preprocess.output.trimmed,
+    rules.assemble.output.contigs,
+    rules.coverage_good.output,
     rules.unmapped_refgenome.output,
     rules.parse_megablast.output.unmapped,
     rules.tantan.output,
