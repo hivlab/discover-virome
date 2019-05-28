@@ -84,7 +84,7 @@ rule coverage:
     input: 
       input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
     output:
-      cov = "assemble/stats/{run}_coverage.txt"
+      out = "assemble/stats/{run}_coverage.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
