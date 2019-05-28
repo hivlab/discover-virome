@@ -77,6 +77,8 @@ rule bbwrap:
       input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
       out = temp("assemble/{run}/aln.sam")
+    params: 
+      extra = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
       "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
 
@@ -85,8 +87,6 @@ rule coverage:
       input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
     output:
       out = "assemble/stats/{run}_coverage.txt"
-    params: 
-      extra = "kfilter=22 subfilter=15 maxindel=80"
     wrapper:
       "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
 
