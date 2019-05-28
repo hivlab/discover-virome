@@ -60,7 +60,7 @@ rule unmapped_refgenome:
 
 rule assemble:
     input: 
-      pe12 = rules.unmapped_refgenome.output.fastq,
+      se = rules.unmapped_refgenome.output.fastq,
     output: 
       contigs = "assemble/{run}/final.contigs.fa"
     params:
