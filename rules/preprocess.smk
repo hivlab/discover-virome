@@ -93,8 +93,8 @@ rule coverage:
 # Filter contigs by setting minimum threshold for average coverage
 rule coverage_good:
   input:
-    contigs = rules.assemble.output,
-    coverage = rules.coverage.output
+    contigs = rules.assemble.output.contigs,
+    coverage = rules.coverage.output.out
   output:
     temp("assemble/{run}/good_contigs.fa")
   params:
