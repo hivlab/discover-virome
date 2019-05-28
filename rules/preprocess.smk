@@ -59,36 +59,36 @@ rule unmapped_refgenome:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
 
 rule assemble:
-  input: 
-    pe12 = rules.unmapped_refgenome.output.fastq,
-  output: 
-    contigs = "assemble/{run}/final.contigs.fa"
-  params:
-    options = "--min-contig-len 500"
-  threads: 2
-  log: "logs/{run}_assemble.log"
-  wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
+    input: 
+      pe12 = rules.unmapped_refgenome.output.fastq,
+    output: 
+      contigs = "assemble/{run}/final.contigs.fa"
+    params:
+      options = "--min-contig-len 500"
+    threads: 2
+    log: "logs/{run}_assemble.log"
+    wrapper:
+      "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
 
 # Calculate assembly coverage stats
 rule bbwrap:
-  input:
-    ref = rules.assemble.output.contigs, 
-    input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
-  output:
-    out = temp("assemble/{run}/aln.sam")
-  params: 
-    extra = "kfilter=22 subfilter=15 maxindel=80"
-  wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
+    input:
+      ref = rules.assemble.output.contigs, 
+      input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
+    output:
+      out = temp("assemble/{run}/aln.sam")
+    wrapper:
+      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
 
 rule coverage:
-  input: 
-    input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
-  output:
-    out = "assemble/stats/{run}_coverage.txt"
-  wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
+    input: 
+      input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
+    output:
+      cov = "assemble/stats/{run}_coverage.txt"
+    params: 
+      extra = "kfilter=22 subfilter=15 maxindel=80"
+    wrapper:
+      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
 
 # Tantan mask of low complexity DNA sequences
 rule tantan:
@@ -124,7 +124,7 @@ rule repeatmasker:
     rules.tantan_good.output
   output:
     masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
-    out = temp("assemble/mask/{run}_repeatmasker.fa.out")
+    out = temp("assemble/mask/{run}_repeatmasker.fa.out"),
     tbl = "assemble/mask/{run}_repeatmasker.fa.tbl"
   params:
     outdir = "assemble/mask"
