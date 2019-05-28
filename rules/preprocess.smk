@@ -96,7 +96,7 @@ rule coverage_good:
     contigs = rules.assemble.output,
     coverage = rules.coverage.output
   output:
-    "assemble/{run}/good_contigs.fa"
+    temp("assemble/{run}/good_contigs.fa")
   params:
     avg_coverage = 8
   wrapper:
