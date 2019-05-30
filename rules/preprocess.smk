@@ -98,7 +98,7 @@ rule coverage_good:
   output:
     temp("assemble/{run}/good_contigs.fa")
   params:
-    avg_coverage = 8
+    avg_coverage = 8 # average coverage threshold 
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/filter_coverage"
 
