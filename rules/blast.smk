@@ -13,7 +13,7 @@ rule blastn_virus:
     input:
       query = rules.repeatmasker_good.output.masked_filt
     output:
-      out = "assemble/blast/{run}_blastn_virus.tsv"
+      out = temp("assemble/blast/{run}_blastn_virus.tsv")
     params:
       db = config["virus_nt"],
       task = "blastn",
@@ -32,8 +32,8 @@ rule parse_blastn_virus:
       query = rules.repeatmasker_good.output.masked_filt,
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = "assemble/blast/{run}_blastn_virus_known-viral.tsv",
-      unmapped = "assemble/blast/{run}_blastn_virus_unmapped.fa"
+      mapped = temp("assemble/blast/{run}_blastn_virus_known-viral.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastn_virus_unmapped.fa")
     params:
       e_cutoff = 1e-5,
       outfmt = rules.blastn_virus.params.outfmt
@@ -45,7 +45,7 @@ rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped
     output:
-      out = "assemble/blast/{run}_blastx_virus.tsv"
+      out = temp("assemble/blast/{run}_blastx_virus.tsv")
     params:
       db = config["virus_nr"],
       word_size = 6,
@@ -64,92 +64,27 @@ rule parse_blastx_virus:
       query = rules.blastx_virus.input.query,
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = "assemble/blast/{run}_blastx_virus_known-viral.tsv",
-      unmapped = "assemble/blast/{run}_blastx_virus_unmapped.fa"
+      mapped = temp("assemble/blast/{run}_blastx_virus_known-viral.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastx_virus_unmapped.fa")
     params:
       e_cutoff = 1e-3,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
-# Filter sequences by division id.
-# Saves hits with division id
-rule classify_phages:
-  input:
-    [rules.parse_blastn_virus.output.mapped, rules.parse_blastx_virus.output.mapped] if config["run_blastx"] else rules.parse_blastn_virus.output.mapped,
-    nodes = "taxonomy/nodes.csv"
-  output:
-    division = "assemble/results/{run}_phages.csv",
-    other = temp("assemble/blast/{run}_candidate_viruses.csv")
-  params:
-    taxdb = config["vhunter"],
-    division_id = 3
-  wrapper:
-    config["wrappers"]["blast_taxonomy"]
-
-# Filter unmasked candidate virus reads.
-rule unmasked_other:
+if config["run_blastx"]:
+  rule merge_virus_fasta:
     input:
-      rules.classify_phages.output.other,
-      rules.repeatmasker_good.output.original_filt
+      rules.parse_blastn_virus.output.unmapped, rules.parse_blastx_virus.output.unmapped
     output:
-      temp("assemble/blast/{run}_candidate_viruses_unmasked.fa")
-    wrapper:
-      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmasked_viral"
-
-# Map reads against bacterial genomes.
-rule bwa_mem_refbac:
-  input:
-    reads = [rules.unmasked_other.output]
-  output:
-    temp("assemble/blast/{run}_bac_mapped.bam")
-  params:
-    index = config["ref_bacteria"],
-    extra = "-k 15",
-    sort = "none"
-  log:
-    "logs/{run}_bwa_mem_refbac.log"
-  threads: 2
-  wrapper:
-    "0.32.0/bio/bwa/mem"
-
-# Extract unmapped reads and convert bam file to fastq file.
-# Extract unmapped reads and convert to fasta.
-rule unmapped_refbac:
-  input:
-    rules.bwa_mem_refbac.output
-  output:
-    fastq = temp("assemble/blast/{run}_unmapped.fq"),
-    fasta = temp("assemble/blast/{run}_unmapped.fa")
-  wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
-
-# Calculate bam file stats
-rule refbak_stats:
-    input:
-      rules.bwa_mem_refbac.output
-    output:
-      "assemble/stats/{run}_refbak_stats.txt"
-    params:
-      extra = "-f 4",
-      region = ""
-    wrapper:
-        "0.32.0/bio/samtools/stats"
-
-# Subset repeatmasker masked reads using unmapped reads.
-rule refbac_unmapped_masked:
-    input:
-      rules.unmapped_refbac.output.fasta,
-      rules.repeatmasker_good.output.masked_filt
-    output:
-      temp("assemble/blast/{run}_bac_unmapped_masked.fa")
-    wrapper:
-      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped_masked_ids"
+      temp("assemble/blast/{run}_blast_virus_unmapped.fa")
+    shell:
+      "cat {input} > {output}"
 
 # Megablast against nt database.
 rule megablast_nt:
     input:
-      query = rules.refbac_unmapped_masked.output
+      query = rules.merge_virus_fasta.output if config["run_blastx"] else rules.parse_blastn_virus.output.unmapped
     output:
       out = temp("assemble/blast/{run}_megablast_nt.tsv")
     params:
@@ -167,7 +102,7 @@ rule megablast_nt:
 # Filter megablast hits for the cutoff value.
 rule parse_megablast_nt:
     input:
-      query = rules.refbac_unmapped_masked.output,
+      query = rules.megablast_nt.input.query,
       blast_result = rules.megablast_nt.output.out
     output:
       mapped = "assemble/blast/{run}_megablast_nt_mapped.tsv",
@@ -244,7 +179,7 @@ rule parse_blastx_nr:
 # Saves hits with division id
 rule classify_phages_viruses:
   input:
-    [rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped, rules.parse_blastx_nr.output.mapped] if config["run_blastx"] else [rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped],
+    [rules.parse_blastn_virus.output.mapped, rules.parse_blastx_virus.output.mapped, rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped, rules.parse_blastx_nr.output.mapped] if config["run_blastx"] else [rules.parse_blastn_virus.output.mapped, rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped],
     nodes = "taxonomy/nodes.csv"
   output:
     division = "assemble/results/{run}_phages_viruses.csv",
@@ -258,7 +193,7 @@ rule classify_phages_viruses:
 # Assign unique taxons to blast queries
 rule query_taxid:
   input:
-    expand("assemble/results/{{run}}_{result}.csv", result = RESULTS)
+    rules.classify_phages_viruses.output.division
   output:
     "assemble/results/{run}_query_taxid.csv"
   wrapper:
