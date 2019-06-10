@@ -4,10 +4,8 @@ rule prepare_taxonomy_data:
   input: config["names"], config["nodes"], config["division"]
   output:
       expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-  conda:
-    "../envs/tidyverse.yaml"
-  script:
-    "../scripts/prepare_taxonomy_data.R"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/prepare_taxonomy_data"
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
@@ -23,7 +21,7 @@ rule blastn_virus:
       db_soft_mask = config["blastn_virus"]["db_soft_mask"],
       max_hsps = config["blastn_virus"]["max_hsps"],
       show_gis = True,
-      num_threads = 8,
+      num_threads = 2,
       outfmt = "'6 qseqid sgi pident length mismatch gapopen qstart qend sstart send evalue bitscore'"
     wrapper:
       config["wrappers"]["blast"]
@@ -55,7 +53,7 @@ rule blastx_virus:
       db_soft_mask = config["blastx_virus"]["db_soft_mask"],
       max_hsps = config["blastx_virus"]["max_hsps"],
       show_gis = True,
-      num_threads = 8,
+      num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
@@ -78,12 +76,11 @@ rule parse_blastx_virus:
 # Saves hits with division id
 rule classify_phages:
   input:
-    [rules.parse_blastn_virus.output.mapped,
-    rules.parse_blastx_virus.output.mapped] if config["run_blastx"] else rules.parse_blastn_virus.output.mapped,
+    [rules.parse_blastn_virus.output.mapped, rules.parse_blastx_virus.output.mapped] if config["run_blastx"] else rules.parse_blastn_virus.output.mapped,
     nodes = "taxonomy/nodes.csv"
   output:
     division = "assemble/results/{run}_phages.csv",
-    other = "assemble/blast/{run}_candidate_viruses.csv"
+    other = temp("assemble/blast/{run}_candidate_viruses.csv")
   params:
     taxdb = config["vhunter"],
     division_id = 3
@@ -96,18 +93,16 @@ rule unmasked_other:
       rules.classify_phages.output.other,
       rules.repeatmasker_good.output.original_filt
     output:
-      "assemble/blast/{run}_candidate_viruses_unmasked.fa"
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/unmasked_viral.py"
+      temp("assemble/blast/{run}_candidate_viruses_unmasked.fa")
+    wrapper:
+      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmasked_viral"
 
 # Map reads against bacterial genomes.
 rule bwa_mem_refbac:
   input:
     reads = [rules.unmasked_other.output]
   output:
-    "assemble/blast/{run}_bac_mapped.bam"
+    temp("assemble/blast/{run}_bac_mapped.bam")
   params:
     index = config["ref_bacteria"],
     extra = "-k 15",
@@ -119,25 +114,15 @@ rule bwa_mem_refbac:
     "0.32.0/bio/bwa/mem"
 
 # Extract unmapped reads and convert bam file to fastq file.
-rule refbak_unmapped:
-    input:
-      rules.bwa_mem_refbac.output
-    output:
-      temp("assemble/blast/{run}_bak_unmapped.fq")
-    params:
-      "-n -f 4"
-    threads: 2
-    wrapper:
-      "0.32.0/bio/samtools/bam2fq/interleaved"
-
-# Convert fastq file to fasta file.
-rule refbak_unmapped_fasta:
+# Extract unmapped reads and convert to fasta.
+rule unmapped_refbac:
   input:
-    rules.refbak_unmapped.output
+    rules.bwa_mem_refbac.output
   output:
-    "assemble/blast/{run}_bac_unmapped.fa"
-  shell:
-    "cat {input} | sed -n '1~4s/^@/>/p;2~4p' > {output}"
+    fastq = temp("assemble/blast/{run}_unmapped.fq"),
+    fasta = temp("assemble/blast/{run}_unmapped.fa")
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
 
 # Calculate bam file stats
 rule refbak_stats:
@@ -148,29 +133,25 @@ rule refbak_stats:
     params:
       extra = "-f 4",
       region = ""
-    log:
-      "logs/{run}_refbak_stats.log"
     wrapper:
         "0.32.0/bio/samtools/stats"
 
 # Subset repeatmasker masked reads using unmapped reads.
 rule refbac_unmapped_masked:
     input:
-      rules.refbak_unmapped_fasta.output,
+      rules.unmapped_refbac.output.fasta,
       rules.repeatmasker_good.output.masked_filt
     output:
       temp("assemble/blast/{run}_bac_unmapped_masked.fa")
-    conda:
-      "../envs/biopython.yaml"
-    script:
-      "../scripts/unmapped_masked_ids.py"
+    wrapper:
+      "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped_masked_ids"
 
 # Megablast against nt database.
 rule megablast_nt:
     input:
       query = rules.refbac_unmapped_masked.output
     output:
-      out = "assemble/blast/{run}_megablast_nt.tsv"
+      out = temp("assemble/blast/{run}_megablast_nt.tsv")
     params:
       db = config["nt"],
       task = "megablast",
@@ -178,7 +159,7 @@ rule megablast_nt:
       word_size = config["megablast_nt"]["word_size"],
       max_hsps = config["megablast_nt"]["max_hsps"],
       show_gis = True,
-      num_threads = 8,
+      num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
@@ -209,7 +190,7 @@ rule blastn_nt:
       evalue = config["blastn_nt"]["evalue"],
       max_hsps = config["blastn_nt"]["max_hsps"],
       show_gis = True,
-      num_threads = 8,
+      num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
@@ -240,7 +221,7 @@ rule blastx_nr:
       evalue = config["blastx_nr"]["evalue"],
       max_hsps = config["blastx_nr"]["max_hsps"],
       show_gis = True,
-      num_threads = 8,
+      num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["blast"]
@@ -274,7 +255,26 @@ rule classify_phages_viruses:
   wrapper:
     config["wrappers"]["blast_taxonomy"]
 
+# Assign unique taxons to blast queries
+rule query_taxid:
+  input:
+    expand("assemble/results/{{run}}_{result}.csv", result = RESULTS)
+  output:
+    "assemble/results/{run}_query_taxid.csv"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unique_taxons"
+
+# Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
+    rule upload_parsed:
+    input:
+      rules.query_taxid.output
+    output:
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{run}_query_taxid.csv", deposition_id = config["zenodo"]["deposition_id"]))
+    group: "upload"
+    shell:
+      "cp {input} {output}"
+
   rule upload:
     input: 
       "assemble/results/{run}_{result}.{ext}"
@@ -282,3 +282,26 @@ if config["zenodo"]["deposition_id"]:
       ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", deposition_id = config["zenodo"]["deposition_id"]))
     shell: 
       "cp {input} {output}"
+
+# Collect stats
+rule blast_stats:
+  input:
+    ["assemble/blast/{run}_blastn_virus_unmapped.fa",
+    "assemble/blast/{run}_blastx_virus_unmapped.fa",
+    "assemble/blast/{run}_candidate_viruses_unmasked.fa",
+    "assemble/blast/{run}_unmapped.fa",
+    "assemble/blast/{run}_bac_unmapped_masked.fa",
+    "assemble/blast/{run}_megablast_nt_unmapped.fa",
+    "assemble/blast/{run}_blastn_nt_unmapped.fa",
+    "assemble/results/{run}_unassigned.fa"] if config["run_blastx"] else ["assemble/blast/{run}_blastn_virus_unmapped.fa",
+    "assemble/blast/{run}_candidate_viruses_unmasked.fa",
+    "assemble/blast/{run}_unmapped.fa",
+    "assemble/blast/{run}_bac_unmapped_masked.fa",
+    "assemble/blast/{run}_megablast_nt_unmapped.fa",
+    "assemble/results/{run}_unassigned.fa"]
+  output:
+    "assemble/stats/{run}_blast.tsv"
+  params:
+    extra = "-T"
+  wrapper:
+    config["wrappers"]["stats"]
