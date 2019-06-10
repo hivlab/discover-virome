@@ -92,7 +92,7 @@ blastx_nr:
 
 # Wrapper urls
 wrappers:
-    blast: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/query
-    parse_blast: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/parse
-    blast_taxonomy: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/taxonomy
+    blast: https://bitbucket.org/tpall/snakemake-wrappers/raw/c95af40e7bfb10a8d213c2f63dd2b79d29ebcbf2/bio/blast/query
+    parse_blast: https://bitbucket.org/tpall/snakemake-wrappers/raw/c95af40e7bfb10a8d213c2f63dd2b79d29ebcbf2/bio/blast/parse
+    blast_taxonomy: https://bitbucket.org/tpall/snakemake-wrappers/raw/dbd5b35cc6d3f2cc3e0142065a2053ffa4ffec20/bio/blast/taxonomy
     stats: https://bitbucket.org/tpall/snakemake-wrappers/raw/e7699c0ae37a999909fb764c91723d46ded7461c/bio/seqkit/stats
