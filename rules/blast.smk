@@ -266,7 +266,7 @@ rule query_taxid:
 
 # Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
-    rule upload_parsed:
+  rule upload_parsed:
     input:
       rules.query_taxid.output
     output:
@@ -282,6 +282,7 @@ if config["zenodo"]["deposition_id"]:
       ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", deposition_id = config["zenodo"]["deposition_id"]))
     shell: 
       "cp {input} {output}"
+
 
 # Collect stats
 rule blast_stats:

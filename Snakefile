@@ -23,16 +23,19 @@ SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
 
+wildcard_constraints:
+    run = "[a-zA-Z0-9]+"
+
 # Main output files and target rules
 RESULTS = ["phages", "phages_viruses", "non_viral"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_refbak_stats.txt", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
-OUTPUTS = expand("assemble/results/{run}_{result}.csv", run = RUN_IDS, result = RESULTS) + expand("assemble/results/{run}_unassigned.fa", run = RUN_IDS) + TAXONOMY + STATS
+OUTPUTS = expand(["assemble/results/{run}_query_taxid.csv", "assemble/results/{run}_unassigned.fa", "assemble/results/{run}_{result}.csv"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 rule all:
     input:
         OUTPUTS, 
-        ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"])) if config["zenodo"]["deposition_id"] else OUTPUTS
+        ZEN.remote(expand(["{deposition_id}/files/assemble/results/{run}_query_taxid.csv", "{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}"], run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"])) if config["zenodo"]["deposition_id"] else OUTPUTS
 
 # Modules
 include: "rules/preprocess.smk"
