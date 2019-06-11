@@ -63,6 +63,7 @@ rule assemble:
     se = rules.unmapped_refgenome.output.fastq,
   output: 
     contigs = "assemble/{run}/final.contigs.fa"
+  shadow: "shallow"
   params:
     options = "--min-contig-len 500"
   threads: 2
@@ -136,8 +137,8 @@ rule repeatmasker:
     rules.tantan_good.output
   output:
     masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
-    out = temp("assemble/mask/{run}_repeatmasker.fa.out"),
-    tbl = "assemble/mask/{run}_repeatmasker.fa.tbl"
+    out = temp("assemble/mask/{run}_repeatmasker.fa.out")
+  shadow: "shallow"
   params:
     outdir = "assemble/mask"
   threads: 2
@@ -147,8 +148,7 @@ rule repeatmasker:
     """
     RepeatMasker -qq -pa {threads} {input} -dir {params.outdir}
     if head -n 1 {output.out} | grep -q "There were no repetitive sequences detected"
-      then ln -sr {input} {output.masked} \
-           && touch {output.tbl}
+      then ln -sr {input} {output.masked}
     fi
     """
 
