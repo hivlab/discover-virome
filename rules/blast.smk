@@ -205,7 +205,7 @@ if config["zenodo"]["deposition_id"]:
     input:
       rules.query_taxid.output
     output:
-      ZEN.remote(expand("{deposition_id}/files/assemble/results/{run}_query_taxid.csv", deposition_id = config["zenodo"]["deposition_id"]))
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_query_taxid.csv", deposition_id = config["zenodo"]["deposition_id"]))
     group: "upload"
     shell:
       "cp {input} {output}"

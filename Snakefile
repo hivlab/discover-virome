@@ -9,19 +9,26 @@ import json
 import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
+from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
 from snakemake.utils import validate
 
 # Load configuration file with sample and path info
 configfile: "config.yaml"
-#validate(config, "schemas/config.schema.yaml")
-SAMPLES = pd.read_csv(config["samples"], sep = "\\s+").set_index("run", drop = False)
-#validate(SAMPLES, "schemas/samples.schema.yaml")
-SAMPLE_IDS, RUN_IDS = list(SAMPLES["sample"]), SAMPLES.run.to_list()
-SNAKEMAKE_DIR = os.path.dirname(workflow.snakefile)
+validate(config, "schemas/config.schema.yaml")
+
+# Load runs and groups
+RUNS = pd.read_csv(config["samples"], sep = "\s+").set_index("run", drop = False)
+validate(RUNS, "schemas/samples.schema.yaml")
+RUN_IDS = RUNS.index.to_list()
+N_FILES = config["split_fasta"]["n_files"]
+N = list(range(1, N_FILES + 1, 1))
 
 # Create slurm logs dir
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
+
+# Setup Zenodo RemoteProvider
+ZEN = ZENRemoteProvider()
 
 wildcard_constraints:
     run = "[a-zA-Z0-9]+"
@@ -32,10 +39,14 @@ TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand(["assemble/results/{run}_query_taxid.csv", "assemble/results/{run}_unassigned.fa", "assemble/results/{run}_{result}.csv"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
+# Remote outputs
+if config["zenodo"]["deposition_id"]:
+    ZENOUTPUTS = [ZEN.remote(expand("{deposition_id}/files/results/{run}_{result}.csv.tar.gz", deposition_id = config["zenodo"]["deposition_id"], run = RUN_IDS, result = RESULTS)),
+    ZEN.remote(expand("{deposition_id}/files/results/{run}_unassigned.fa.tar.gz", deposition_id = config["zenodo"]["deposition_id"], run = RUN_IDS))]
+
 rule all:
     input:
-        OUTPUTS, 
-        ZEN.remote(expand(["{deposition_id}/files/assemble/results/{run}_query_taxid.csv", "{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}"], run = RUN_IDS, result = RESULTS, deposition_id = config["zenodo"]["deposition_id"])) if config["zenodo"]["deposition_id"] else OUTPUTS
+        OUTPUTS, ZENOUTPUTS if config["zenodo"]["deposition_id"] else OUTPUTS
 
 # Modules
 include: "rules/preprocess.smk"
