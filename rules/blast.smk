@@ -105,8 +105,8 @@ rule parse_megablast_nt:
       query = rules.megablast_nt.input.query,
       blast_result = rules.megablast_nt.output.out
     output:
-      mapped = "assemble/blast/{run}_megablast_nt_mapped.tsv",
-      unmapped = "assemble/blast/{run}_megablast_nt_unmapped.fa"
+      mapped = temp("assemble/blast/{run}_megablast_nt_mapped.tsv"),
+      unmapped = temp("assemble/blast/{run}_megablast_nt_unmapped.fa")
     params:
       e_cutoff = 1e-10,
       outfmt = rules.blastn_virus.params.outfmt
@@ -118,7 +118,7 @@ rule blastn_nt:
     input:
       query = rules.parse_megablast_nt.output.unmapped
     output:
-      out = "assemble/blast/{run}_blastn_nt.tsv"
+      out = temp("assemble/blast/{run}_blastn_nt.tsv")
     params:
       db = config["nt"],
       task = "blastn",
@@ -136,8 +136,8 @@ rule parse_blastn_nt:
       query = rules.blastn_nt.input.query,
       blast_result = rules.blastn_nt.output.out
     output:
-      mapped = "assemble/blast/{run}_blastn_nt_mapped.tsv",
-      unmapped = "assemble/blast/{run}_blastn_nt_unmapped.fa" if config["run_blastx"] else "assemble/results/{run}_unassigned.fa"
+      mapped = temp("assemble/blast/{run}_blastn_nt_mapped.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastn_nt_unmapped.fa") if config["run_blastx"] else temp("assemble/results/{run}_unassigned.fa")
     params:
       e_cutoff = 1e-10,
       outfmt = rules.blastn_virus.params.outfmt
@@ -149,7 +149,7 @@ rule blastx_nr:
     input:
       query = rules.parse_blastn_nt.output.unmapped
     output:
-      out = "assemble/blast/{run}_blastx_nr.tsv"
+      out = temp("assemble/blast/{run}_blastx_nr.tsv")
     params:
       db = config["nr"],
       word_size = 6,
@@ -167,8 +167,8 @@ rule parse_blastx_nr:
       query = rules.blastx_nr.input.query,
       blast_result = rules.blastx_nr.output.out
     output:
-      mapped = "assemble/blast/{run}_blastx_nr_mapped.tsv",
-      unmapped = "assemble/results/{run}_unassigned.fa" if config["run_blastx"] else "{run}_None"
+      mapped = temp("assemble/blast/{run}_blastx_nr_mapped.tsv"),
+      unmapped = temp("assemble/results/{run}_unassigned.fa") if config["run_blastx"] else temp("{run}_None")
     params:
       e_cutoff = 1e-3,
       outfmt = rules.blastn_virus.params.outfmt
@@ -218,21 +218,14 @@ if config["zenodo"]["deposition_id"]:
     shell: 
       "cp {input} {output}"
 
-
 # Collect stats
 rule blast_stats:
   input:
     ["assemble/blast/{run}_blastn_virus_unmapped.fa",
     "assemble/blast/{run}_blastx_virus_unmapped.fa",
-    "assemble/blast/{run}_candidate_viruses_unmasked.fa",
-    "assemble/blast/{run}_unmapped.fa",
-    "assemble/blast/{run}_bac_unmapped_masked.fa",
     "assemble/blast/{run}_megablast_nt_unmapped.fa",
     "assemble/blast/{run}_blastn_nt_unmapped.fa",
     "assemble/results/{run}_unassigned.fa"] if config["run_blastx"] else ["assemble/blast/{run}_blastn_virus_unmapped.fa",
-    "assemble/blast/{run}_candidate_viruses_unmasked.fa",
-    "assemble/blast/{run}_unmapped.fa",
-    "assemble/blast/{run}_bac_unmapped_masked.fa",
     "assemble/blast/{run}_megablast_nt_unmapped.fa",
     "assemble/results/{run}_unassigned.fa"]
   output:

@@ -29,7 +29,7 @@ wildcard_constraints:
 # Main output files and target rules
 RESULTS = ["phages_viruses", "non_viral"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_refbak_stats.txt", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
+STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand(["assemble/results/{run}_query_taxid.csv", "assemble/results/{run}_unassigned.fa", "assemble/results/{run}_{result}.csv"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 rule all:
