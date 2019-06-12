@@ -72,6 +72,8 @@ rule assemble:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
 
 # Calculate assembly coverage stats
+# nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
+# and reused for other unrelated runs
 rule bbwrap:
   input:
     ref = rules.assemble.output.contigs, 
@@ -79,7 +81,7 @@ rule bbwrap:
   output:
     out = temp("assemble/{run}/aln.sam")
   params: 
-    extra = "kfilter=22 subfilter=15 maxindel=80"
+    extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
 
