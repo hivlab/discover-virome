@@ -171,6 +171,17 @@ rule repeatmasker_good:
   wrapper:
     "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
 
+# Split reads to smaller chunks for Repeatmasker
+rule split_fasta:
+  input:
+    rules.repeatmasker_good.output.masked_filt
+  output:
+    temp(expand("assemble/mask/{{run}}_repmaskedgood_{n}.fa", n = N))
+  params:
+    config["split_fasta"]["n_files"]
+  wrapper:
+    "https://bitbucket.org/tpall/snakemake-wrappers/raw/7e681180a5607f20594b3070f8eced7ccd245a89/bio/split-fasta"
+
 # Collect stats from preprocess outputs.
 rule preprocess_stats:
   input:
@@ -178,7 +189,6 @@ rule preprocess_stats:
     rules.assemble.output.contigs,
     rules.coverage_good.output,
     rules.unmapped_refgenome.output,
-    rules.parse_megablast.output.unmapped,
     rules.tantan.output,
     rules.tantan_good.output,
     rules.repeatmasker_good.output

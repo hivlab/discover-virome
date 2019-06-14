@@ -11,9 +11,9 @@ rule prepare_taxonomy_data:
 # Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = rules.repeatmasker_good.output.masked_filt
+      query = "assemble/mask/{run}_repmaskedgood_{n}.fa"
     output:
-      out = temp("assemble/blast/{run}_blastn_virus.tsv")
+      out = temp("assemble/blast/{run}_blastn_virus_{n}.tsv")
     params:
       db = config["virus_nt"],
       task = "blastn",
@@ -30,11 +30,11 @@ rule blastn_virus:
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-      query = rules.repeatmasker_good.output.masked_filt,
+      query = "assemble/mask/{run}_repmaskedgood_{n}.fa",
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastn_virus_known-viral.tsv"),
-      unmapped = temp("assemble/blast/{run}_blastn_virus_unmapped.fa")
+      mapped = temp("assemble/blast/{run}_blastn_virus_known-viral_{n}.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastn_virus_unmapped_{n}.fa")
     params:
       e_cutoff = 1e-5,
       outfmt = rules.blastn_virus.params.outfmt
@@ -46,7 +46,7 @@ rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped
     output:
-      out = temp("assemble/blast/{run}_blastx_virus.tsv")
+      out = temp("assemble/blast/{run}_blastx_virus_{n}.tsv")
     params:
       db = config["virus_nr"],
       word_size = 6,
@@ -66,8 +66,8 @@ rule parse_blastx_virus:
       query = rules.blastx_virus.input.query,
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastx_virus_known-viral.tsv"),
-      unmapped = temp("assemble/blast/{run}_blastx_virus_unmapped.fa")
+      mapped = temp("assemble/blast/{run}_blastx_virus_known-viral_{n}.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastx_virus_unmapped_{n}.fa")
     params:
       e_cutoff = 1e-3,
       outfmt = rules.blastn_virus.params.outfmt
@@ -79,7 +79,7 @@ if config["run_blastx"]:
     input:
       rules.parse_blastn_virus.output.unmapped, rules.parse_blastx_virus.output.unmapped
     output:
-      temp("assemble/blast/{run}_blast_virus_unmapped.fa")
+      temp("assemble/blast/{run}_blast_virus_unmapped_{n}.fa")
     shell:
       "cat {input} > {output}"
 
@@ -88,7 +88,7 @@ rule megablast_nt:
     input:
       query = rules.merge_virus_fasta.output if config["run_blastx"] else rules.parse_blastn_virus.output.unmapped
     output:
-      out = temp("assemble/blast/{run}_megablast_nt.tsv")
+      out = temp("assemble/blast/{run}_megablast_nt_{n}.tsv")
     params:
       db = config["nt"],
       task = "megablast",
@@ -108,8 +108,8 @@ rule parse_megablast_nt:
       query = rules.megablast_nt.input.query,
       blast_result = rules.megablast_nt.output.out
     output:
-      mapped = temp("assemble/blast/{run}_megablast_nt_mapped.tsv"),
-      unmapped = temp("assemble/blast/{run}_megablast_nt_unmapped.fa")
+      mapped = temp("assemble/blast/{run}_megablast_nt_mapped_{n}.tsv"),
+      unmapped = temp("assemble/blast/{run}_megablast_nt_unmapped_{n}.fa")
     params:
       e_cutoff = 1e-10,
       outfmt = rules.blastn_virus.params.outfmt
@@ -121,7 +121,7 @@ rule blastn_nt:
     input:
       query = rules.parse_megablast_nt.output.unmapped
     output:
-      out = temp("assemble/blast/{run}_blastn_nt.tsv")
+      out = temp("assemble/blast/{run}_blastn_nt_{n}.tsv")
     params:
       db = config["nt"],
       task = "blastn",
@@ -140,8 +140,8 @@ rule parse_blastn_nt:
       query = rules.blastn_nt.input.query,
       blast_result = rules.blastn_nt.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastn_nt_mapped.tsv"),
-      unmapped = temp("assemble/blast/{run}_blastn_nt_unmapped.fa") if config["run_blastx"] else temp("assemble/results/{run}_unassigned.fa")
+      mapped = temp("assemble/blast/{run}_blastn_nt_mapped_{n}.tsv"),
+      unmapped = temp("assemble/blast/{run}_blastn_nt_unmapped_{n}.fa") if config["run_blastx"] else temp("assemble/blast/{run}_unassigned_{n}.fa")
     params:
       e_cutoff = 1e-10,
       outfmt = rules.blastn_virus.params.outfmt
@@ -153,7 +153,7 @@ rule blastx_nr:
     input:
       query = rules.parse_blastn_nt.output.unmapped
     output:
-      out = temp("assemble/blast/{run}_blastx_nr.tsv")
+      out = temp("assemble/blast/{run}_blastx_nr_{n}.tsv")
     params:
       db = config["nr"],
       word_size = 6,
@@ -172,19 +172,35 @@ rule parse_blastx_nr:
       query = rules.blastx_nr.input.query,
       blast_result = rules.blastx_nr.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastx_nr_mapped.tsv"),
-      unmapped = temp("assemble/results/{run}_unassigned.fa") if config["run_blastx"] else temp("{run}_None")
+      mapped = temp("assemble/blast/{run}_blastx_nr_mapped_{n}.tsv"),
+      unmapped = temp("assemble/blast/{run}_unassigned_{n}.fa") if config["run_blastx"] else temp("{run}_None_{n}")
     params:
       e_cutoff = 1e-3,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       config["wrappers"]["parse_blast"]
 
+# Merge blast results for classification
+rule merge_blast_results:
+  input: expand("assemble/blast/{{run}}_{{blastresult}}_mapped_{n}.tsv", n = N)
+  output: "assemble/blast/{run}_{blastresult}_mapped.tsv"
+  run:
+    merged = pd.concat(input)
+    with open(output, "w") as out:
+      out.write(merged)
+
+# Merge unassigned sequences
+rule merge_unassigned:
+  input: expand("assemble/blast/{{run}}_unassigned_{n}.fa", n = N)
+  output: "assemble/results/{run}_unassigned.fa"
+  shell:
+    "cat {input} > {output}"
+
 # Filter sequences by division id.
 # Saves hits with division id
 rule classify_phages_viruses:
   input:
-    [rules.parse_blastn_virus.output.mapped, rules.parse_blastx_virus.output.mapped, rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped, rules.parse_blastx_nr.output.mapped] if config["run_blastx"] else [rules.parse_blastn_virus.output.mapped, rules.parse_megablast_nt.output.mapped, rules.parse_blastn_nt.output.mapped],
+    expand("assemble/blast/{{run}}_{blastresult}_mapped.tsv", blastresult = ["blastn_virus", "blastx_virus", "megablast_nt", "blastn_nt", "blastx_nr"] if config["run_blastx"] else ["blastn_virus", "megablast_nt", "blastn_nt"]),
     nodes = "taxonomy/nodes.csv"
   output:
     division = "assemble/results/{run}_phages_viruses.csv",
@@ -222,6 +238,13 @@ if config["zenodo"]["deposition_id"]:
       ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", deposition_id = config["zenodo"]["deposition_id"]))
     shell: 
       "cp {input} {output}"
+
+# Merge unmapped seqs for stats
+rule merge_blast_unmapped:
+  input: expand("assemble/blast/{{run}}_{{blastresult}}_unmapped_{n}.fa", n = N)
+  output: temp("assemble/blast/{run}_{blastresult}_unmapped.fa")
+  shell:
+    "cat {input} > {output}"
 
 # Collect stats
 rule blast_stats:

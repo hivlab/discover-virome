@@ -31,7 +31,8 @@ if not os.path.exists("logs/slurm"):
 ZEN = ZENRemoteProvider()
 
 wildcard_constraints:
-    run = "[a-zA-Z0-9]+"
+    run = "[a-zA-Z0-9]+",
+    n = "\d+"
 
 # Main output files and target rules
 RESULTS = ["phages_viruses", "non_viral"]
