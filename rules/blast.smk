@@ -220,6 +220,16 @@ rule query_taxid:
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unique_taxons"
 
+# Subset viral contigs
+rule subset_contigs:
+  input: 
+    contigs = "assemble/{run}/final.contigs.fa",
+    virids = "assemble/results/{run}_query_taxid.csv"
+  output:
+    "assemble/{run}/viral.contigs.fa"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/subset"
+
 # Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
   rule upload_parsed:
