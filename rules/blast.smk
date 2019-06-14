@@ -23,6 +23,7 @@ rule blastn_virus:
       show_gis = True,
       num_threads = 2,
       outfmt = "'6 qseqid sgi pident length mismatch gapopen qstart qend sstart send evalue bitscore'"
+    threads: 2
     wrapper:
       config["wrappers"]["blast"]
 
@@ -55,6 +56,7 @@ rule blastx_virus:
       show_gis = True,
       num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
+    threads: 2
     wrapper:
       config["wrappers"]["blast"]
 
@@ -96,6 +98,7 @@ rule megablast_nt:
       show_gis = True,
       num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
+    threads: 2
     wrapper:
       config["wrappers"]["blast"]
 
@@ -127,6 +130,7 @@ rule blastn_nt:
       show_gis = True,
       num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
+    threads: 2
     wrapper:
       config["wrappers"]["blast"]
 
@@ -158,6 +162,7 @@ rule blastx_nr:
       show_gis = True,
       num_threads = 2,
       outfmt = rules.blastn_virus.params.outfmt
+    threads: 2
     wrapper:
       config["wrappers"]["blast"]
 
