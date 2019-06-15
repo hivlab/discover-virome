@@ -33,7 +33,7 @@ rule parse_blastn_virus:
       query = "assemble/mask/{run}_repmaskedgood_{n}.fa",
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastn_virus_known-viral_{n}.tsv"),
+      mapped = temp("assemble/blast/{run}_blastn_virus_mapped_{n}.tsv"),
       unmapped = temp("assemble/blast/{run}_blastn_virus_unmapped_{n}.fa")
     params:
       e_cutoff = 1e-5,
@@ -66,7 +66,7 @@ rule parse_blastx_virus:
       query = rules.blastx_virus.input.query,
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = temp("assemble/blast/{run}_blastx_virus_known-viral_{n}.tsv"),
+      mapped = temp("assemble/blast/{run}_blastx_virus_mapped_{n}.tsv"),
       unmapped = temp("assemble/blast/{run}_blastx_virus_unmapped_{n}.fa")
     params:
       e_cutoff = 1e-3,
