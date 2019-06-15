@@ -183,7 +183,7 @@ rule parse_blastx_nr:
 # Merge blast results for classification
 rule merge_blast_results:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_mapped_{n}.tsv", n = N)
-  output: "assemble/blast/{run}_{blastresult}_mapped.tsv"
+  output: temp("assemble/blast/{run}_{blastresult}_mapped.tsv")
   run:
     def safely_read_csv(path, **kwargs):
       try:
