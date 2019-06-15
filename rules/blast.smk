@@ -183,14 +183,14 @@ rule parse_blastx_nr:
 # Merge blast results for classification
 rule merge_blast_results:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_mapped_{n}.tsv", n = N)
-  output: "assemble/blast/{run}_{blastresult}_mapped.tsv"
+  output: temp("assemble/blast/{run}_{blastresult}_mapped.tsv")
   run:
     def safely_read_csv(path, **kwargs):
       try:
         return pd.read_csv(path, **kwargs)
       except pd.errors.EmptyDataError:
         pass
-    frames = [pd.read_csv(f) for f in input]
+    frames = [safely_read_csv(f) for f in input]
     pd.concat(frames).to_csv(output[0], index = False) 
 
 # Merge unassigned sequences
