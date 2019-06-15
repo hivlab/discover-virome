@@ -185,9 +185,8 @@ rule merge_blast_results:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_mapped_{n}.tsv", n = N)
   output: "assemble/blast/{run}_{blastresult}_mapped.tsv"
   run:
-    merged = pd.concat(input)
-    with open(output, "w") as out:
-      out.write(merged)
+    frames = [pd.read_csv(f) for f in input]
+    pd.concat(frames).to_csv(output, index = False)
 
 # Merge unassigned sequences
 rule merge_unassigned:
