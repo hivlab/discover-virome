@@ -190,7 +190,7 @@ rule merge_blast_results:
         return pd.read_csv(path, **kwargs)
       except pd.errors.EmptyDataError:
         pass
-    frames = [safely_read_csv(f) for f in input]
+    frames = [safely_read_csv(f, sep = "\t+") for f in input]
     pd.concat(frames).to_csv(output[0], index = False) 
 
 # Merge unassigned sequences
