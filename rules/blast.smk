@@ -190,8 +190,8 @@ rule merge_blast_results:
         return pd.read_csv(path, **kwargs)
       except pd.errors.EmptyDataError:
         pass
-    frames = [safely_read_csv(f) for f in input]
-    pd.concat(frames).to_csv(output[0], index = False) 
+    frames = [safely_read_csv(f, sep = "\s+") for f in input]
+    pd.concat(frames, keys = input).reset_index(level = 0).rename(columns = {"level_0": "file"}).to_csv(output[0], index = False)
 
 # Merge unassigned sequences
 rule merge_unassigned:
@@ -236,20 +236,11 @@ rule subset_contigs:
 
 # Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
-  rule upload_parsed:
-    input:
-      rules.query_taxid.output
-    output:
-      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_query_taxid.csv", deposition_id = config["zenodo"]["deposition_id"]))
-    group: "upload"
-    shell:
-      "cp {input} {output}"
-
-  rule upload:
+  rule results:
     input: 
-      "assemble/results/{run}_{result}.{ext}"
+      "assemble/results/{run}_{result}"
     output: 
-      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}.{{ext}}", deposition_id = config["zenodo"]["deposition_id"]))
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}", deposition_id = config["zenodo"]["deposition_id"]))
     shell: 
       "cp {input} {output}"
 
