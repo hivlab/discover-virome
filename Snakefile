@@ -38,7 +38,7 @@ wildcard_constraints:
 RESULTS = ["phages_viruses.csv", "non_viral.csv", "query_taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
-OUTPUTS = expand(["assemble/results/{run}_query_taxid.csv", "assemble/results/{run}_unassigned.fa", "assemble/results/{run}_{result}.csv"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
+OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
