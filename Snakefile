@@ -35,15 +35,18 @@ wildcard_constraints:
     n = "\d+"
 
 # Main output files and target rules
-RESULTS = ["phages_viruses", "non_viral"]
+RESULTS = ["phages_viruses.csv", "non_viral.csv", "query_taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand(["assemble/results/{run}_query_taxid.csv", "assemble/results/{run}_unassigned.fa", "assemble/results/{run}_{result}.csv"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
-    ZENOUTPUTS = [ZEN.remote(expand("{deposition_id}/files/results/{run}_{result}.csv.tar.gz", deposition_id = config["zenodo"]["deposition_id"], run = RUN_IDS, result = RESULTS)),
-    ZEN.remote(expand("{deposition_id}/files/results/{run}_unassigned.fa.tar.gz", deposition_id = config["zenodo"]["deposition_id"], run = RUN_IDS))]
+    ZENOUTPUTS = ZEN.remote(expand(
+        "{deposition_id}/files/assemble/results/{run}_{result}", 
+        deposition_id = config["zenodo"]["deposition_id"], 
+        run = RUN_IDS, 
+        result = RESULTS))
 
 rule all:
     input:
