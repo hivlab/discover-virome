@@ -240,9 +240,9 @@ if config["zenodo"]["deposition_id"]:
     input: 
       expand("assemble/results/{{run}}_{result}", result = RESULTS)
     output: 
-      ZEN.remote("{params.deposition_id}/files/assemble/results/{run}_assembly_counts.tgz")
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_assembly_counts.tgz", deposition_id = config["zenodo"]["deposition_id"]))
     params:
-      deposition_id = config["zenodo"]["deposition_id"]
+      
     shell: 
       "tar czvf {output} {input}"
 
