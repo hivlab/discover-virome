@@ -42,9 +42,9 @@ OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RE
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
-    ZENOUTPUTS = ZEN.remote("{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", 
+    ZENOUTPUTS = ZEN.remote(expand("{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", 
         deposition_id = config["zenodo"]["deposition_id"], 
-        run = RUN_IDS)
+        run = RUN_IDS))
 
 rule all:
     input:
