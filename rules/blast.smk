@@ -236,13 +236,15 @@ rule subset_contigs:
 
 # Upload results to Zenodo.
 if config["zenodo"]["deposition_id"]:
-  rule results:
+  rule upload_results:
     input: 
-      "assemble/results/{run}_{result}"
+      expand("assemble/results/{{run}}_{result}", result = RESULTS)
+    params:
+      deposition_id = config["zenodo"]["deposition_id"])
     output: 
-      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run, [^_]+}}_{{result}}", deposition_id = config["zenodo"]["deposition_id"]))
+      ZEN.remote("{params.deposition_id}/files/assemble/results/{run}_assembly_counts.tgz")
     shell: 
-      "cp {input} {output}"
+      "tar czvf {output} {input}"
 
 # Merge unmapped seqs for stats
 rule merge_blast_unmapped:
