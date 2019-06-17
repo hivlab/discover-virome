@@ -45,8 +45,9 @@ if config["zenodo"]["deposition_id"]:
     ZENOUTPUTS = ZEN.remote(expand("{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", 
         deposition_id = config["zenodo"]["deposition_id"], 
         run = RUN_IDS))
+    localrules: upload_results
 
-localrules: all, upload_results if config["zenodo"]["deposition_id"] else all
+localrules: all
 
 rule all:
     input:
