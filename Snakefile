@@ -46,6 +46,8 @@ if config["zenodo"]["deposition_id"]:
         deposition_id = config["zenodo"]["deposition_id"], 
         run = RUN_IDS))
 
+localrules: all, upload_results if config["zenodo"]["deposition_id"] else all
+
 rule all:
     input:
         OUTPUTS, ZENOUTPUTS if config["zenodo"]["deposition_id"] else OUTPUTS

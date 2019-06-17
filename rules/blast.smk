@@ -241,8 +241,6 @@ if config["zenodo"]["deposition_id"]:
       expand("assemble/results/{{run}}_{result}", result = RESULTS)
     output: 
       ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_assembly_counts.tgz", deposition_id = config["zenodo"]["deposition_id"]))
-    params:
-      
     shell: 
       "tar czvf {output} {input}"
 
