@@ -42,10 +42,10 @@ OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RE
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
-    ZENOUTPUTS = ZEN.remote(expand("{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", 
+    ZENOUTPUTS = ZEN.remote(expand(["{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", "{deposition_id}/files/assemble/stats/{run}_stats.tgz"], 
         deposition_id = config["zenodo"]["deposition_id"], 
         run = RUN_IDS))
-    localrules: upload_results
+    localrules: upload_results, upload_stats
 
 localrules: all
 

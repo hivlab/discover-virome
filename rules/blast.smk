@@ -234,16 +234,6 @@ rule subset_contigs:
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/subset"
 
-# Upload results to Zenodo.
-if config["zenodo"]["deposition_id"]:
-  rule upload_results:
-    input: 
-      expand("assemble/results/{{run}}_{result}", result = RESULTS)
-    output: 
-      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_assembly_counts.tgz", deposition_id = config["zenodo"]["deposition_id"]))
-    shell: 
-      "tar czvf {output} {input}"
-
 # Merge unmapped seqs for stats
 rule merge_blast_unmapped:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_unmapped_{n}.fa", n = N)
@@ -267,3 +257,23 @@ rule blast_stats:
     extra = "-T"
   wrapper:
     config["wrappers"]["stats"]
+
+# Upload results to Zenodo.
+if config["zenodo"]["deposition_id"]:
+  rule upload_results:
+    input: 
+      expand("assemble/results/{{run}}_{result}", result = RESULTS)
+    output: 
+      ZEN.remote(expand("{deposition_id}/files/assemble/results/{{run}}_assembly_counts.tgz", deposition_id = config["zenodo"]["deposition_id"]))
+    shell: 
+      "tar czvf {output} {input}"
+  
+  rule upload_stats:
+    input: 
+      "assemble/stats/{run}_refgenome_stats.txt", 
+      "assemble/stats/{run}_blast.tsv", 
+      "assemble/stats/{run}_coverage.txt"
+    output: 
+      ZEN.remote(expand("{deposition_id}/files/assemble/stats/{{run}}_stats.tgz", deposition_id = config["zenodo"]["deposition_id"]))
+    shell: 
+      "tar czvf {output} {input}"
