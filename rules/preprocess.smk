@@ -89,7 +89,7 @@ rule coverage:
   input: 
     input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
   output:
-    out = "assemble/stats/{run}_coverage.txt"
+    out = "assemble/stats/{run}_assembly-coverage.txt"
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
 
@@ -193,7 +193,7 @@ rule preprocess_stats:
     rules.tantan_good.output,
     rules.repeatmasker_good.output
   output:
-    "assemble/stats/{run}_preprocess.tsv"
+    "assemble/stats/{run}_assembly-preprocess.tsv"
   params:
     extra = "-T"
   wrapper:
@@ -204,7 +204,7 @@ rule refgenome_bam_stats:
     input:
       rules.bwa_mem_refgenome.output
     output:
-      "assemble/stats/{run}_refgenome_stats.txt"
+      "assemble/stats/{run}_assembly-refgenome-stats.txt"
     params:
       extra = "-f 4",
       region = ""

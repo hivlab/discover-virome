@@ -31,7 +31,8 @@ wildcard_constraints:
     n = "\d+"
 
 # Main output files and target rules
-RESULTS = ["phages_viruses.csv", "non_viral.csv", "query_taxid.csv", "unassigned.fa"]
+BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr"] if config["run_blastx"] else ["blastn-virus", "megablast-nt", "blastn-nt"]
+RESULTS = ["phages-viruses.csv", "non-viral.csv", "query-taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
