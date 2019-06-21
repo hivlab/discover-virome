@@ -9,7 +9,6 @@ import json
 import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
-from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
 from snakemake.utils import validate
 
 # Load configuration file with sample and path info
@@ -27,9 +26,6 @@ N = list(range(1, N_FILES + 1, 1))
 if not os.path.exists("logs/slurm"):
     os.makedirs("logs/slurm")
 
-# Setup Zenodo RemoteProvider
-ZEN = ZENRemoteProvider()
-
 wildcard_constraints:
     run = "[a-zA-Z0-9]+",
     n = "\d+"
@@ -42,16 +38,17 @@ OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RE
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
-    ZENOUTPUTS = ZEN.remote(expand(["{deposition_id}/files/assemble/results/{run}_assembly_counts.tgz", "{deposition_id}/files/assemble/stats/{run}_stats.tgz"], 
-        deposition_id = config["zenodo"]["deposition_id"], 
-        run = RUN_IDS))
+    from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
+    # Setup Zenodo RemoteProvider
+    ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
+    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly_counts.tgz", "assemble/stats/{run}_stats.tgz"], run = RUN_IDS))
+    OUTPUTS = OUTPUTS + ZENOUTPUTS
     localrules: upload_results, upload_stats
 
 localrules: all
-
 rule all:
     input:
-        OUTPUTS, ZENOUTPUTS if config["zenodo"]["deposition_id"] else OUTPUTS
+        OUTPUTS
 
 # Modules
 include: "rules/preprocess.smk"
