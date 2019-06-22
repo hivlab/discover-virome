@@ -34,7 +34,7 @@ wildcard_constraints:
 BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr"] if config["run_blastx"] else ["blastn-virus", "megablast-nt", "blastn-nt"]
 RESULTS = ["phages-viruses.csv", "non-viral.csv", "query-taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-STATS = expand(["assemble/stats/{run}_refgenome_stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt"], run = RUN_IDS)
+STATS = expand(["assemble/stats/{run}_assembly-refgenome-stats.txt", "assemble/stats/{run}_assembly-blast.tsv", "assemble/stats/{run}_assembly-coverage.txt"], run = RUN_IDS)
 OUTPUTS = expand(["assemble/results/{run}_{result}"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 # Remote outputs
@@ -42,7 +42,7 @@ if config["zenodo"]["deposition_id"]:
     from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
     # Setup Zenodo RemoteProvider
     ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
-    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly_counts.tgz", "assemble/stats/{run}_stats.tgz"], run = RUN_IDS))
+    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz"], run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
     localrules: upload_results, upload_stats
 
