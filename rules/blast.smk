@@ -1,13 +1,15 @@
 
+# Import tables, pass empty tables
 def safely_read_csv(path, **kwargs):
       try:
         return pd.read_csv(path, **kwargs)
       except pd.errors.EmptyDataError:
         pass
 
+# Concatenate tables
 def concatenate_tables(input, output, sep = "\s+"):
   frames = [safely_read_csv(f, sep = sep) for f in input]
-  pd.concat(frames, keys = input).to_csv(output[0], index = False)
+  pd.concat(frames).to_csv(output[0], sep = "\t", index = False)
 
 # Prepare taxonomy annotation tables.
 rule prepare_taxonomy_data:
@@ -186,7 +188,7 @@ rule merge_blast_results:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_{n}_mapped.tsv", n = N)
   output: temp("assemble/blast/{run}_{blastresult}_mapped.tsv")
   run:
-    concatenate_tables(input, output)
+    concatenate_tables(input, output, sep = "\s+")
 
 # Merge unassigned sequences
 rule merge_unassigned:
