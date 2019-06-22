@@ -227,7 +227,7 @@ rule subset_contigs:
     contigs = "assemble/{run}/final.contigs.fa",
     virids = "assemble/results/{run}_query-taxid.csv"
   output:
-    "assemble/{run}/viral.contigs.fa"
+    "assemble/result/{run}_viral-contigs.fa"
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/subset"
 

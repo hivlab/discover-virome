@@ -62,7 +62,7 @@ rule assemble:
   input: 
     se = rules.unmapped_refgenome.output.fastq,
   output: 
-    contigs = "assemble/{run}/final.contigs.fa"
+    contigs = temp("assemble/{run}/final.contigs.fa")
   shadow: "shallow"
   params:
     options = "--min-contig-len 500"

@@ -54,3 +54,6 @@ rule all:
 # Modules
 include: "rules/preprocess.smk"
 include: "rules/blast.smk"
+
+onsuccess:
+    shell("mail -s "forkflow finished successfully" tapa741@gmail.com < {log}")
