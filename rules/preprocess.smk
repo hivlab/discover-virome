@@ -62,8 +62,8 @@ rule assemble:
   input: 
     se = rules.unmapped_refgenome.output.fastq,
   output: 
-    contigs = temp("assemble/{run}/final.contigs.fa")
-  shadow: "full"
+    contigs = temp("assemble/{run}/final.contigs.fa"),
+    intermediate_contigs = temp(directory("assemble/{run}"))
   params:
     options = "--min-contig-len 500"
   threads: 2
