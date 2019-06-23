@@ -63,7 +63,7 @@ rule assemble:
     se = rules.unmapped_refgenome.output.fastq,
   output: 
     contigs = temp("assemble/{run}/final.contigs.fa")
-  shadow: "shallow"
+  shadow: "full"
   params:
     options = "--min-contig-len 500"
   threads: 2
@@ -140,7 +140,7 @@ rule repeatmasker:
   output:
     masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
     out = temp("assemble/mask/{run}_repeatmasker.fa.out")
-  shadow: "shallow"
+  shadow: "full"
   params:
     outdir = "assemble/mask"
   threads: 2
