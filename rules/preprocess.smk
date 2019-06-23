@@ -62,8 +62,8 @@ rule assemble:
   input: 
     se = rules.unmapped_refgenome.output.fastq,
   output: 
-    contigs = temp("assemble/{run}/final.contigs.fa"),
-    intermediate_contigs = temp(directory("assemble/{run}"))
+    contigs = temp("assemble/{run}/final.contigs.fa")
+  shadow: "full"
   params:
     options = "--min-contig-len 1000"
   threads: 2
@@ -79,7 +79,7 @@ rule bbwrap:
     ref = rules.assemble.output.contigs, 
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
-    out = temp("assemble/{run}/aln.sam")
+    out = temp("assemble/contigs/{run}_aln.sam")
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
   wrapper:
@@ -99,7 +99,7 @@ rule coverage_good:
     contigs = rules.assemble.output.contigs,
     coverage = rules.coverage.output.out
   output:
-    temp("assemble/{run}/good_contigs.fa")
+    temp("assemble/contigs/{run}_good-contigs.fa")
   params:
     avg_coverage = 8 # average coverage threshold 
   wrapper:
@@ -138,11 +138,11 @@ rule repeatmasker:
   input:
     rules.tantan_good.output
   output:
-    masked = temp("assemble/mask/{run}_repeatmasker.fa.masked"),
-    out = temp("assemble/mask/{run}_repeatmasker.fa.out")
+    masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
+    out = temp("assemble/RM/{run}_repeatmasker.fa.out")
   shadow: "full"
   params:
-    outdir = "assemble/mask"
+    outdir = "assemble/RM"
   threads: 2
   singularity:
     "shub://tpall/repeatmasker-singularity"
