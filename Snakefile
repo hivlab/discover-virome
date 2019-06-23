@@ -35,7 +35,7 @@ BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr
 RESULTS = ["phages-viruses.csv", "non-viral.csv", "query-taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_assembly-refgenome-stats.txt", "assemble/stats/{run}_assembly-blast.tsv", "assemble/stats/{run}_assembly-coverage.txt"], run = RUN_IDS)
-OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/result/{run}_viral-contigs.fa"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
+OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_viral-contigs.fa"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
