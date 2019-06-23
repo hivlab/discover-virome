@@ -65,7 +65,7 @@ rule assemble:
     contigs = temp("assemble/{run}/final.contigs.fa"),
     intermediate_contigs = temp(directory("assemble/{run}"))
   params:
-    options = "--min-contig-len 500"
+    options = "--min-contig-len 1000"
   threads: 2
   log: "logs/{run}_assemble.log"
   wrapper:
