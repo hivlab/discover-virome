@@ -46,7 +46,7 @@ if config["zenodo"]["deposition_id"]:
     OUTPUTS = OUTPUTS + ZENOUTPUTS
     localrules: upload_results, upload_stats
 
-localrules: all
+localrules: all, assemble_cleanup
 rule all:
     input:
         OUTPUTS

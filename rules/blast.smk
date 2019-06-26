@@ -224,7 +224,7 @@ rule query_taxid:
 # Subset viral contigs
 rule subset_contigs:
   input: 
-    contigs = "assemble/{run}/final.contigs.fa",
+    contigs = rules.coverage_good.output[0],
     virids = "assemble/results/{run}_query-taxid.csv"
   output:
     "assemble/contigs/{run}_viral-contigs.fa"

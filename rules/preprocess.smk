@@ -63,20 +63,30 @@ rule assemble:
     se = rules.unmapped_refgenome.output.fastq,
   output: 
     contigs = temp("assemble/{run}/final.contigs.fa")
-  shadow: "full"
   params:
-    options = "--min-contig-len 1000"
+    extra = "--min-contig-len 1000"
   threads: 2
   log: "logs/{run}_assemble.log"
   wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/adc9201669a4c121968ac044ad149e9b292774d8/bio/assembly/megahit"
+    "https://bitbucket.org/tpall/snakemake-wrappers/raw/484d48db8ff89e9b2c6bf406824a92634afe3e37/bio/assembly/megahit"
+
+rule assemble_cleanup:
+  input:
+    rules.assemble.output.contigs
+  output:
+    contigs = temp("assemble/contigs/{run}_final-contigs.fa")
+  shell:
+    """
+    mv {input} {output}
+    rm -rf assemble/{run}
+    """
 
 # Calculate assembly coverage stats
 # nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
 # and reused for other unrelated runs
 rule bbwrap:
   input:
-    ref = rules.assemble.output.contigs, 
+    ref = rules.assemble_cleanup.output.contigs, 
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
     out = temp("assemble/contigs/{run}_aln.sam")
@@ -96,7 +106,7 @@ rule coverage:
 # Filter contigs by setting minimum threshold for average coverage
 rule coverage_good:
   input:
-    contigs = rules.assemble.output.contigs,
+    contigs = rules.assemble_cleanup.output.contigs,
     coverage = rules.coverage.output.out
   output:
     temp("assemble/contigs/{run}_good-contigs.fa")
@@ -140,7 +150,7 @@ rule repeatmasker:
   output:
     masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
     out = temp("assemble/RM/{run}_repeatmasker.fa.out")
-  shadow: "full"
+  shadow: "shallow"
   params:
     outdir = "assemble/RM"
   threads: 2
