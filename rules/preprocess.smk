@@ -78,7 +78,7 @@ rule assemble_cleanup:
   shell:
     """
     mv {input} {output}
-    rm -rf assemble/{run}
+    rm -rf $(dirname {input})
     """
 
 # Calculate assembly coverage stats
@@ -150,7 +150,7 @@ rule repeatmasker:
   output:
     masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
     out = temp("assemble/RM/{run}_repeatmasker.fa.out")
-  shadow: "shallow"
+  shadow: "full"
   params:
     outdir = "assemble/RM"
   threads: 2
