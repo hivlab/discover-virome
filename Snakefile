@@ -44,7 +44,6 @@ if config["zenodo"]["deposition_id"]:
     ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
     ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz"], run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
-    localrules: upload_results, upload_stats
 
 localrules: all, assemble_cleanup
 rule all:
