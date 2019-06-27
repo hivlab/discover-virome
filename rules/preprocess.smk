@@ -210,7 +210,7 @@ rule split_fasta:
 rule preprocess_stats:
   input:
     rules.preprocess.output.trimmed,
-    rules.assemble.output.contigs,
+    rules.assemble_cleanup.output.contigs,
     rules.coverage_good.output,
     rules.unmapped_refgenome.output,
     rules.cd_hit.output.repres,
