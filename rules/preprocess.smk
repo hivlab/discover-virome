@@ -120,8 +120,8 @@ rule cd_hit:
   input:
     rules.coverage_good.output.contigs
   output:
-    repres = temp("assemble/cdhit/{run}_cdhit.fa")
-  shadow: "full"
+    repres = temp("assemble/cdhit/{run}_cdhit.fa"),
+    clstr = temp("cdhit/{run}_cdhit.fa.clstr")
   params:
     extra = "-c 0.95 -G 0 -n 10 -g 1 -r 1 -d 0 -aS 0.95 -r 1 -M 0"
   threads: 2
