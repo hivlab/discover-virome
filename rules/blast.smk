@@ -261,10 +261,10 @@ if config["zenodo"]["deposition_id"]:
   
   rule upload_stats:
     input: 
-      "assemble/stats/{run}_assembly-refgenome-stats.txt",
-      "assemble/stats/{run}_assembly-coverage.txt",
-      "assemble/stats/{run}_assembly-preprocess.tsv",
-      "assemble/stats/{run}_assembly-blast.tsv"
+      rules.refgenome_bam_stats.output,
+      rules.coverage.output,
+      rules.preprocess_stats.output,
+      rules.blast_stats.output
     output: 
       ZEN.remote("assemble/stats/{run}_assembly-stats.tgz")
     shell: 
