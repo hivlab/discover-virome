@@ -109,16 +109,31 @@ rule coverage_good:
     contigs = rules.assemble_cleanup.output.contigs,
     coverage = rules.coverage.output.out
   output:
-    temp("assemble/contigs/{run}_good-contigs.fa")
+    contigs = temp("assemble/contigs/{run}_good-contigs.fa")
   params:
     avg_coverage = 8 # average coverage threshold 
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/filter_coverage"
 
+# Run cd-hit to cluster similar contigs
+rule cd_hit:
+  input:
+    rules.coverage_good.output.contigs
+  output:
+    repres = temp("assemble/cdhit/{run}_cdhit.fa")
+  shadow: "full"
+  params:
+    extra = "-c 0.95 -G 0 -n 10 -g 1 -r 1 -d 0 -aS 0.95 -r 1 -M 0"
+  threads: 2
+  log:
+    "logs/{run}_cdhit.log"
+  wrapper:
+    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/cdhit"
+
 # Tantan mask of low complexity DNA sequences
 rule tantan:
   input:
-    rules.coverage_good.output
+    rules.cd_hit.output.repres
   output:
     temp("assemble/mask/{run}_tantan.fasta")
   params:
@@ -199,6 +214,7 @@ rule preprocess_stats:
     rules.assemble.output.contigs,
     rules.coverage_good.output,
     rules.unmapped_refgenome.output,
+    rules.cd_hit.output.repres,
     rules.tantan.output,
     rules.tantan_good.output,
     rules.repeatmasker_good.output
