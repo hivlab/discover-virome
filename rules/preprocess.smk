@@ -23,7 +23,7 @@ rule preprocess:
     sampled = temp("preprocess/{run}_sample.fq")
   params:
     bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
-    frac = lambda wildcards: get_frac(wildcards),
+    frac = 1, #lambda wildcards: get_frac(wildcards),
     seed = config["seed"]
   threads: 2
   wrapper:
@@ -53,8 +53,8 @@ rule unmapped_refgenome:
     fastq = temp("preprocess/{run}_unmapped.fq"),
     fasta = temp("preprocess/{run}_unmapped.fa")
   params:
-    reformat_fastq_extra = "-Xmx2000m",
-    reformat_fasta_extra = "uniquenames -Xmx2000m"
+    reformat_fastq_extra = "-Xmx4000m",
+    reformat_fasta_extra = "uniquenames -Xmx4000m"
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
 
