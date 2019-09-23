@@ -45,7 +45,6 @@ if config["zenodo"]["deposition_id"]:
     ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz"], run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
 
-localrules: all, assemble_cleanup
 rule all:
     input:
         OUTPUTS
