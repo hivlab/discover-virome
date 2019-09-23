@@ -33,9 +33,6 @@ properties:
       description: number of files to split fasta file before repeatmasker, defaults to 2
     required:
       - n_files
-  repbase_file:
-    type: string
-    description: path to RepeatMasker Repbase file (path/to/RMRBSeqs.embl)
   ref_genome:
     type: string
     description:  path to host reference genome database
@@ -177,7 +174,6 @@ properties:
 required:
   - samples
   - split_fasta
-  - repbase_file
   - ref_genome
   - ref_bacteria
   - virus_nt

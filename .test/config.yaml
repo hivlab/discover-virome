@@ -1,0 +1,95 @@
+
+# Global parameters -------------------
+
+# Set seed for fastq downsampling
+seed: 561837
+
+# Path or URL to sample sheet (TSV format, required columns: sample, fq1, fq2, frac)
+# sample - unique sample name
+# run - sequencing run
+# fq1 and fq2 - paths to paired-end fastq file
+samples: samples.tsv
+remote: False
+
+# Remote FTP credentials
+username: anonymous
+password: your@email.addr
+
+# Option to save time by not running blastx
+run_blastx: False
+
+# Upload results to zenodo
+# For upload, setup ZENODO_PAT environment variable for access_token
+zenodo:
+    deposition_id:
+
+# Split fasta
+split_fasta:
+    n_files: 2
+
+# Path to reference genome
+ref_genome: /gpfs/software/VirusSeeker/databases/ref_genomes/human_g1k_v37.fasta
+ref_bacteria: /gpfs/software/VirusSeeker/databases/bacteria_ref_sequence/Bacteria_ref_genome.fna
+
+# Path to virus database
+virus_nt: /gpfs/software/VirusSeeker/databases/VirusDBNT_20160802/VirusDBNT_20160802_ID98.fa
+virus_nr: /gpfs/software/VirusSeeker/databases/VirusDBNR_20160802/VirusDBNR_20160802_ID98.fa
+
+# Path to taxonomy database
+vhunter: /gpfs/software/VirusSeeker/databases/taxdump_300817/vhunter.db
+names: /gpfs/software/VirusSeeker/databases/taxdump_300817/names.dmp
+nodes: /gpfs/software/VirusSeeker/databases/taxdump_300817/nodes.dmp
+division: /gpfs/software/VirusSeeker/databases/taxdump_300817/division.dmp
+
+# Paths to nt and nr blast database
+nt: /gpfs/software/VirusSeeker/databases/nt/nt
+nr: /gpfs/software/VirusSeeker/databases/nr/nr
+
+# Rule parameters ---------------------
+# Filter repeatmasker and tantan output
+filter_ns:
+    min_length: 50
+    por_n: 40
+
+# MegaBlast against reference genome to remove more host sequences
+megablast_ref_genome:
+    perc_identity: 85
+    evalue: 1e-10
+    word_size: 16
+    max_hsps: 1
+
+# MegaBlast against NT to remove more host sequences
+megablast_nt:
+    evalue: 1e-8
+    word_size: 16
+    max_hsps: 50
+    max_target_seqs: 5
+
+# Blastn against virus nucleotide database
+blastn_virus:
+    evalue: 1e-4
+    db_soft_mask: 100
+    max_hsps: 50
+
+# Blastx against virus protein database
+blastx_virus:
+    evalue: 1e-2
+    db_soft_mask: 100
+    max_hsps: 50
+
+# Blastn against nucleotide database
+blastn_nt:
+    evalue: 1e-8
+    max_hsps: 50
+
+# Blastx against protein database
+blastx_nr:
+    evalue: 1e-2
+    max_hsps: 50
+
+# Wrapper urls
+wrappers:
+    blast: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/query
+    parse_blast: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/parse
+    blast_taxonomy: https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/blast/taxonomy
+    stats: https://bitbucket.org/tpall/snakemake-wrappers/raw/e7699c0ae37a999909fb764c91723d46ded7461c/bio/seqkit/stats
