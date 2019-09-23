@@ -70,6 +70,7 @@ rule assemble:
   wrapper:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/484d48db8ff89e9b2c6bf406824a92634afe3e37/bio/assembly/megahit"
 
+localrule: assemble_cleanup
 rule assemble_cleanup:
   input:
     rules.assemble.output.contigs
