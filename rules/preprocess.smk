@@ -93,27 +93,17 @@ rule bbwrap:
     out = temp("assemble/contigs/{run}_aln.sam"),
     bam = temp("assemble/contigs/{run}_aln_sorted.bam"),
     covstats = "assemble/stats/{run}_coverage.txt",
-    rpkm = "assemble/stats/{run}_rpkm.txt",
-    covhist = "assemble/stats/{run}_covhist.txt",
     basecov = "assemble/stats/{run}_basecov.txt"
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk bamscript=bs.sh; sh bs.sh"
   wrapper:
     "https://raw.githubusercontent.com/avilab/virome-wrappers/binning/bbmap/bbwrap"
 
-rule coverage:
-  input: 
-    input = rules.bbwrap.output # input will be parsed to 'in', input1 to in1 etc.
-  output:
-    out = "assemble/stats/{run}_assembly-coverage.txt"
-  wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
-
 # Filter contigs by setting minimum threshold for average coverage
 rule coverage_good:
   input:
     contigs = rules.assemble_cleanup.output.contigs,
-    coverage = rules.coverage.output.out
+    coverage = rules.bbwrap.output.covstats
   output:
     contigs = temp("assemble/contigs/{run}_good-contigs.fa")
   params:
