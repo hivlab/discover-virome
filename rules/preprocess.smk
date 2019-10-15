@@ -90,11 +90,13 @@ rule bbwrap:
     ref = rules.assemble_cleanup.output.contigs, 
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
-    out = temp("assemble/contigs/{run}_aln.sam")
+    out = temp("assemble/contigs/{run}_aln.sam"),
+    bam = temp("assemble/contigs/{run}_aln.bam"),
+    covstats = "assemble/stats/{run}_coverage.txt"
   params: 
-    extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
+    extra = "kfilter=22 subfilter=15 maxindel=80 nodisk bamscript=bs.sh; sh bs.sh"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
+    "https://github.com/avilab/virome-wrappers/tree/binning/bbmap/bbwrap"
 
 rule coverage:
   input: 
