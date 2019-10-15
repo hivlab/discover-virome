@@ -96,7 +96,7 @@ rule bbwrap:
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk bamscript=bs.sh; sh bs.sh"
   wrapper:
-    "https://github.com/avilab/virome-wrappers/tree/binning/bbmap/bbwrap"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/binning/bbmap/bbwrap"
 
 rule coverage:
   input: 
