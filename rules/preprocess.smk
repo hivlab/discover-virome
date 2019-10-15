@@ -91,8 +91,11 @@ rule bbwrap:
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
     out = temp("assemble/contigs/{run}_aln.sam"),
-    bam = temp("assemble/contigs/{run}_aln.bam"),
-    covstats = "assemble/stats/{run}_coverage.txt"
+    bam = temp("assemble/contigs/{run}_aln_sorted.bam"),
+    covstats = "assemble/stats/{run}_coverage.txt",
+    rpkm = "assemble/stats/{run}_rpkm.txt",
+    covhist = "assemble/stats/{run}_covhist.txt",
+    basecov = "assemble/stats/{run}_basecov.txt"
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk bamscript=bs.sh; sh bs.sh"
   wrapper:
