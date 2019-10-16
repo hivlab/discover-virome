@@ -155,7 +155,7 @@ rule tantan_good:
 # If no repetitive sequences were detected symlink output to input file
 rule repeatmasker:
   input:
-    rules.tantan_good.output
+    fa = rules.tantan_good.output
   output:
     masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
     out = temp("assemble/RM/{run}_repeatmasker.fa.out"),
