@@ -157,10 +157,10 @@ rule repeatmasker:
   input:
     rules.tantan_good.output
   output:
-    masked = temp("assemble/RM/{run}_repeatmasker_{n}.fa.masked"),
-    out = temp("assemble/RM/{run}_repeatmasker_{n}.fa.out"),
-    cat = temp("assemble/RM/{run}_repeatmasker_{n}.fa.cat"),
-    tbl = "assemble/RM/{run}_repeatmasker_{n}.fa.tbl"
+    masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
+    out = temp("assemble/RM/{run}_repeatmasker.fa.out"),
+    cat = temp("assemble/RM/{run}_repeatmasker.fa.cat"),
+    tbl = "assemble/RM/{run}_repeatmasker.fa.tbl"
   params:
     extra = "-qq"
   threads: 8
