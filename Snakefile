@@ -10,6 +10,7 @@ import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 from snakemake.utils import validate
+shell.executable("bash")
 
 # Load configuration file with sample and path info
 configfile: "config.yaml"
