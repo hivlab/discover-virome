@@ -102,7 +102,7 @@ rule coverage:
 rule coverage_good:
   input:
     contigs = rules.assemble_cleanup.output.contigs,
-    coverage = rules.bbwrap.output.covstats
+    coverage = rules.coverage.output.covstats
   output:
     contigs = temp("assemble/contigs/{run}_good-contigs.fa")
   params:
