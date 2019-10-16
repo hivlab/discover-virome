@@ -56,7 +56,7 @@ rule unmapped_refgenome:
     reformat_fastq_extra = "-Xmx8000m",
     reformat_fasta_extra = "uniquenames -Xmx8000m"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
+    BWA_UNMAPPED
 
 rule assemble:
   input: 
@@ -129,7 +129,7 @@ rule tantan:
   input:
     rules.cd_hit.output.repres
   output:
-    temp("assemble/mask/{run}_tantan.fasta")
+    temp("assemble/RM/{run}_tantan.fasta")
   params:
     extra = "-x N" # mask low complexity using N
   wrapper:
@@ -142,12 +142,12 @@ rule tantan_good:
   input:
     masked = rules.tantan.output
   output:
-    masked_filt = temp("assemble/mask/{run}_repeatmasker.fa")
+    masked_filt = temp("assemble/RM/{run}_repeatmasker.fa")
   params:
     min_length = 50,
     por_n = 40
   wrapper:
-    "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
+    LN_FILTER
 
 # Repeatmasker
 # Outputs are generated from input file names by RepeatMasker
@@ -157,21 +157,17 @@ rule repeatmasker:
   input:
     rules.tantan_good.output
   output:
-    masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
-    out = temp("assemble/RM/{run}_repeatmasker.fa.out")
-  shadow: "full"
+    masked = temp("assemble/RM/{run}_repeatmasker_{n}.fa.masked"),
+    out = temp("assemble/RM/{run}_repeatmasker_{n}.fa.out"),
+    cat = temp("assemble/RM/{run}_repeatmasker_{n}.fa.cat"),
+    tbl = "assemble/RM/{run}_repeatmasker_{n}.fa.tbl"
   params:
-    outdir = "assemble/RM"
-  threads: 4
+    extra = "-qq"
+  threads: 8
   singularity:
     "shub://tpall/repeatmasker-singularity"
-  shell:
-    """
-    RepeatMasker -qq -pa {threads} {input} -dir {params.outdir}
-    if head -n 1 {output.out} | grep -q "There were no repetitive sequences detected"
-      then ln -sr {input} {output.masked}
-    fi
-    """
+  script:
+    RM
 
 # Filter repeatmasker output
 # 1) Sequences > 50 nt of consecutive sequence without N
@@ -182,20 +178,20 @@ rule repeatmasker_good:
     masked = rules.repeatmasker.output.masked,
     original = rules.tantan_good.output
   output:
-    masked_filt = temp("assemble/mask/{run}_repmaskedgood.fa"),
-    original_filt = temp("assemble/mask/{run}_unmaskedgood.fa")
+    masked_filt = temp("assemble/RM/{run}_repmaskedgood.fa"),
+    original_filt = temp("assemble/RM/{run}_unmaskedgood.fa")
   params:
     min_length = 50,
     por_n = 40
   wrapper:
-    "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
+    LN_FILTER
 
 # Split reads to smaller chunks for Repeatmasker
 rule split_fasta:
   input:
     rules.repeatmasker_good.output.masked_filt
   output:
-    temp(expand("assemble/mask/{{run}}_repmaskedgood_{n}.fa", n = N))
+    temp(expand("assemble/RM/{{run}}_repmaskedgood_{n}.fa", n = N))
   params:
     config["split_fasta"]["n_files"]
   wrapper:
@@ -217,7 +213,7 @@ rule preprocess_stats:
   params:
     extra = "-T"
   wrapper:
-    config["wrappers"]["stats"]
+    SEQ_STATS
 
 # Refgenome mapping stats.
 rule refgenome_bam_stats:

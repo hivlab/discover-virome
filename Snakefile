@@ -32,10 +32,9 @@ wildcard_constraints:
 
 # Main output files and target rules
 BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr"] if config["run_blastx"] else ["blastn-virus", "megablast-nt", "blastn-nt"]
-RESULTS = ["phages-viruses.csv", "non-viral.csv", "query-taxid.csv", "unassigned.fa"]
-TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
-STATS = expand(["assemble/stats/{run}_assembly-refgenome-stats.txt", "assemble/stats/{run}_assembly-blast.tsv", "assemble/stats/{run}_coverage.txt", "assemble/stats/{run}_basecov.txt"], run = RUN_IDS)
-OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
+RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa"]
+STATS = expand(["assemble/stats/{run}_assembly-refgenome-stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt", "assemble/stats/{run}_basecov.txt"], run = RUN_IDS)
+OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"], run = RUN_IDS, result = RESULTS) + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
@@ -78,6 +77,21 @@ localrules: all
 rule all:
     input:
         OUTPUTS
+
+# Path to reference genomes
+REF_GENOME = os.getenv("REF_GENOME_HUMAN")
+REF_BACTERIA = os.getenv("REF_BACTERIA")
+TAXON_DB = os.getenv("TAXON_DB")
+
+# Wrappers
+LN_FILTER = "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
+RM = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/repeatmasker/wrapper.py"
+BWA_UNMAPPED = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/unmapped"
+BLAST_QUERY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/query"
+PARSE_BLAST = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/parse"
+BLAST_TAXONOMY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxonomy"
+SUBSET_FASTA = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/subset_fasta"
+SEQ_STATS = "https://bitbucket.org/tpall/snakemake-wrappers/raw/e7699c0ae37a999909fb764c91723d46ded7461c/bio/seqkit/stats"
 
 # Modules
 include: "rules/preprocess.smk"
