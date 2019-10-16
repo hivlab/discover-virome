@@ -221,16 +221,6 @@ rule query_taxid:
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unique_taxons"
 
-# Subset viral contigs
-rule subset_contigs:
-  input: 
-    contigs = rules.coverage_good.output[0],
-    virids = "assemble/results/{run}_query-taxid.csv"
-  output:
-    "assemble/contigs/{run}_viral-contigs.fa"
-  wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/subset"
-
 # Merge unmapped seqs for stats
 rule merge_blast_unmapped:
   input: expand("assemble/blast/{{run}}_{{blastresult}}_{n}_unmapped.fa", n = N)
@@ -248,24 +238,3 @@ rule blast_stats:
     extra = "-T"
   wrapper:
     config["wrappers"]["stats"]
-
-# Upload results to Zenodo.
-if config["zenodo"]["deposition_id"]:
-  rule upload_results:
-    input: 
-      expand("assemble/results/{{run}}_{result}", result = RESULTS)
-    output: 
-      ZEN.remote("assemble/results/{run}_assembly-counts.tgz")
-    shell: 
-      "tar czvf {output} {input}"
-  
-  rule upload_stats:
-    input: 
-      rules.refgenome_bam_stats.output,
-      rules.coverage.output,
-      rules.preprocess_stats.output,
-      rules.blast_stats.output
-    output: 
-      ZEN.remote("assemble/stats/{run}_assembly-stats.tgz")
-    shell: 
-      "tar czvf {output} {input}"

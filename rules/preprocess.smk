@@ -85,7 +85,7 @@ rule assemble_cleanup:
 # Calculate assembly coverage stats
 # nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
 # and reused for other unrelated runs
-rule bbwrap:
+rule coverage:
   input:
     ref = rules.assemble_cleanup.output.contigs, 
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.

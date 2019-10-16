@@ -35,16 +35,44 @@ BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr
 RESULTS = ["phages-viruses.csv", "non-viral.csv", "query-taxid.csv", "unassigned.fa"]
 TAXONOMY = expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
 STATS = expand(["assemble/stats/{run}_assembly-refgenome-stats.txt", "assemble/stats/{run}_assembly-blast.tsv", "assemble/stats/{run}_coverage.txt", "assemble/stats/{run}_basecov.txt"], run = RUN_IDS)
-OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_viral-contigs.fa"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
+OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"], run = RUN_IDS, result = RESULTS) + TAXONOMY + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
     from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
     # Setup Zenodo RemoteProvider
     ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
-    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz"], run = RUN_IDS))
+    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz", "assemble/stats/{run}_run-stats.tgz"], run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
-    localrules: upload_results, upload_stats
+    localrules: upload_results, upload_assembly, upload_stats
+
+    rule upload_results:
+    input: 
+      expand("assemble/results/{{run}}_{result}", result = RESULTS)
+    output: 
+      ZEN.remote("assemble/results/{run}_assembly-counts.tgz")
+    shell: 
+      "tar czvf {output} {input}"
+  
+  rule upload_stats:
+    input: 
+      rules.refgenome_bam_stats.output,
+      rules.preprocess_stats.output,
+      rules.blast_stats.output
+    output: 
+      ZEN.remote("assemble/stats/{run}_run-stats.tgz")
+    shell: 
+      "tar czvf {output} {input}"
+  
+  rule upload_assembly:
+    input:
+      rules.assemble_cleanup.output.contigs,
+      rules.coverage.output.covstats,
+      rules.coverage.output.basecov
+    output:
+      ZEN.remote("assemble/stats/{run}_assembly-stats.tgz")
+    shell: 
+      "tar czvf {output} {input}"
 
 localrules: all
 rule all:
