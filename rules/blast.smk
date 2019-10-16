@@ -263,10 +263,7 @@ rule merge_unassigned:
 # Collect stats.
 rule blast_stats:
   input:
-    expand(["assemble/blast/{{run}}_{blastresult}_{n}_unmapped.fa",
-    "assemble/blast/{{run}}_candidate-viruses_{n}_unmasked.fa",
-    "assemble/blast/{{run}}_unmapped_{n}.fa",
-    "assemble/blast/{{run}}_unmapped_{n}_masked.fa"], blastresult = BLAST, n = N)
+    expand("assemble/blast/{{run}}_{blastresult}_{n}_unmapped.fa", blastresult = BLAST, n = N)
   output:
     "assemble/stats/{run}_blast.tsv"
   params:
