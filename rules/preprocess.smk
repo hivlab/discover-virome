@@ -27,7 +27,7 @@ rule preprocess:
     seed = config["seed"]
   threads: 4
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/preprocess"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/preprocess"
 
 # Map reads to Refgenome.
 rule bwa_mem_refgenome:
@@ -108,7 +108,7 @@ rule coverage_good:
   params:
     avg_coverage = 8 # average coverage threshold 
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/filter_coverage"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/assembly/filter_coverage"
 
 # Run cd-hit to cluster similar contigs
 rule cd_hit:
@@ -122,7 +122,7 @@ rule cd_hit:
   log:
     "logs/{run}_cdhit.log"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/cdhit"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/cdhit"
 
 # Tantan mask of low complexity DNA sequences
 rule tantan:
