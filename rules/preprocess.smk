@@ -96,7 +96,7 @@ rule coverage:
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/virome-wrappers/binning/bbmap/bbwrap"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/bbmap/bbwrap"
 
 # Filter contigs by setting minimum threshold for average coverage
 rule coverage_good:
