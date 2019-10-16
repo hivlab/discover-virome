@@ -25,7 +25,7 @@ rule preprocess:
     bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
     frac = 1, #lambda wildcards: get_frac(wildcards),
     seed = config["seed"]
-  threads: 2
+  threads: 4
   wrapper:
     "https://raw.githubusercontent.com/avilab/vs-wrappers/master/preprocess"
 
@@ -41,7 +41,7 @@ rule bwa_mem_refgenome:
     sort = "none"
   log:
     "logs/{run}_bwa_map_refgenome.log"
-  threads: 2
+  threads: 4
   wrapper:
     "0.32.0/bio/bwa/mem"
 
@@ -65,7 +65,7 @@ rule assemble:
     contigs = temp("assemble/{run}/final.contigs.fa")
   params:
     extra = "--min-contig-len 1000"
-  threads: 2
+  threads: 4
   log: "logs/{run}_assemble.log"
   wrapper:
     "https://bitbucket.org/tpall/snakemake-wrappers/raw/484d48db8ff89e9b2c6bf406824a92634afe3e37/bio/assembly/megahit"
@@ -75,7 +75,7 @@ rule assemble_cleanup:
   input:
     rules.assemble.output.contigs
   output:
-    contigs = temp("assemble/contigs/{run}_final-contigs.fa")
+    contigs = "assemble/contigs/{run}_final-contigs.fa"
   shell:
     """
     mv {input} {output}
@@ -91,11 +91,10 @@ rule bbwrap:
     input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
     out = temp("assemble/contigs/{run}_aln.sam"),
-    bam = temp("assemble/contigs/{run}_aln_sorted.bam"),
     covstats = "assemble/stats/{run}_coverage.txt",
     basecov = "assemble/stats/{run}_basecov.txt"
   params: 
-    extra = "kfilter=22 subfilter=15 maxindel=80 nodisk bamscript=bs.sh; sh bs.sh"
+    extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
   wrapper:
     "https://raw.githubusercontent.com/avilab/virome-wrappers/binning/bbmap/bbwrap"
 
@@ -119,7 +118,7 @@ rule cd_hit:
     repres = temp("assemble/cdhit/{run}_cdhit.fa")
   params:
     extra = "-c 0.95 -G 0 -n 10 -g 1 -r 1 -d 0 -aS 0.95 -r 1 -M 0"
-  threads: 2
+  threads: 4
   log:
     "logs/{run}_cdhit.log"
   wrapper:
@@ -163,7 +162,7 @@ rule repeatmasker:
   shadow: "full"
   params:
     outdir = "assemble/RM"
-  threads: 2
+  threads: 4
   singularity:
     "shub://tpall/repeatmasker-singularity"
   shell:
