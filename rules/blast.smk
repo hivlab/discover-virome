@@ -63,7 +63,7 @@ rule merge_taxidlists:
 # Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = "assemble/mask/{run}_repmaskedgood_{n}.fa",
+      query = "assemble/RM/{run}_repmaskedgood_{n}.fa",
       taxidlist = "blast/10239.taxids"
     output:
       out = temp("assemble/blast/{run}_blastn-virus_{n}.tsv")
@@ -80,7 +80,7 @@ rule blastn_virus:
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-      query = "assemble/mask/{run}_repmaskedgood_{n}.fa",
+      query = "assemble/RM/{run}_repmaskedgood_{n}.fa",
       blast_result = rules.blastn_virus.output.out
     output:
       mapped = temp("assemble/blast/{run}_blastn-virus_{n}_mapped.tsv"),
