@@ -238,7 +238,7 @@ rule classify_all:
 # Split classification rule outputs into viruses and non-viral
 rule filter_viruses:
   input:
-    expand("assemble/results/{{run}}_{classified}_{n}.csv", n = N, classified = ["viruses", "all"])
+    expand("assemble/results/{{run}}_all_{n}.csv", n = N)
   output:
     viral = "assemble/results/{run}_viruses.csv",
     non_viral = "assemble/results/{run}_non-viral.csv"
