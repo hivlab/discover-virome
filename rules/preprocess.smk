@@ -36,7 +36,7 @@ rule bwa_mem_refgenome:
   output:
     temp("mapped/{run}_refgenome.bam")
   params:
-    index = config["ref_genome"],
+    index = REF_GENOME,
     extra = "-L 100,100 -k 15",
     sort = "none"
   log:
