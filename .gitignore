@@ -1,13 +1,3 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-.snakemake
-.test
-!.test/config.yaml
-!.test/samples.tsv
-!.test/cluster.json
-!.test/reads
-scripts/.snakemake*
-scripts/common/__pycache__
-.vscode/settings.json
+*.snakemake
+.vscode
+*logs
