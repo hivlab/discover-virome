@@ -141,7 +141,7 @@ snakemake -d .test --dag | dot -Tsvg > graph/dag.svg
 
 #### Run workflow
 
-This workflow is designed to be run in cluster. `cluster.json` configuration file may need some customisation, for example partition name. Memory nad maximum runtime limits are optimised for 100 splits. Number of splits can be specified in `config.yaml` file with n_files option (currently n_files is 2). Installation of software dependencies is taken care by conda, hence there is software installation overhead when you run this workflow for the first time in new environment. 
+This workflow is designed to run on hpc cluster, e.g. slurm. `cluster.json` configuration file may need some customisation, for example partition name. Memory nad maximum runtime limits are optimised for 20 splits. Number of splits can be specified in `config.yaml` file with n_files option (currently n_files is 2). Installation of software dependencies is taken care by conda and singularity, hence there is software installation overhead when you run this workflow for the first time in new environment. 
 
 Example workflow submission script for slurm cluster, where values for job name, cluster partition name, time and memory constraints, and slurm log path (output) are taken from cluster.json: 
 ```
@@ -172,5 +172,5 @@ For technical reasons, workflow is split into two parts, virome and taxonomy, th
 
 ![Virome workflow](graph/dag.svg)
 
-Figure 1. **Virome workflow** graph with test sample split into two (default = 20) subfiles for parallel processing. Outputs parsed BLAST results.
+Figure 1. **Workflow** graph with test sample split into two (default = 20) subfiles for parallel processing.
 
