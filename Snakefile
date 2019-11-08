@@ -9,7 +9,7 @@ import json
 import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
-from snakemake.utils import validate
+from snakemake.utils import validate, makedirs
 shell.executable("bash")
 
 # Load configuration file with sample and path info
@@ -24,8 +24,7 @@ N_FILES = config["split_fasta"]["n_files"]
 N = list(range(1, N_FILES + 1, 1))
 
 # Create slurm logs dir
-if not os.path.exists("logs/slurm"):
-    os.makedirs("logs/slurm")
+makedirs("logs/slurm")
 
 wildcard_constraints:
     run = "[a-zA-Z0-9]+",
@@ -94,7 +93,7 @@ BLAST_QUERY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/b
 PARSE_BLAST = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/parse"
 BLAST_TAXONOMY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxonomy"
 SUBSET_FASTA = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/subset_fasta"
-SEQ_STATS = "https://bitbucket.org/tpall/snakemake-wrappers/raw/e7699c0ae37a999909fb764c91723d46ded7461c/bio/seqkit/stats"
+SEQ_STATS = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/seqkit/stats"
 
 # Modules
 include: "rules/preprocess.smk"
