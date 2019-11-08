@@ -1,7 +1,0 @@
-name: cd-hit
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - cd-hit=4.6.8=0
