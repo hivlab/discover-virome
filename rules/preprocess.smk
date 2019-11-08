@@ -195,7 +195,7 @@ rule split_fasta:
   params:
     config["split_fasta"]["n_files"]
   wrapper:
-    "https://bitbucket.org/tpall/snakemake-wrappers/raw/7e681180a5607f20594b3070f8eced7ccd245a89/bio/split-fasta"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/split-fasta"
 
 # Collect stats from preprocess outputs.
 rule preprocess_stats:
