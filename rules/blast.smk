@@ -15,20 +15,20 @@ def concatenate_tables(input, sep = "\s+", cols_to_integer = None):
     frames_concatenated[cols_to_integer] = frames_concatenated[cols_to_integer].apply(lambda x: pd.Series(x, dtype = "Int64"))
   return(frames_concatenated)
 
-rule taxids_lists:
+rule taxids_list:
     output:
       "blast/viruses.taxids",
       "blast/negative.taxids"
+    params: 
+      viruses = 10239, 
+      host = HOST_TAXID, 
+      bacteria = 2, 
+      unidentified = 12908
     shadow: "full"
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
     run:
-      from snakemake.shell import shell
-      taxdict = {"viruses": 10239, "host": HOST_TAXID, "bacteria": 2, "unidentified": 12908}
-      for k,v in taxdict.items():
-          shell("get_species_taxids.sh -t {} > blast/{}.taxid".format(v, k))
-      neg_taxid_files = ["blast/{}.taxid".format(k) for k,v in taxdict.items() if k != "viruses"]
-      shell("cat {neg_taxid_files} > negative.taxids")
+      "../scripts/get_taxids_list.py"
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
