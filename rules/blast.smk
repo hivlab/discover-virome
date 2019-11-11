@@ -15,56 +15,26 @@ def concatenate_tables(input, sep = "\s+", cols_to_integer = None):
     frames_concatenated[cols_to_integer] = frames_concatenated[cols_to_integer].apply(lambda x: pd.Series(x, dtype = "Int64"))
   return(frames_concatenated)
 
-rule get_virus_taxids:
-    output: "blast/10239.taxids"
-    params:
-       taxid = 10239
-    conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    shell:
-       "get_species_taxids.sh -t {params.taxid} > {output}"
-
-rule get_human_taxids:
-    output: "blast/9606.taxids"
-    params:
-       taxid = 9606
-    conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    shell:
-       "get_species_taxids.sh -t {params.taxid} > {output}"
-
-rule get_bacterial_taxids:
-    output: "blast/2.taxids"
-    params:
-       taxid = 2
-    conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    shell:
-       "get_species_taxids.sh -t {params.taxid} > {output}"
-
-rule get_unclassified_taxids:
-    output: "blast/12908.taxids"
-    params:
-       taxid = 12908
-    conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    shell:
-       "get_species_taxids.sh -t {params.taxid} > {output}"
-
-rule merge_taxidlists:
-    input: 
-      "blast/9606.taxids", "blast/2.taxids", "blast/12908.taxids"
+rule taxids_lists:
     output:
+      "blast/viruses.taxids",
       "blast/negative.taxids"
-    shell:
-      "cat {input} > {output}"
+    conda:
+        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
+    run:
+      from snakemake.shell import shell
+      taxdict = {"viruses": 10239, "host": HOST_TAXID, "bacteria": 2, "unidentified": 12908}
+      for k,v in taxdict.items():
+          shell("get_species_taxids.sh -t {} > blast/{}.taxid".format(v, k))
+      neg_taxid_files = ["blast/{}.taxid".format(k) for k,v in taxdict.items() if k != "viruses"]
+      shell("cat {neg_taxid_files} > negative.taxids")
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
 rule blastn_virus:
     input:
       query = "assemble/RM/{run}_repmaskedgood_{n}.fa",
-      taxidlist = "blast/10239.taxids"
+      taxidlist = "blast/viruses.taxids"
     output:
       out = temp("assemble/blast/{run}_blastn-virus_{n}.tsv")
     params:
@@ -95,7 +65,7 @@ rule parse_blastn_virus:
 rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped,
-      taxidlist = "blast/10239.taxids"
+      taxidlist = "blast/viruses.taxids"
     output:
       out = temp("assemble/blast/{run}_blastx-virus_{n}.tsv")
     params:

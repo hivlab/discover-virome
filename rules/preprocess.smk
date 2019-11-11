@@ -29,26 +29,26 @@ rule preprocess:
   wrapper:
     "https://raw.githubusercontent.com/avilab/virome-wrappers/master/preprocess"
 
-# Map reads to Refgenome.
-rule bwa_mem_refgenome:
+# Map reads to host.
+rule bwa_mem_host:
   input:
     reads = [rules.preprocess.output.sampled]
   output:
-    temp("mapped/{run}_refgenome.bam")
+    temp("mapped/{run}_host.bam")
   params:
-    index = REF_GENOME,
+    index = HOST_GENOME,
     extra = "-L 100,100 -k 15",
     sort = "none"
   log:
-    "logs/{run}_bwa_map_refgenome.log"
+    "logs/{run}_bwa_map_host.log"
   threads: 4
   wrapper:
     "0.32.0/bio/bwa/mem"
 
 # Extract unmapped reads and convert to fasta.
-rule unmapped_refgenome:
+rule unmapped_host:
   input:
-    rules.bwa_mem_refgenome.output
+    rules.bwa_mem_host.output
   output:
     fastq = temp("preprocess/{run}_unmapped.fq"),
     fasta = temp("preprocess/{run}_unmapped.fa")
@@ -60,7 +60,7 @@ rule unmapped_refgenome:
 
 rule assemble:
   input: 
-    se = rules.unmapped_refgenome.output.fastq,
+    se = rules.unmapped_host.output.fastq,
   output: 
     contigs = temp("assemble/{run}/final.contigs.fa")
   params:
@@ -88,7 +88,7 @@ rule assemble_cleanup:
 rule coverage:
   input:
     ref = rules.assemble_cleanup.output.contigs, 
-    input = rules.unmapped_refgenome.output.fastq # input will be parsed to 'in', input1 to in1 etc.
+    input = rules.unmapped_host.output.fastq # input will be parsed to 'in', input1 to in1 etc.
   output:
     out = temp("assemble/contigs/{run}_aln.sam"),
     covstats = "assemble/stats/{run}_coverage.txt",
@@ -203,7 +203,7 @@ rule preprocess_stats:
     rules.preprocess.output.trimmed,
     rules.assemble_cleanup.output.contigs,
     rules.coverage_good.output,
-    rules.unmapped_refgenome.output,
+    rules.unmapped_host.output,
     rules.cd_hit.output.repres,
     rules.tantan.output,
     rules.tantan_good.output,
@@ -215,12 +215,12 @@ rule preprocess_stats:
   wrapper:
     SEQ_STATS
 
-# Refgenome mapping stats.
-rule refgenome_bam_stats:
+# host mapping stats.
+rule host_bam_stats:
     input:
-      rules.bwa_mem_refgenome.output
+      rules.bwa_mem_host.output
     output:
-      "assemble/stats/{run}_assembly-refgenome-stats.txt"
+      "assemble/stats/{run}_assembly-host-stats.txt"
     params:
       extra = "-f 4",
       region = ""
