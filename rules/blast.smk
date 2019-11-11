@@ -24,7 +24,6 @@ rule taxids_list:
       host = HOST_TAXID, 
       bacteria = 2, 
       unidentified = 12908
-    shadow: "full"
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
     script:
