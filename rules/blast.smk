@@ -19,6 +19,7 @@ rule taxids_lists:
     output:
       "blast/viruses.taxids",
       "blast/negative.taxids"
+    shadow: "full"
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
     run:
