@@ -27,7 +27,7 @@ rule taxids_list:
     shadow: "full"
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    run:
+    script:
       "../scripts/get_taxids_list.py"
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
