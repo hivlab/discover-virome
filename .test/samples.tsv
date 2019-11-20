@@ -1,2 +1,2 @@
 sample	run	fq1	fq2	frac
-A	SRR5580016sub2	reads/SRR5580016sub2_1.fastq.gz	reads/SRR5580016sub2_2.fastq.gz	0.96
+A	SRR5580016sub2	reads/SRR5580016sub2_1.fastq	reads/SRR5580016sub2_2.fastq	0.96
