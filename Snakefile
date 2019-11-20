@@ -28,7 +28,8 @@ if not os.path.exists("logs/slurm"):
 
 wildcard_constraints:
     run = "[a-zA-Z0-9]+",
-    n = "\d+"
+    n = "\d+",
+    blastresult = "[-a-z]+"
 
 # Main output files and target rules
 BLAST = ["blastn-virus", "blastx-virus", "megablast-nt", "blastn-nt", "blastx-nr"] if config["run_blastx"] else ["blastn-virus", "megablast-nt", "blastn-nt"]
