@@ -28,25 +28,25 @@ split_fasta:
     n_files: 2
 
 # Path to RepeatMasker Repbase file (path/to/RMRBSeqs.embl)
-repbase_file: /gpfs/hpchome/taavi74/databases/Repbase/Libraries/RMRBSeqs.embl
+repbase_file: # path to/Repbase/Libraries/RMRBSeqs.embl
 
 # Path to reference genome
-ref_genome: /gpfs/software/VirusSeeker/databases/ref_genomes/human_g1k_v37.fasta
-ref_bacteria: /gpfs/software/VirusSeeker/databases/bacteria_ref_sequence/Bacteria_ref_genome.fna
+ref_genome: # path to reference genome
+ref_bacteria: # path to bacteria ref genome
 
 # Path to virus database
-virus_nt: /gpfs/software/VirusSeeker/databases/VirusDBNT_20160802/VirusDBNT_20160802_ID98.fa
-virus_nr: /gpfs/software/VirusSeeker/databases/VirusDBNR_20160802/VirusDBNR_20160802_ID98.fa
+virus_nt: # path to /VirusDBNT_20160802/VirusDBNT_20160802_ID98.fa
+virus_nr: # path to /VirusDBNR_20160802/VirusDBNR_20160802_ID98.fa
 
 # Path to taxonomy database
-vhunter: /gpfs/software/VirusSeeker/databases/taxdump_300817/vhunter.db
-names: /gpfs/software/VirusSeeker/databases/taxdump_300817/names.dmp
-nodes: /gpfs/software/VirusSeeker/databases/taxdump_300817/nodes.dmp
-division: /gpfs/software/VirusSeeker/databases/taxdump_300817/division.dmp
+vhunter: # path to /taxdump_300817/vhunter.db
+names: # path to /taxdump_300817/names.dmp
+nodes: # path to /taxdump_300817/nodes.dmp
+division: # path to /taxdump_300817/division.dmp
 
 # Paths to nt and nr blast database
-nt: /gpfs/software/VirusSeeker/databases/nt/nt
-nr: /gpfs/software/VirusSeeker/databases/nr/nr
+nt: # bath to blast nt db
+nr: # bath to blast nr db
 
 # Rule parameters ---------------------
 # Filter repeatmasker and tantan output
