@@ -69,10 +69,10 @@ mkdir -p $HOME/databases/blast
 cd $HOME/databases/blast
 ```
 
-Use update_blastdb.pl (included with the BLAST+ package) to check available version 5 databases, use the --blastdb_version flag:
+Use update_blastdb.pl (included with the BLAST+ package) to check available version 4 databases, use the --blastdb_version flag:
 
 ```bash
-update_blastdb.pl --blastdb_version 5 --showall
+update_blastdb.pl --blastdb_version 4 --showall
 ```
 
 Download nt and nr databases (takes time and might need restarting if connection drops):
