@@ -28,7 +28,8 @@ makedirs("logs/slurm")
 
 wildcard_constraints:
     run = "[a-zA-Z0-9]+",
-    n = "\d+"
+    n = "\d+",
+    blastresult = "[-a-z]+"
 
 # Main output files and target rules
 RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa"]
