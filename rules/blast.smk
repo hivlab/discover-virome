@@ -1,19 +1,24 @@
 
 # Helper function to import tables
 def safely_read_csv(path, **kwargs):
-  try:
-    return pd.read_csv(path, **kwargs)
-  except pd.errors.EmptyDataError:
-    pass
+    try:
+        return pd.read_csv(path, **kwargs)
+    except pd.errors.EmptyDataError:
+        pass
 
-RANKS_OF_INTEREST = ['superkingdom', 'order', 'family', 'genus', 'species']
 
-def concatenate_tables(input, sep = "\s+", cols_to_integer = None):
-  frames = [safely_read_csv(f, sep = sep) for f in input]
-  frames_concatenated = pd.concat(frames, keys = input, sort=False)
-  if cols_to_integer:
-    frames_concatenated[cols_to_integer] = frames_concatenated[cols_to_integer].apply(lambda x: pd.Series(x, dtype = "Int64"))
-  return(frames_concatenated)
+RANKS_OF_INTEREST = ["superkingdom", "order", "family", "genus", "species"]
+
+
+def concatenate_tables(input, sep="\s+", cols_to_integer=None):
+    frames = [safely_read_csv(f, sep=sep) for f in input]
+    frames_concatenated = pd.concat(frames, keys=input, sort=False)
+    if cols_to_integer:
+        frames_concatenated[cols_to_integer] = frames_concatenated[
+            cols_to_integer
+        ].apply(lambda x: pd.Series(x, dtype="Int64"))
+    return frames_concatenated
+
 
 # Creates to required outputs viruses.taxids and negative.taxids.
 # Output directory can be changed.
@@ -31,6 +36,7 @@ rule taxids_list:
     shadow: "full"
     wrapper:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxidslist"
+
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
@@ -50,6 +56,7 @@ rule blastn_virus:
     wrapper:
       BLAST_QUERY
 
+
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
@@ -63,6 +70,7 @@ rule parse_blastn_virus:
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       PARSE_BLAST
+
 
 # Blastx unmapped reads against nr virus database.
 rule blastx_virus:
@@ -83,6 +91,7 @@ rule blastx_virus:
     wrapper:
       BLAST_QUERY
 
+
 # Filter blastn hits for the cutoff value.
 rule parse_blastx_virus:
     input:
@@ -96,6 +105,7 @@ rule parse_blastx_virus:
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       PARSE_BLAST
+
 
 # Megablast against nt database.
 rule megablast_nt:
@@ -116,6 +126,7 @@ rule megablast_nt:
     wrapper:
       BLAST_QUERY
 
+
 # Filter megablast hits for the cutoff value.
 rule parse_megablast_nt:
     input:
@@ -129,6 +140,7 @@ rule parse_megablast_nt:
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       PARSE_BLAST
+
 
 # Blastn against nt database.
 rule blastn_nt:
@@ -148,6 +160,7 @@ rule blastn_nt:
     wrapper:
       BLAST_QUERY
 
+
 # Filter blastn records for the cutoff value.
 rule parse_blastn_nt:
     input:
@@ -161,6 +174,7 @@ rule parse_blastn_nt:
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       PARSE_BLAST
+
 
 # Blastx unmapped sequences against nr database.
 rule blastx_nr:
@@ -180,6 +194,7 @@ rule blastx_nr:
     wrapper:
       BLAST_QUERY
 
+
 # Filter blastx records for the cutoff value.
 rule parse_blastx_nr:
     input:
@@ -194,6 +209,7 @@ rule parse_blastx_nr:
     wrapper:
       PARSE_BLAST
 
+
 # Filter sequences by division id.
 # Saves hits with division id
 rule classify_all:
@@ -207,6 +223,7 @@ rule classify_all:
     dbfile = TAXON_DB
   wrapper:
     BLAST_TAXONOMY
+
 
 # Split classification rule outputs into viruses and non-viral
 rule filter_viruses:
@@ -224,6 +241,7 @@ rule filter_viruses:
     vir.to_csv(output.viral, index = False)
     non_vir.to_csv(output.non_viral, index = False)
 
+
 # Merge unassigned sequences
 rule merge_unassigned:
   input:
@@ -232,6 +250,7 @@ rule merge_unassigned:
     "assemble/results/{run}_unassigned.fa"
   shell:
     "cat {input} > {output}"
+
 
 # Collect stats.
 rule blast_stats:

@@ -10,6 +10,7 @@ import glob
 import pandas as pd
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 from snakemake.utils import validate, makedirs
+
 shell.executable("bash")
 
 # Load configuration file with sample and path info
@@ -17,7 +18,7 @@ configfile: "config.yaml"
 validate(config, "schemas/config.schema.yaml")
 
 # Load runs and groups
-RUNS = pd.read_csv(config["samples"], sep = "\s+").set_index("run", drop = False)
+RUNS = pd.read_csv(config["samples"], sep="\s+").set_index("run", drop=False)
 validate(RUNS, "schemas/samples.schema.yaml")
 RUN_IDS = RUNS.index.to_list()
 N_FILES = config["split_fasta"]["n_files"]
@@ -34,10 +35,29 @@ wildcard_constraints:
 # Main output files and target rules
 RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa"]
 BLASTV = ["blastn-virus", "blastx-virus"] if config["run_blastx"] else ["blastn-virus"]
-BLASTNR = ["megablast-nt", "blastn-nt", "blastx-nr"] if config["run_blastx"] else ["megablast-nt", "blastn-nt"]
+BLASTNR = (
+    ["megablast-nt", "blastn-nt", "blastx-nr"]
+    if config["run_blastx"]
+    else ["megablast-nt", "blastn-nt"]
+)
 BLAST = BLASTV + BLASTNR
-STATS = expand(["assemble/stats/{run}_assembly-host-stats.txt", "assemble/stats/{run}_blast.tsv", "assemble/stats/{run}_coverage.txt", "assemble/stats/{run}_basecov.txt"], run = RUN_IDS)
-OUTPUTS = expand(["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"], run = RUN_IDS, result = RESULTS) + STATS
+STATS = expand(
+    [
+        "assemble/stats/{run}_assembly-host-stats.txt",
+        "assemble/stats/{run}_blast.tsv",
+        "assemble/stats/{run}_coverage.txt",
+        "assemble/stats/{run}_basecov.txt",
+    ],
+    run=RUN_IDS,
+)
+OUTPUTS = (
+    expand(
+        ["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"],
+        run=RUN_IDS,
+        result=RESULTS,
+    )
+    + STATS
+)
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
