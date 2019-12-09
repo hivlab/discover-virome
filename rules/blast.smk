@@ -17,7 +17,7 @@ rule prepare_taxonomy_data:
   output:
       expand("taxonomy/{file}.csv", file = ["names", "nodes", "division"])
   wrapper:
-    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/prepare_taxonomy_data"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/release/metformin-pill/prepare_taxonomy_data"
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
@@ -219,7 +219,7 @@ rule query_taxid:
   output:
     "assemble/results/{run}_query-taxid.csv"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/unique_taxons"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/release/metformin-pill/unique_taxons"
 
 # Subset viral contigs
 rule subset_contigs:
@@ -229,7 +229,7 @@ rule subset_contigs:
   output:
     "assemble/contigs/{run}_viral-contigs.fa"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/assembly/subset"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/release/metformin-pill/assembly/subset"
 
 # Merge unmapped seqs for stats
 rule merge_blast_unmapped:
