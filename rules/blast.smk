@@ -15,6 +15,10 @@ def concatenate_tables(input, sep = "\s+", cols_to_integer = None):
     frames_concatenated[cols_to_integer] = frames_concatenated[cols_to_integer].apply(lambda x: pd.Series(x, dtype = "Int64"))
   return(frames_concatenated)
 
+# Creates to required outputs viruses.taxids and negative.taxids.
+# Output directory can be changed.
+# Additional negative taxids (all listed taxids except viruses) can be added via params.
+# Shadow=full ensures that only required outputs will be saved. 
 rule taxids_list:
     output:
       "blast/viruses.taxids",
