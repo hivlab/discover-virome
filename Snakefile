@@ -108,7 +108,7 @@ REF_BACTERIA = os.getenv("REF_BACTERIA")
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
-wrapper_prefix = "https://github.com/avilab/virome-wrappers/raw/"
+wrapper_prefix = "https://raw.githubusercontent.com/avilab/virome-wrappers/"
 LN_FILTER = wrapper_prefix + "master/filter/masked"
 BWA_UNMAPPED = wrapper_prefix + "master/unmapped"
 BLAST_QUERY = wrapper_prefix + "master/blast/query"
@@ -118,7 +118,7 @@ SUBSET_FASTA = wrapper_prefix + "master/subset_fasta"
 SEQ_STATS = wrapper_prefix + "master/seqkit/stats"
 
 # Path to Repeatmasker script 
-RM = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/repeatmasker/wrapper.py"
+RM = wrapper_prefix + "master/repeatmasker/wrapper.py"
 
 # Modules
 include: "rules/preprocess.smk"
