@@ -30,7 +30,7 @@ rule preprocess:
       seed = config["seed"]
     threads: 4
     wrapper:
-      "master/preprocess"
+      wrapper_prefix + "master/preprocess"
 
 
 # Map reads to host.
@@ -74,7 +74,7 @@ rule assemble:
     threads: 4
     log: "logs/{run}_assemble.log"
     wrapper:
-      "master/assembly/megahit"
+      wrapper_prefix + "master/assembly/megahit"
 
 
 localrules: assemble_cleanup
@@ -104,7 +104,7 @@ rule coverage:
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
-      "master/bbmap/bbwrap"
+      wrapper_prefix + "master/bbmap/bbwrap"
 
 
 # Filter contigs by setting minimum threshold for average coverage
@@ -117,7 +117,7 @@ rule coverage_good:
     params:
       avg_coverage = 8 # average coverage threshold 
     wrapper:
-      "master/assembly/filter_coverage"
+      wrapper_prefix + "master/assembly/filter_coverage"
 
 
 # Run cd-hit to cluster similar contigs
@@ -132,7 +132,7 @@ rule cd_hit:
     log:
       "logs/{run}_cdhit.log"
     wrapper:
-      "master/cdhit"
+      wrapper_prefix + "master/cdhit"
 
 
 # Tantan mask of low complexity DNA sequences
@@ -144,7 +144,7 @@ rule tantan:
     params:
       extra = "-x N" # mask low complexity using N
     wrapper:
-      "master/tantan"
+      wrapper_prefix + "master/tantan"
 
 
 # Filter tantan output
@@ -210,7 +210,7 @@ rule split_fasta:
     params:
       config["split_fasta"]["n_files"]
     wrapper:
-      "master/split-fasta"
+      wrapper_prefix + "master/split-fasta"
 
 
 # Collect stats from preprocess outputs.
