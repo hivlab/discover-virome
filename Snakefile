@@ -108,7 +108,7 @@ REF_BACTERIA = os.getenv("REF_BACTERIA")
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
-wrapper_prefix: "https://github.com/avilab/virome-wrappers/raw/"
+wrapper_prefix = "https://github.com/avilab/virome-wrappers/raw/"
 LN_FILTER = wrapper_prefix + "master/filter/masked"
 BWA_UNMAPPED = wrapper_prefix + "master/unmapped"
 BLAST_QUERY = wrapper_prefix + "master/blast/query"
