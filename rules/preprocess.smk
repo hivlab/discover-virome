@@ -27,7 +27,7 @@ rule preprocess:
     seed = config["seed"]
   threads: 2
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/preprocess"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/preprocess"
 
 # Map reads to Refgenome.
 rule bwa_mem_refgenome:
@@ -56,7 +56,7 @@ rule unmapped_refgenome:
     reformat_fastq_extra = "-Xmx8000m",
     reformat_fasta_extra = "uniquenames -Xmx8000m"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/unmapped"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/unmapped"
 
 rule assemble:
   input: 
@@ -94,7 +94,7 @@ rule bbwrap:
   params: 
     extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/bbwrap"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/bbmap/bbwrap"
 
 rule coverage:
   input: 
@@ -102,7 +102,7 @@ rule coverage:
   output:
     out = "assemble/stats/{run}_assembly-coverage.txt"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/bbmap/pileup"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/bbmap/pileup"
 
 # Filter contigs by setting minimum threshold for average coverage
 rule coverage_good:
@@ -114,7 +114,7 @@ rule coverage_good:
   params:
     avg_coverage = 8 # average coverage threshold 
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/assembly/filter_coverage"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/assembly/filter_coverage"
 
 # Run cd-hit to cluster similar contigs
 rule cd_hit:
@@ -128,7 +128,7 @@ rule cd_hit:
   log:
     "logs/{run}_cdhit.log"
   wrapper:
-    "https://raw.githubusercontent.com/avilab/vs-wrappers/master/cdhit"
+    "https://raw.githubusercontent.com/avilab/virome-wrappers/master/cdhit"
 
 # Tantan mask of low complexity DNA sequences
 rule tantan:
