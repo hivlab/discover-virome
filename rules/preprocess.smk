@@ -117,7 +117,7 @@ rule coverage_good:
     params:
       avg_coverage = 8 # average coverage threshold 
     wrapper:
-      "assembly/filter_coverage"
+      "master/assembly/filter_coverage"
 
 
 # Run cd-hit to cluster similar contigs
@@ -144,7 +144,7 @@ rule tantan:
     params:
       extra = "-x N" # mask low complexity using N
     wrapper:
-      "https://bitbucket.org/tpall/snakemake-wrappers/raw/7e681180a5607f20594b3070f8eced7ccd245a89/bio/tantan"
+      "master/tantan"
 
 
 # Filter tantan output
