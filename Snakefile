@@ -111,11 +111,11 @@ TAXON_DB = os.getenv("TAXON_DB")
 wrapper-prefix: "https://github.com/avilab/virome-wrappers/raw/"
 LN_FILTER = "master/filter/masked"
 BWA_UNMAPPED = "master/unmapped"
-BLAST_QUERY = "blast5/blast/query"
+BLAST_QUERY = "master/blast/query"
 PARSE_BLAST = "master/blast/parse"
-BLAST_TAXONOMY = "blast5/blast/taxonomy"
-SUBSET_FASTA = "blast5/subset_fasta"
-SEQ_STATS = "blast5/seqkit/stats"
+BLAST_TAXONOMY = "master/blast/taxonomy"
+SUBSET_FASTA = "master/subset_fasta"
+SEQ_STATS = "master/seqkit/stats"
 
 # Path to Repeatmasker script 
 RM = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/repeatmasker/wrapper.py"

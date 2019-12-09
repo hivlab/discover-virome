@@ -104,7 +104,7 @@ rule coverage:
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
-      "blast5/bbmap/bbwrap"
+      "master/bbmap/bbwrap"
 
 
 # Filter contigs by setting minimum threshold for average coverage
