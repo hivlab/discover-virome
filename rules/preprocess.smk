@@ -47,7 +47,7 @@ rule bwa_mem_host:
       "logs/{run}_bwa_map_host.log"
     threads: 4
     wrapper:
-      "https://github.com/snakemake/snakemake-wrappers/raw/master/bio/bwa/mem"
+      "0.42.0/bio/bwa/mem"
 
 
 # Extract unmapped reads and convert to fasta.
@@ -242,4 +242,4 @@ rule host_bam_stats:
       extra = "-f 4",
       region = ""
     wrapper:
-        "https://github.com/snakemake/snakemake-wrappers/raw/master/bio/samtools/stats"
+        "0.42.0/bio/samtools/stats"
