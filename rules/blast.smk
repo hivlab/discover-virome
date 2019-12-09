@@ -29,10 +29,8 @@ rule taxids_list:
       bacteria = 2, 
       unidentified = 12908
     shadow: "full"
-    conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
-    script:
-      "../scripts/get_taxids_list.py"
+    wrapper:
+        "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxidslist"
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
