@@ -122,4 +122,5 @@ include: "rules/preprocess.smk"
 include: "rules/blast.smk"
 
 onsuccess:
-    shell("mail -s 'forkflow finished successfully' tapa741@gmail.com < {log}")
+    email = config["email"]
+    shell("mail -s 'Forkflow finished successfully' {email} < {log}")

@@ -8,6 +8,9 @@ seed: 561837
 samples: samples.tsv
 remote: False
 
+# Onsuccess notification email address
+email: your@email.addr
+
 # Remote FTP credentials
 username: anonymous
 password: your@email.addr
