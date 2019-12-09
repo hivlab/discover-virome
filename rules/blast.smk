@@ -35,7 +35,7 @@ rule taxids_list:
       unidentified = 12908
     shadow: "full"
     wrapper:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxidslist"
+        "blast5/blast/taxidslist"
 
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.

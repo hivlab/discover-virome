@@ -108,14 +108,17 @@ REF_BACTERIA = os.getenv("REF_BACTERIA")
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
-LN_FILTER = "https://raw.githubusercontent.com/avilab/snakemake-wrappers/master/filter/masked"
+wrapper-prefix: "https://github.com/avilab/virome-wrappers/raw/"
+LN_FILTER = "master/filter/masked"
+BWA_UNMAPPED = "master/unmapped"
+BLAST_QUERY = "blast5/blast/query"
+PARSE_BLAST = "master/blast/parse"
+BLAST_TAXONOMY = "blast5/blast/taxonomy"
+SUBSET_FASTA = "blast5/subset_fasta"
+SEQ_STATS = "blast5/seqkit/stats"
+
+# Path to Repeatmasker script 
 RM = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/repeatmasker/wrapper.py"
-BWA_UNMAPPED = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/unmapped"
-BLAST_QUERY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/query"
-PARSE_BLAST = "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/parse"
-BLAST_TAXONOMY = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/blast/taxonomy"
-SUBSET_FASTA = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/subset_fasta"
-SEQ_STATS = "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/seqkit/stats"
 
 # Modules
 include: "rules/preprocess.smk"

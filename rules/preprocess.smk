@@ -30,7 +30,7 @@ rule preprocess:
       seed = config["seed"]
     threads: 4
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/master/preprocess"
+      "master/preprocess"
 
 
 # Map reads to host.
@@ -47,7 +47,7 @@ rule bwa_mem_host:
       "logs/{run}_bwa_map_host.log"
     threads: 4
     wrapper:
-      "0.32.0/bio/bwa/mem"
+      "https://github.com/snakemake/snakemake-wrappers/raw/master/bio/bwa/mem"
 
 
 # Extract unmapped reads and convert to fasta.
@@ -74,7 +74,7 @@ rule assemble:
     threads: 4
     log: "logs/{run}_assemble.log"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/master/assembly/megahit"
+      "master/assembly/megahit"
 
 
 localrules: assemble_cleanup
@@ -104,7 +104,7 @@ rule coverage:
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/blast5/bbmap/bbwrap"
+      "blast5/bbmap/bbwrap"
 
 
 # Filter contigs by setting minimum threshold for average coverage
@@ -117,7 +117,7 @@ rule coverage_good:
     params:
       avg_coverage = 8 # average coverage threshold 
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/master/assembly/filter_coverage"
+      "assembly/filter_coverage"
 
 
 # Run cd-hit to cluster similar contigs
@@ -132,7 +132,7 @@ rule cd_hit:
     log:
       "logs/{run}_cdhit.log"
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/master/cdhit"
+      "master/cdhit"
 
 
 # Tantan mask of low complexity DNA sequences
@@ -210,7 +210,7 @@ rule split_fasta:
     params:
       config["split_fasta"]["n_files"]
     wrapper:
-      "https://raw.githubusercontent.com/avilab/virome-wrappers/master/split-fasta"
+      "master/split-fasta"
 
 
 # Collect stats from preprocess outputs.
@@ -242,4 +242,4 @@ rule host_bam_stats:
       extra = "-f 4",
       region = ""
     wrapper:
-        "0.32.0/bio/samtools/stats"
+        "https://github.com/snakemake/snakemake-wrappers/raw/master/bio/samtools/stats"
