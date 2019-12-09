@@ -1,7 +1,4 @@
-
-# Global parameters -------------------
-
-# Set seed for fastq downsampling
+# Set seed for replicability
 seed: 561837
 
 # Path or URL to sample sheet (TSV format, required columns: sample, fq1, fq2, frac)
@@ -10,6 +7,9 @@ seed: 561837
 # fq1 and fq2 - paths to paired-end fastq file
 samples: samples.tsv
 remote: False
+
+# Onsuccess notification email address
+email: your@email.addr
 
 # Remote FTP credentials
 username: anonymous
@@ -26,73 +26,3 @@ zenodo:
 # Split fasta
 split_fasta:
     n_files: 2
-
-# Path to RepeatMasker Repbase file (path/to/RMRBSeqs.embl)
-repbase_file: # path to/Repbase/Libraries/RMRBSeqs.embl
-
-# Path to reference genome
-ref_genome: # path to reference genome
-ref_bacteria: # path to bacteria ref genome
-
-# Path to virus database
-virus_nt: # path to /VirusDBNT_20160802/VirusDBNT_20160802_ID98.fa
-virus_nr: # path to /VirusDBNR_20160802/VirusDBNR_20160802_ID98.fa
-
-# Path to taxonomy database
-vhunter: # path to /taxdump_300817/vhunter.db
-names: # path to /taxdump_300817/names.dmp
-nodes: # path to /taxdump_300817/nodes.dmp
-division: # path to /taxdump_300817/division.dmp
-
-# Paths to nt and nr blast database
-nt: # bath to blast nt db
-nr: # bath to blast nr db
-
-# Rule parameters ---------------------
-# Filter repeatmasker and tantan output
-filter_ns:
-    min_length: 50
-    por_n: 40
-
-# MegaBlast against reference genome to remove more host sequences
-megablast_ref_genome:
-    perc_identity: 85
-    evalue: 1e-10
-    word_size: 16
-    max_hsps: 1
-
-# MegaBlast against NT to remove more host sequences
-megablast_nt:
-    evalue: 1e-8
-    word_size: 16
-    max_hsps: 50
-    max_target_seqs: 5
-
-# Blastn against virus nucleotide database
-blastn_virus:
-    evalue: 1e-4
-    db_soft_mask: 100
-    max_hsps: 50
-
-# Blastx against virus protein database
-blastx_virus:
-    evalue: 1e-2
-    db_soft_mask: 100
-    max_hsps: 50
-
-# Blastn against nucleotide database
-blastn_nt:
-    evalue: 1e-8
-    max_hsps: 50
-
-# Blastx against protein database
-blastx_nr:
-    evalue: 1e-2
-    max_hsps: 50
-
-# Wrapper urls
-wrappers:
-    blast: https://bitbucket.org/tpall/snakemake-wrappers/raw/c95af40e7bfb10a8d213c2f63dd2b79d29ebcbf2/bio/blast/query
-    parse_blast: https://bitbucket.org/tpall/snakemake-wrappers/raw/c95af40e7bfb10a8d213c2f63dd2b79d29ebcbf2/bio/blast/parse
-    blast_taxonomy: https://bitbucket.org/tpall/snakemake-wrappers/raw/ba0b66a145b4a574209d827ec9b9f02ca48ad9e6/bio/blast/taxonomy
-    stats: https://bitbucket.org/tpall/snakemake-wrappers/raw/e7699c0ae37a999909fb764c91723d46ded7461c/bio/seqkit/stats
