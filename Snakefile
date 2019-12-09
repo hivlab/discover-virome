@@ -20,7 +20,7 @@ validate(config, "schemas/config.schema.yaml")
 # Load runs and groups
 RUNS = pd.read_csv(config["samples"], sep="\s+").set_index("run", drop=False)
 validate(RUNS, "schemas/samples.schema.yaml")
-RUN_IDS = RUNS.index.to_list()
+RUN_IDS = RUNS.index.tolist()
 N_FILES = config["split_fasta"]["n_files"]
 N = list(range(1, N_FILES + 1, 1))
 
