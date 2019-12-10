@@ -26,14 +26,11 @@ def concatenate_tables(input, sep="\s+", cols_to_integer=None):
 # Shadow=full ensures that only required outputs will be saved. 
 rule taxids_list:
     output:
-      "blast/viruses.taxids",
-      "blast/negative.taxids"
+      viruses = "blast/viruses.taxids",
+      negative = "blast/negative.taxids"
     params: 
       viruses = 10239, 
-      host = HOST_TAXID, 
-      bacteria = 2, 
-      unidentified = 12908
-    shadow: "full"
+      negative = [HOST_TAXID, 2, 12908]
     wrapper:
         wrapper_prefix + "master/blast/taxidslist"
 
