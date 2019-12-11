@@ -66,7 +66,7 @@ rule unmapped_host:
 
 rule assemble:
     input: 
-      se = rules.unmapped_host.output.fastq,
+      se = rules.unmapped_host.output.fastq
     output: 
       contigs = temp("assemble/{run}/final.contigs.fa")
     params:
