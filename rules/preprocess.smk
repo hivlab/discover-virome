@@ -40,14 +40,14 @@ rule bwa_mem_host:
     output:
       temp("mapped/{run}_host.bam")
     params:
-      index = HOST_GENOME,
+      db_prefix = config["ref_genome"],
       extra = "-L 100,100 -k 15",
-      sort = "none"
+      sorting = "none"
     log:
-      "logs/{run}_bwa_map_host.log"
-    threads: 4
+      "logs/{run}_bwa_map_refgenome.log"
+    threads: 2
     wrapper:
-      "0.42.0/bio/bwa/mem"
+      "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_PR145/bio/bwa/mem"
 
 
 # Extract unmapped reads and convert to fasta.
