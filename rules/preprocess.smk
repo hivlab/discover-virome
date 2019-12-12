@@ -36,14 +36,14 @@ rule bwa_mem_refgenome:
   output:
     temp("mapped/{run}_refgenome.bam")
   params:
-    index = config["ref_genome"],
+    db_prefix = config["ref_genome"],
     extra = "-L 100,100 -k 15",
-    sort = "none"
+    sorting = "none"
   log:
     "logs/{run}_bwa_map_refgenome.log"
   threads: 2
   wrapper:
-    "0.32.0/bio/bwa/mem"
+    "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_PR145/bio/bwa/mem"
 
 # Extract unmapped reads and convert to fasta.
 rule unmapped_refgenome:
