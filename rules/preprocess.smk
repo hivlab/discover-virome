@@ -43,7 +43,7 @@ rule bwa_mem_refgenome:
     "logs/{run}_bwa_map_refgenome.log"
   threads: 2
   wrapper:
-    "0.32.0/bio/bwa/mem"
+    "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_PR145/bio/bwa/mem"
 
 # Extract unmapped reads and convert to fasta.
 rule unmapped_refgenome:
