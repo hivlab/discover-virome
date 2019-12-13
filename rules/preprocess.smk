@@ -40,14 +40,14 @@ rule bwa_mem_host:
     output:
       temp("mapped/{run}_host.bam")
     params:
-      index = HOST_GENOME,
+      db_refix = HOST_GENOME,
       extra = "-L 100,100 -k 15",
-      sort = "none"
+      sorting = "none"
     log:
       "logs/{run}_bwa_map_host.log"
     threads: 4
     wrapper:
-      "0.42.0/bio/bwa/mem"
+      "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_issue145/bio/bwa/mem"
 
 
 # Extract unmapped reads and convert to fasta.
@@ -74,7 +74,7 @@ rule assemble:
     threads: 4
     log: "logs/{run}_assemble.log"
     wrapper:
-      wrapper_prefix + "master/assembly/megahit"
+      wrapper_prefix + "release/metformin-pill/assembly/megahit"
 
 
 localrules: assemble_cleanup
