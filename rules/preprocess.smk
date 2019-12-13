@@ -40,12 +40,12 @@ rule bwa_mem_host:
     output:
       temp("mapped/{run}_host.bam")
     params:
-      db_refix = HOST_GENOME,
+      db_prefix = config["ref_genome"],
       extra = "-L 100,100 -k 15",
       sorting = "none"
     log:
-      "logs/{run}_bwa_map_host.log"
-    threads: 4
+      "logs/{run}_bwa_map_refgenome.log"
+    threads: 2
     wrapper:
       "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_issue145/bio/bwa/mem"
 
