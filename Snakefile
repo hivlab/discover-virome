@@ -104,7 +104,6 @@ rule all:
 # Path to reference genomes
 HOST_GENOME = os.getenv("REF_GENOME_HUMAN")
 HOST_TAXID = 9606
-REF_BACTERIA = os.getenv("REF_BACTERIA")
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers

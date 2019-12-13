@@ -40,7 +40,7 @@ rule bwa_mem_host:
     output:
       temp("mapped/{run}_host.bam")
     params:
-      db_prefix = config["ref_genome"],
+      db_prefix = HOST_GENOME,
       extra = "-L 100,100 -k 15",
       sorting = "none"
     log:

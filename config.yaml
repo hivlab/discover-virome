@@ -25,4 +25,4 @@ zenodo:
 
 # Split fasta
 split_fasta:
-    n_files: 10
+    n_files: 2
