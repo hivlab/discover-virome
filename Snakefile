@@ -43,16 +43,17 @@ BLASTNR = (
 BLAST = BLASTV + BLASTNR
 STATS = expand(
     [
-        "assemble/stats/{run}_assembly-host-stats.txt",
-        "assemble/stats/{run}_blast.tsv",
-        "assemble/stats/{run}_coverage.txt",
-        "assemble/stats/{run}_basecov.txt",
+        "output/stats/{run}_host-bam-stats.txt",
+        "output/stats/{run}_preprocess-stats.tsv",
+        "output/stats/{run}_blast.tsv",
+        "output/stats/{run}_coverage.txt",
+        "output/stats/{run}_basecov.txt",
     ],
     run=RUN_IDS,
 )
 OUTPUTS = (
     expand(
-        ["assemble/results/{run}_{result}", "assemble/contigs/{run}_final-contigs.fa"],
+        ["output/results/{run}_{result}", "output/contigs/{run}_final-contigs.fa"],
         run=RUN_IDS,
         result=RESULTS,
     )
@@ -64,15 +65,15 @@ if config["zenodo"]["deposition_id"]:
     from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
     # Setup Zenodo RemoteProvider
     ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
-    ZENOUTPUTS = ZEN.remote(expand(["assemble/results/{run}_assembly-counts.tgz", "assemble/stats/{run}_assembly-stats.tgz", "assemble/stats/{run}_run-stats.tgz"], run = RUN_IDS))
+    ZENOUTPUTS = ZEN.remote(expand(["output/results/{run}_results.tgz", "output/stats/{run}_assembly-stats.tgz", "output/stats/{run}_run-stats.tgz"], run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
     localrules: upload_results, upload_assembly, upload_stats
 
     rule upload_results:
       input: 
-        expand("assemble/results/{{run}}_{result}", result = RESULTS)
+        expand("output/results/{{run}}_{result}", result = RESULTS)
       output: 
-        ZEN.remote("assemble/results/{run}_assembly-counts.tgz")
+        ZEN.remote("output/results/{run}_results.tgz")
       shell: 
         "tar czvf {output} {input}"
 
@@ -82,7 +83,7 @@ if config["zenodo"]["deposition_id"]:
         rules.preprocess_stats.output,
         rules.blast_stats.output
       output: 
-        ZEN.remote("assemble/stats/{run}_run-stats.tgz")
+        ZEN.remote("output/stats/{run}_run-stats.tgz")
       shell: 
         "tar czvf {output} {input}"
     
@@ -92,7 +93,7 @@ if config["zenodo"]["deposition_id"]:
         rules.coverage.output.covstats,
         rules.coverage.output.basecov
       output:
-        ZEN.remote("assemble/stats/{run}_assembly-stats.tgz")
+        ZEN.remote("output/stats/{run}_assembly-stats.tgz")
       shell: 
         "tar czvf {output} {input}"
 

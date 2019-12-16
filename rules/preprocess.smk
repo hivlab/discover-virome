@@ -18,12 +18,12 @@ rule preprocess:
     input:
       sample = lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
     output:
-      adapters = temp("preprocess/{run}_adapters.fa"),
-      merged = temp("preprocess/{run}_merged.fq"),
-      unmerged = temp("preprocess/{run}_unmerged.fq"),
-      reads = temp("preprocess/{run}_reads.fq"),
-      trimmed = temp("preprocess/{run}_trimmed.fq"),
-      sampled = temp("preprocess/{run}_sample.fq")
+      adapters = temp("output/preprocess/{run}_adapters.fa"),
+      merged = temp("output/preprocess/{run}_merged.fq"),
+      unmerged = temp("output/preprocess/{run}_unmerged.fq"),
+      reads = temp("output/preprocess/{run}_reads.fq"),
+      trimmed = temp("output/preprocess/{run}_trimmed.fq"),
+      sampled = temp("output/preprocess/{run}_sample.fq")
     params:
       bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
       frac = 1, #lambda wildcards: get_frac(wildcards),
@@ -55,8 +55,8 @@ rule unmapped_host:
     input:
       rules.bwa_mem_host.output
     output:
-      fastq = temp("preprocess/{run}_unmapped.fq"),
-      fasta = temp("preprocess/{run}_unmapped.fa")
+      fastq = temp("output/preprocess/{run}_unmapped.fq"),
+      fasta = temp("output/preprocess/{run}_unmapped.fa")
     params:
       reformat_fastq_extra = "-Xmx8000m",
       reformat_fasta_extra = "uniquenames -Xmx8000m"
@@ -68,7 +68,7 @@ rule assemble:
     input: 
       se = rules.unmapped_host.output.fastq
     output: 
-      contigs = temp("assemble/{run}/final.contigs.fa")
+      contigs = temp("output/{run}/final.contigs.fa")
     params:
       extra = "--min-contig-len 1000"
     threads: 4
@@ -82,7 +82,7 @@ rule assemble_cleanup:
     input:
       rules.assemble.output.contigs
     output:
-      contigs = "assemble/contigs/{run}_final-contigs.fa"
+      contigs = "output/contigs/{run}_final-contigs.fa"
     shell:
       """
       mv {input} {output}
@@ -98,9 +98,9 @@ rule coverage:
       ref = rules.assemble_cleanup.output.contigs, 
       input = rules.unmapped_host.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
-      out = temp("assemble/contigs/{run}_aln.sam"),
-      covstats = "assemble/stats/{run}_coverage.txt",
-      basecov = "assemble/stats/{run}_basecov.txt"
+      out = temp("output/contigs/{run}_aln.sam"),
+      covstats = "output/stats/{run}_coverage.txt",
+      basecov = "output/stats/{run}_basecov.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
@@ -113,7 +113,7 @@ rule coverage_good:
       contigs = rules.assemble_cleanup.output.contigs,
       coverage = rules.coverage.output.covstats
     output:
-      contigs = temp("assemble/contigs/{run}_good-contigs.fa")
+      contigs = temp("output/contigs/{run}_good-contigs.fa")
     params:
       avg_coverage = 8 # average coverage threshold 
     wrapper:
@@ -125,7 +125,7 @@ rule cd_hit:
     input:
       rules.coverage_good.output.contigs
     output:
-      repres = temp("assemble/cdhit/{run}_cdhit.fa")
+      repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
       extra = "-c 0.95 -G 0 -n 10 -g 1 -r 1 -d 0 -aS 0.95 -r 1 -M 0"
     threads: 4
@@ -140,7 +140,7 @@ rule tantan:
     input:
       rules.cd_hit.output.repres
     output:
-      temp("assemble/RM/{run}_tantan.fasta")
+      temp("output/RM/{run}_tantan.fasta")
     params:
       extra = "-x N" # mask low complexity using N
     wrapper:
@@ -154,7 +154,7 @@ rule tantan_good:
     input:
       masked = rules.tantan.output
     output:
-      masked_filt = temp("assemble/RM/{run}_repeatmasker.fa")
+      masked_filt = temp("output/RM/{run}_repeatmasker.fa")
     params:
       min_length = 50,
       por_n = 40
@@ -170,10 +170,10 @@ rule repeatmasker:
     input:
       fa = rules.tantan_good.output
     output:
-      masked = temp("assemble/RM/{run}_repeatmasker.fa.masked"),
-      out = temp("assemble/RM/{run}_repeatmasker.fa.out"),
-      cat = temp("assemble/RM/{run}_repeatmasker.fa.cat"),
-      tbl = "assemble/RM/{run}_repeatmasker.fa.tbl"
+      masked = temp("output/RM/{run}_repeatmasker.fa.masked"),
+      out = temp("output/RM/{run}_repeatmasker.fa.out"),
+      cat = temp("output/RM/{run}_repeatmasker.fa.cat"),
+      tbl = "output/RM/{run}_repeatmasker.fa.tbl"
     params:
       extra = "-qq"
     threads: 8
@@ -192,8 +192,8 @@ rule repeatmasker_good:
       masked = rules.repeatmasker.output.masked,
       original = rules.tantan_good.output
     output:
-      masked_filt = temp("assemble/RM/{run}_repmaskedgood.fa"),
-      original_filt = temp("assemble/RM/{run}_unmaskedgood.fa")
+      masked_filt = temp("output/RM/{run}_repmaskedgood.fa"),
+      original_filt = temp("output/RM/{run}_unmaskedgood.fa")
     params:
       min_length = 50,
       por_n = 40
@@ -206,7 +206,7 @@ rule split_fasta:
     input:
       rules.repeatmasker_good.output.masked_filt
     output:
-      temp(expand("assemble/RM/{{run}}_repmaskedgood_{n}.fa", n = N))
+      temp(expand("output/RM/{{run}}_repmaskedgood_{n}.fa", n = N))
     params:
       config["split_fasta"]["n_files"]
     wrapper:
@@ -225,7 +225,7 @@ rule preprocess_stats:
       rules.tantan_good.output,
       rules.repeatmasker_good.output
     output:
-      "assemble/stats/{run}_assembly-preprocess.tsv"
+      "output/stats/{run}_preprocess-stats.tsv"
     params:
       extra = "-T"
     wrapper:
@@ -237,7 +237,7 @@ rule host_bam_stats:
     input:
       rules.bwa_mem_host.output
     output:
-      "assemble/stats/{run}_assembly-host-stats.txt"
+      "output/stats/{run}_host-bam-stats.txt"
     params:
       extra = "-f 4",
       region = ""
