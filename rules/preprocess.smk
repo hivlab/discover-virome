@@ -127,7 +127,7 @@ rule cd_hit:
     output:
       repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
-      program = "psi-cd-hit"
+      program = "psi-cd-hit",
       extra = "-c 0.9 -G 1 -g 1 -prog megablast"
     threads: 4
     log:
