@@ -128,8 +128,7 @@ rule cd_hit:
       repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
       program = "psi-cd-hit.pl",
-      extra = "-c 0.9 -G 1 -g 1 -prog megablast"
-    threads: 4
+      extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
     log:
       "logs/{run}_cdhit.log"
     singularity:
