@@ -127,13 +127,15 @@ rule cd_hit:
     output:
       repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
-      program = "psi-cd-hit",
+      program = "psi-cd-hit.pl",
       extra = "-c 0.9 -G 1 -g 1 -prog megablast"
     threads: 4
     log:
       "logs/{run}_cdhit.log"
-    wrapper:
-      wrapper_prefix + "master/cdhit"
+    singularity:
+      "shub://avilab/singularity-cdhit"
+    script:
+      CDHIT
 
 
 # Tantan mask of low complexity DNA sequences

@@ -117,8 +117,9 @@ BLAST_TAXONOMY = wrapper_prefix + "master/blast/taxonomy"
 SUBSET_FASTA = wrapper_prefix + "master/subset_fasta"
 SEQ_STATS = wrapper_prefix + "master/seqkit/stats"
 
-# Path to Repeatmasker script 
+# Paths to wrapper scripts 
 RM = wrapper_prefix + "master/repeatmasker/wrapper.py"
+CDHIT =  wrapper_prefix + "master/cdhit/wrapper.py"
 
 # Modules
 include: "rules/preprocess.smk"
