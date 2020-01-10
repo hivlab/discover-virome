@@ -115,7 +115,7 @@ rule coverage_good:
     output:
       contigs = temp("output/contigs/{run}_good-contigs.fa")
     params:
-      avg_coverage = 8 # average coverage threshold 
+      avg_coverage = 1 # average coverage threshold 
     wrapper:
       wrapper_prefix + "master/assembly/filter_coverage"
 
@@ -127,7 +127,8 @@ rule cd_hit:
     output:
       repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
-      extra = "-c 0.95 -G 0 -n 10 -g 1 -r 1 -d 0 -aS 0.95 -r 1 -M 0"
+      program = "psi-cd-hit"
+      extra = "-c 0.9 -G 1 -g 1 -prog megablast"
     threads: 4
     log:
       "logs/{run}_cdhit.log"
