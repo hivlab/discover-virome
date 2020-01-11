@@ -107,7 +107,7 @@ rule cd_hit:
     singularity:
       "shub://avilab/singularity-cdhit"
     shell:
-      "psi-cd-hit.pl -i {input} -o {output} {params.extra}"
+      "psi-cd-hit.pl -i {input} -o {output.repres} {params.extra}"
 
 
 localrules: assemble_cleanup
