@@ -113,12 +113,13 @@ rule cd_hit:
 localrules: assemble_cleanup
 rule assemble_cleanup:
     input:
-      contigs = rules.assemble.output.contigs
+      contigs = rules.assemble.output.contigs,
+      repres = rules.cd_hit.output.repres
     output:
       contigs = "output/contigs/{run}_final-contigs.fa"
     shell:
       """
-      mv {input} {output}
+      mv {input.contigs} {output}
       rm -rf $(dirname {input})
       """
 
