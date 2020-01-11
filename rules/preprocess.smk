@@ -21,7 +21,6 @@ rule preprocess:
       adapters = temp("output/preprocess/{run}_adapters.fa"),
       merged = temp("output/preprocess/{run}_merged.fq"),
       unmerged = temp("output/preprocess/{run}_unmerged.fq"),
-      reads = temp("output/preprocess/{run}_reads.fq"),
       trimmed = temp("output/preprocess/{run}_trimmed.fq"),
       sampled = temp("output/preprocess/{run}_sample.fq")
     params:
