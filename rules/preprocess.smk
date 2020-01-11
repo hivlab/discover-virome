@@ -76,25 +76,12 @@ rule assemble:
       wrapper_prefix + "release/metformin-pill/assembly/megahit"
 
 
-localrules: assemble_cleanup
-rule assemble_cleanup:
-    input:
-      rules.assemble.output.contigs
-    output:
-      contigs = "output/contigs/{run}_final-contigs.fa"
-    shell:
-      """
-      mv {input} {output}
-      rm -rf $(dirname {input})
-      """
-
-
 # Calculate assembly coverage stats
 # nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
 # and reused for other unrelated runs
 rule coverage:
     input:
-      ref = rules.assemble_cleanup.output.contigs, 
+      ref = rules.assemble.output.contigs, 
       input = rules.unmapped_host.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
       out = temp("output/contigs/{run}_aln.sam"),
@@ -109,15 +96,31 @@ rule coverage:
 # Run cd-hit to cluster similar contigs
 rule cd_hit:
     input:
-      rules.assemble_cleanup.output.contigs
+      rules.assemble.output.contigs
     output:
-      repres = temp("output/cdhit/{run}_cdhit.fa")
+      repres = temp("output/cdhit/{run}_cdhit.fa"),
+      clstr = "output/cdhit/{run}_cdhit.fa.clstr"
     params:
       extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
+    shadow: 
+      "shallow"
     singularity:
       "shub://avilab/singularity-cdhit"
     shell:
       "psi-cd-hit.pl -i {input} -o {output} {params.extra}"
+
+
+localrules: assemble_cleanup
+rule cleanup:
+    input:
+      contigs = rules.assemble.output.contigs
+    output:
+      contigs = "output/contigs/{run}_final-contigs.fa"
+    shell:
+      """
+      mv {input} {output}
+      rm -rf $(dirname {input})
+      """
 
 
 # Tantan mask of low complexity DNA sequences
@@ -186,7 +189,7 @@ rule repeatmasker_good:
       LN_FILTER
 
 
-# Split reads to smaller chunks for Repeatmasker
+# Split reads to smaller chunks
 rule split_fasta:
     input:
       rules.repeatmasker_good.output.masked_filt
