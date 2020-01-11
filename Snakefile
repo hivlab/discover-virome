@@ -119,7 +119,6 @@ SEQ_STATS = wrapper_prefix + "master/seqkit/stats"
 
 # Paths to wrapper scripts 
 RM = wrapper_prefix + "master/repeatmasker/wrapper.py"
-CDHIT =  wrapper_prefix + "master/cdhit/wrapper.py"
 
 # Modules
 include: "rules/preprocess.smk"

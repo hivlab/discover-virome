@@ -107,23 +107,10 @@ rule coverage:
       wrapper_prefix + "master/bbmap/bbwrap"
 
 
-# Filter contigs by setting minimum threshold for average coverage
-rule coverage_good:
-    input:
-      contigs = rules.assemble_cleanup.output.contigs,
-      coverage = rules.coverage.output.covstats
-    output:
-      contigs = temp("output/contigs/{run}_good-contigs.fa")
-    params:
-      avg_coverage = 1 # average coverage threshold 
-    wrapper:
-      wrapper_prefix + "master/assembly/filter_coverage"
-
-
 # Run cd-hit to cluster similar contigs
 rule cd_hit:
     input:
-      rules.coverage_good.output.contigs
+      rules.assemble_cleanup.output.contigs
     output:
       repres = temp("output/cdhit/{run}_cdhit.fa")
     params:
@@ -217,7 +204,6 @@ rule preprocess_stats:
     input:
       rules.preprocess.output.trimmed,
       rules.assemble_cleanup.output.contigs,
-      rules.coverage_good.output,
       rules.unmapped_host.output,
       rules.cd_hit.output.repres,
       rules.tantan.output,
