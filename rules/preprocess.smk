@@ -111,7 +111,7 @@ rule cd_hit:
 
 
 localrules: assemble_cleanup
-rule cleanup:
+rule assemble_cleanup:
     input:
       contigs = rules.assemble.output.contigs
     output:
