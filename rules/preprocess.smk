@@ -102,24 +102,27 @@ rule cd_hit:
       clstr = "output/cdhit/{run}_cdhit.fa.clstr"
     params:
       extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
-    shadow: 
-      "shallow"
     singularity:
       "shub://avilab/singularity-cdhit"
     shell:
       "psi-cd-hit.pl -i {input} -o {output.repres} {params.extra}"
 
 
-localrules: assemble_cleanup
-rule assemble_cleanup:
+localrules: cleanup
+rule cleanup:
     input:
       contigs = rules.assemble.output.contigs,
-      repres = rules.cd_hit.output.repres
+      repres = rules.cd_hit.output.repres,
+      clstr = rules.cd_hit.output.clstr
     output:
-      contigs = "output/contigs/{run}_final-contigs.fa"
+      contigs = "output/contigs/{run}_final-contigs.fa",
+      repres = "output/contigs/{run}_cdhit.fa",
+      clstr = "output/contigs/{run}_cdhit.fa.clstr"
     shell:
       """
-      mv {input.contigs} {output}
+      mv {input.contigs} {output.contigs}
+      mv {input.repres} {output.repres}
+      mv {input.clstr} {output.clstr}
       rm -rf $(dirname {input})
       """
 
@@ -127,7 +130,7 @@ rule assemble_cleanup:
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-      rules.cd_hit.output.repres
+      rules.cleanup.output.repres
     output:
       temp("output/RM/{run}_tantan.fasta")
     params:
@@ -206,7 +209,7 @@ rule split_fasta:
 rule preprocess_stats:
     input:
       rules.preprocess.output.trimmed,
-      rules.assemble_cleanup.output.contigs,
+      rules.cleanup.output.contigs,
       rules.unmapped_host.output,
       rules.cd_hit.output.repres,
       rules.tantan.output,
