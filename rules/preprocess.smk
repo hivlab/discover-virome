@@ -16,11 +16,11 @@ rule preprocess:
     input:
       sample = lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
     output:
-      adapters = temp("output/preprocess/{group}_{run}_adapters.fa"),
-      merged = temp("output/preprocess/{group}_{run}_merged.fq"),
-      unmerged = temp("output/preprocess/{group}_{run}_unmerged.fq"),
-      trimmed = temp("output/preprocess/{group}_{run}_trimmed.fq"),
-      sampled = temp("output/preprocess/{group}_{run}_sample.fq")
+      adapters = temp("output/preprocess/{group}-{run}_adapters.fa"),
+      merged = temp("output/preprocess/{group}-{run}_merged.fq"),
+      unmerged = temp("output/preprocess/{group}-{run}_unmerged.fq"),
+      trimmed = temp("output/preprocess/{group}-{run}_trimmed.fq"),
+      sampled = temp("output/preprocess/{group}-{run}_sample.fq")
     params:
       bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
       frac = 1, #lambda wildcards: get_frac(wildcards),
@@ -35,7 +35,7 @@ rule bwa_mem_host:
     input:
       reads = [rules.preprocess.output.sampled]
     output:
-      temp("mapped/{group}_{run}_host.bam")
+      temp("mapped/{group}-{run}_host.bam")
     params:
       db_prefix = HOST_GENOME,
       extra = "-L 100,100 -k 15",
@@ -52,8 +52,8 @@ rule unmapped_host:
     input:
       rules.bwa_mem_host.output
     output:
-      fastq = temp("output/preprocess/{group}_{run}_unmapped.fq"),
-      fasta = temp("output/preprocess/{group}_{run}_unmapped.fa")
+      fastq = temp("output/preprocess/{group}-{run}_unmapped.fq"),
+      fasta = temp("output/preprocess/{group}-{run}_unmapped.fa")
     params:
       reformat_fastq_extra = "-Xmx8000m",
       reformat_fasta_extra = "uniquenames -Xmx8000m"
@@ -63,13 +63,13 @@ rule unmapped_host:
 
 rule assemble:
     input: 
-      se = expand("output/preprocess/{group}_{run}_unmapped.fq", zip, group = GROUP, run = RUN)
+      se = lambda wildcards: expand("output/preprocess/{group}-{run}_unmapped.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group])
     output: 
-      contigs = temp("output/{run}/final.contigs.fa")
+      contigs = temp("output/{group}/final.contigs.fa")
     params:
       extra = "--min-contig-len 1000"
     threads: 4
-    log: "logs/{run}_assemble.log"
+    log: "logs/{group}_assemble.log"
     wrapper:
       wrapper_prefix + "release/metformin-pill/assembly/megahit"
 
@@ -82,9 +82,9 @@ rule coverage:
       ref = rules.assemble.output.contigs, 
       input = rules.unmapped_host.output.fastq # input will be parsed to 'in', input1 to in1 etc.
     output:
-      out = temp("output/contigs/{run}_aln.sam"),
-      covstats = "output/stats/{run}_coverage.txt",
-      basecov = "output/stats/{run}_basecov.txt"
+      out = temp("output/contigs/{group}_aln.sam"),
+      covstats = "output/stats/{group}_coverage.txt",
+      basecov = "output/stats/{group}_basecov.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
@@ -96,8 +96,8 @@ rule cd_hit:
     input:
       rules.assemble.output.contigs
     output:
-      repres = temp("output/cdhit/{run}_cdhit.fa"),
-      clstr = "output/cdhit/{run}_cdhit.fa.clstr"
+      repres = temp("output/cdhit/{group}_cdhit.fa"),
+      clstr = "output/cdhit/{group}_cdhit.fa.clstr"
     params:
       extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
     singularity:
@@ -113,9 +113,9 @@ rule cleanup:
       repres = rules.cd_hit.output.repres,
       clstr = rules.cd_hit.output.clstr
     output:
-      contigs = "output/contigs/{run}_final-contigs.fa",
-      repres = "output/contigs/{run}_cdhit.fa",
-      clstr = "output/contigs/{run}_cdhit.fa.clstr"
+      contigs = "output/contigs/{group}_final-contigs.fa",
+      repres = "output/contigs/{group}_cdhit.fa",
+      clstr = "output/contigs/{group}_cdhit.fa.clstr"
     shell:
       """
       mv {input.contigs} {output.contigs}
@@ -130,7 +130,7 @@ rule tantan:
     input:
       rules.cleanup.output.repres
     output:
-      temp("output/RM/{run}_tantan.fasta")
+      temp("output/RM/{group}_tantan.fasta")
     params:
       extra = "-x N" # mask low complexity using N
     wrapper:
@@ -144,7 +144,7 @@ rule tantan_good:
     input:
       masked = rules.tantan.output
     output:
-      masked_filt = temp("output/RM/{run}_repeatmasker.fa")
+      masked_filt = temp("output/RM/{group}_repeatmasker.fa")
     params:
       min_length = 50,
       por_n = 40
@@ -160,10 +160,10 @@ rule repeatmasker:
     input:
       fa = rules.tantan_good.output
     output:
-      masked = temp("output/RM/{run}_repeatmasker.fa.masked"),
-      out = temp("output/RM/{run}_repeatmasker.fa.out"),
-      cat = temp("output/RM/{run}_repeatmasker.fa.cat"),
-      tbl = "output/RM/{run}_repeatmasker.fa.tbl"
+      masked = temp("output/RM/{group}_repeatmasker.fa.masked"),
+      out = temp("output/RM/{group}_repeatmasker.fa.out"),
+      cat = temp("output/RM/{group}_repeatmasker.fa.cat"),
+      tbl = "output/RM/{group}_repeatmasker.fa.tbl"
     params:
       extra = "-qq"
     threads: 8
@@ -182,8 +182,8 @@ rule repeatmasker_good:
       masked = rules.repeatmasker.output.masked,
       original = rules.tantan_good.output
     output:
-      masked_filt = temp("output/RM/{run}_repmaskedgood.fa"),
-      original_filt = temp("output/RM/{run}_unmaskedgood.fa")
+      masked_filt = temp("output/RM/{group}_repmaskedgood.fa"),
+      original_filt = temp("output/RM/{group}_unmaskedgood.fa")
     params:
       min_length = 50,
       por_n = 40
@@ -196,7 +196,7 @@ rule split_fasta:
     input:
       rules.repeatmasker_good.output.masked_filt
     output:
-      temp(expand("output/RM/{{run}}_repmaskedgood_{n}.fa", n = N))
+      temp(expand("output/RM/{{group}}_repmaskedgood_{n}.fa", n = N))
     params:
       config["split_fasta"]["n_files"]
     wrapper:
@@ -206,15 +206,14 @@ rule split_fasta:
 # Collect stats from preprocess outputs.
 rule preprocess_stats:
     input:
-      rules.preprocess.output.trimmed,
+      lambda wildcards: expand("output/preprocess/{group}-{run}_{file}.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group], file = ["trimmed", "unmapped"]),
       rules.cleanup.output.contigs,
-      rules.unmapped_host.output,
       rules.cd_hit.output.repres,
       rules.tantan.output,
       rules.tantan_good.output,
       rules.repeatmasker_good.output
     output:
-      "output/stats/{run}_preprocess-stats.tsv"
+      "output/stats/{group}_preprocess-stats.tsv"
     params:
       extra = "-T"
     wrapper:
@@ -226,7 +225,7 @@ rule host_bam_stats:
     input:
       rules.bwa_mem_host.output
     output:
-      "output/stats/{run}_host-bam-stats.txt"
+      "output/stats/{group}-{run}_host-bam-stats.txt"
     params:
       extra = "-f 4",
       region = ""
