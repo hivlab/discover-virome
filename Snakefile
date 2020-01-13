@@ -18,10 +18,11 @@ configfile: "config.yaml"
 validate(config, "schemas/config.schema.yaml")
 
 # Load runs and groups
-SAMPLES = pd.read_csv(config["samples"], sep="\s+").set_index(
+SAMPLES = pd.read_csv(config["samples"], sep="\s+")
+validate(SAMPLES, "schemas/samples.schema.yaml")
+SAMPLES = SAMPLES.set_index(
     ["group", "run"], drop=False
 )
-validate(SAMPLES, "schemas/samples.schema.yaml")
 GROUP, RUN = map(list, zip(*SAMPLES.index.tolist()))
 N_FILES = config["split_fasta"]["n_files"]
 N = list(range(1, N_FILES + 1, 1))
@@ -45,10 +46,7 @@ BLASTNR = (
 )
 BLAST = BLASTV + BLASTNR
 RUN_STATS = expand(
-    [
         "output/stats/{group}-{run}_host-bam-stats.txt",
-        "output/stats/{group}-{run}_preprocess-stats.tsv",
-    ],
     zip,
     group=GROUP,
     run=RUN,
@@ -58,6 +56,7 @@ GROUP_STATS = expand(
         "output/stats/{group}_blast.tsv",
         "output/stats/{group}_coverage.txt",
         "output/stats/{group}_basecov.txt",
+        "output/stats/{group}_preprocess-stats.tsv"
     ],
     group=set(GROUP),
 )

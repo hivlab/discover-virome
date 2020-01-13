@@ -41,7 +41,7 @@ rule bwa_mem_host:
       extra = "-L 100,100 -k 15",
       sorting = "none"
     log:
-      "logs/{run}_bwa_mem_host.log"
+      "logs/{group}-{run}_bwa_mem_host.log"
     threads: 2
     wrapper:
       "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_issue145/bio/bwa/mem"
@@ -76,11 +76,12 @@ rule assemble:
 
 # Calculate assembly coverage stats
 # nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
-# and reused for other unrelated runs
+# and reused for other unrelated runs.
+# Key "input" will be parsed to "in", "input1" to "in1" etc.
 rule coverage:
     input:
       ref = rules.assemble.output.contigs, 
-      input = rules.unmapped_host.output.fastq # input will be parsed to 'in', input1 to in1 etc.
+      input = lambda wildcards: expand("output/preprocess/{group}-{run}_unmapped.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group]) 
     output:
       out = temp("output/contigs/{group}_aln.sam"),
       covstats = "output/stats/{group}_coverage.txt",
