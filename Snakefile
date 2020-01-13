@@ -18,9 +18,9 @@ configfile: "config.yaml"
 validate(config, "schemas/config.schema.yaml")
 
 # Load runs and groups
-RUNS = pd.read_csv(config["samples"], sep="\s+").set_index("run", drop=False)
-validate(RUNS, "schemas/samples.schema.yaml")
-RUN_IDS = RUNS.index.tolist()
+SAMPLES = pd.read_csv(config["samples"], sep="\s+").set_index(["group", "run"], drop=False)
+validate(SAMPLES, "schemas/samples.schema.yaml")
+GROUP, RUN = map(list, zip(*SAMPLES.index.tolist()))
 N_FILES = config["split_fasta"]["n_files"]
 N = list(range(1, N_FILES + 1, 1))
 
@@ -49,12 +49,12 @@ STATS = expand(
         "output/stats/{run}_coverage.txt",
         "output/stats/{run}_basecov.txt",
     ],
-    run=RUN_IDS,
+    run=RUN,
 )
 OUTPUTS = (
     expand(
         ["output/results/{run}_{result}", "output/contigs/{run}_final-contigs.fa"],
-        run=RUN_IDS,
+        run=RUN,
         result=RESULTS,
     )
     + STATS
@@ -65,7 +65,7 @@ if config["zenodo"]["deposition_id"]:
     from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
     # Setup Zenodo RemoteProvider
     ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
-    ZENOUTPUTS = ZEN.remote(expand(["output/results/{run}_results.tgz", "output/stats/{run}_assembly-stats.tgz", "output/stats/{run}_run-stats.tgz"], run = RUN_IDS))
+    ZENOUTPUTS = ZEN.remote(expand(["output/results/{run}_results.tgz", "output/stats/{run}_assembly-stats.tgz", "output/stats/{run}_run-stats.tgz"], run = RUN))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
     localrules: upload_results, upload_assembly, upload_stats
 

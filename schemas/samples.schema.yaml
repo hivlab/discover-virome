@@ -2,6 +2,9 @@ $schema: "http://json-schema.org/draft-07/schema#"
 description: an entry in the sample sheet
 type: object
 properties:
+  group:
+    type: string
+    description: group runs for assembly
   run:
     type: string
     description: sequencing run name/identifier
@@ -17,6 +20,7 @@ properties:
     description: a number between 0 and 1 that indicates proportion of reads to sample from fastq file. No subsampling with 0 or >=1
 
 required:
+  - group
   - run
   - fq1
   - fq2

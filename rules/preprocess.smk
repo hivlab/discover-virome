@@ -4,25 +4,23 @@ FTP = FTPRemoteProvider(username=config["username"], password=config["password"]
 
 def get_fastq(wildcards):
     """Get fraction read file paths from samples.tsv"""
-    urls = RUNS.loc[wildcards.run, ["fq1", "fq2"]]
-    return list(urls)
+    return list(SAMPLES.loc[(wildcards.group, wildcards.run), ["fq1", "fq2"]])
 
 
 def get_frac(wildcards):
     """Get fraction of reads to be sampled from samples.tsv"""
-    frac = RUNS.loc[wildcards.run, ["frac"]][0]
-    return frac
+    return SAMPLES.loc[(wildcards.group, wildcards.run), ["frac"]][0]
 
 
 rule preprocess:
     input:
       sample = lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
     output:
-      adapters = temp("output/preprocess/{run}_adapters.fa"),
-      merged = temp("output/preprocess/{run}_merged.fq"),
-      unmerged = temp("output/preprocess/{run}_unmerged.fq"),
-      trimmed = temp("output/preprocess/{run}_trimmed.fq"),
-      sampled = temp("output/preprocess/{run}_sample.fq")
+      adapters = temp("output/preprocess/{group}_{run}_adapters.fa"),
+      merged = temp("output/preprocess/{group}_{run}_merged.fq"),
+      unmerged = temp("output/preprocess/{group}_{run}_unmerged.fq"),
+      trimmed = temp("output/preprocess/{group}_{run}_trimmed.fq"),
+      sampled = temp("output/preprocess/{group}_{run}_sample.fq")
     params:
       bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
       frac = 1, #lambda wildcards: get_frac(wildcards),
@@ -37,13 +35,13 @@ rule bwa_mem_host:
     input:
       reads = [rules.preprocess.output.sampled]
     output:
-      temp("mapped/{run}_host.bam")
+      temp("mapped/{group}_{run}_host.bam")
     params:
       db_prefix = HOST_GENOME,
       extra = "-L 100,100 -k 15",
       sorting = "none"
     log:
-      "logs/{run}_bwa_map_refgenome.log"
+      "logs/{run}_bwa_mem_host.log"
     threads: 2
     wrapper:
       "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_issue145/bio/bwa/mem"
@@ -54,8 +52,8 @@ rule unmapped_host:
     input:
       rules.bwa_mem_host.output
     output:
-      fastq = temp("output/preprocess/{run}_unmapped.fq"),
-      fasta = temp("output/preprocess/{run}_unmapped.fa")
+      fastq = temp("output/preprocess/{group}_{run}_unmapped.fq"),
+      fasta = temp("output/preprocess/{group}_{run}_unmapped.fa")
     params:
       reformat_fastq_extra = "-Xmx8000m",
       reformat_fasta_extra = "uniquenames -Xmx8000m"
@@ -65,7 +63,7 @@ rule unmapped_host:
 
 rule assemble:
     input: 
-      se = rules.unmapped_host.output.fastq
+      se = expand("output/preprocess/{group}_{run}_unmapped.fq", zip, group = GROUP, run = RUN)
     output: 
       contigs = temp("output/{run}/final.contigs.fa")
     params:
