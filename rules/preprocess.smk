@@ -63,7 +63,7 @@ rule unmapped_host:
 
 rule assemble:
     input: 
-      se = lambda wildcards: expand("output/preprocess/{group}-{run}_unmapped.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group])
+      se = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN)
     output: 
       contigs = temp("output/{group}/final.contigs.fa")
     params:
@@ -81,7 +81,7 @@ rule assemble:
 rule coverage:
     input:
       ref = rules.assemble.output.contigs, 
-      input = lambda wildcards: expand("output/preprocess/{group}-{run}_unmapped.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group]) 
+      input = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN) 
     output:
       out = temp("output/contigs/{group}_aln.sam"),
       covstats = "output/stats/{group}_coverage.txt",
@@ -207,7 +207,7 @@ rule split_fasta:
 # Collect stats from preprocess outputs.
 rule preprocess_stats:
     input:
-      lambda wildcards: expand("output/preprocess/{group}-{run}_{file}.fq", group = wildcards.group, run = [r for r, g in zip(GROUP, RUN) if g in wildcards.group], file = ["trimmed", "unmapped"]),
+      expand("output/preprocess/{{group}}-{run}_{file}.fq", run = RUN, file = ["trimmed", "unmapped"]),
       rules.cleanup.output.contigs,
       rules.cd_hit.output.repres,
       rules.tantan.output,
