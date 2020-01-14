@@ -103,7 +103,7 @@ rule quast:
     singularity: 
       "docker://quay.io/biocontainers/quast:5.0.2--py27pl526ha92aebf_0"
     shell: 
-      "quast -o {params.outdir} {input} --threads {threads}"
+      "python metaquast.py -o {params.outdir} {input} --threads {threads}"
 
 
 # Run cd-hit to cluster similar contigs
