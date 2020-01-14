@@ -92,6 +92,20 @@ rule coverage:
       wrapper_prefix + "master/bbmap/bbwrap"
 
 
+rule quast:
+    input:
+      rules.assemble.output.contigs
+    output:
+      "output/stats/quast/{group}/report.html"
+    params:
+      outdir = "output/stats/quast/{group}"
+    threads: 4
+    singularity: 
+      "docker://quay.io/biocontainers/quast:5.0.2--py27pl526ha92aebf_0"
+    shell: 
+      "quast -o {params.outdir} {input} --threads {threads}"
+
+
 # Run cd-hit to cluster similar contigs
 rule cd_hit:
     input:
