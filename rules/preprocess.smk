@@ -98,12 +98,13 @@ rule quast:
     output:
       "output/stats/quast/{group}/report.html"
     params:
-      outdir = "output/stats/quast/{group}"
+      outdir = "output/stats/quast/{group}",
+      extra = "--gene-finding --mgm --rna-finding"
     threads: 4
     singularity: 
       "docker://quay.io/biocontainers/quast:5.0.2--py27pl526ha92aebf_0"
     shell: 
-      "metaquast -o {params.outdir} {input} --threads {threads}"
+      "metaquast -o {params.outdir} {params.extra} {input} --threads {threads}"
 
 
 # Run cd-hit to cluster similar contigs
