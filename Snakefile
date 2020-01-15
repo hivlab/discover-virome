@@ -63,7 +63,7 @@ GROUP_STATS = expand(
 STATS = GROUP_STATS + RUN_STATS
 OUTPUTS = (
     expand(
-        ["output/results/{group}_{result}", "output/contigs/{group}_final-contigs.fa"],
+        ["output/results/{group}_{result}", "output/{group}/final.contigs.fa"],
         group=set(GROUP),
         result=RESULTS,
     )

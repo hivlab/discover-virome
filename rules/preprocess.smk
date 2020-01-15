@@ -35,7 +35,7 @@ rule bwa_mem_host:
     input:
       reads = [rules.preprocess.output.sampled]
     output:
-      temp("mapped/{group}-{run}_host.bam")
+      temp("output/mapped/{group}-{run}_host.bam")
     params:
       db_prefix = HOST_GENOME,
       extra = "-L 100,100 -k 15",
@@ -65,11 +65,13 @@ rule assemble:
     input: 
       se = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN)
     output: 
-      contigs = temp("output/{group}/final.contigs.fa")
+      contigs = "output/{group}/final.contigs.fa"
     params:
       extra = "--min-contig-len 1000"
     threads: 4
     log: "logs/{group}_assemble.log"
+    shadow: 
+      "full"
     wrapper:
       wrapper_prefix + "release/metformin-pill/assembly/megahit"
 
@@ -83,28 +85,13 @@ rule coverage:
       ref = rules.assemble.output.contigs, 
       input = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN) 
     output:
-      out = temp("output/contigs/{group}_aln.sam"),
+      out = temp("output/{group}/final.contigs_aln.sam"),
       covstats = "output/stats/{group}_coverage.txt",
       basecov = "output/stats/{group}_basecov.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
       wrapper_prefix + "master/bbmap/bbwrap"
-
-
-rule quast:
-    input:
-      rules.assemble.output.contigs
-    output:
-      "output/stats/quast/{group}/report.html"
-    params:
-      outdir = "output/stats/quast/{group}",
-      extra = "--gene-finding --mgm --rna-finding"
-    threads: 4
-    singularity: 
-      "docker://quay.io/biocontainers/quast:5.0.2--py27pl526ha92aebf_0"
-    shell: 
-      "metaquast -o {params.outdir} {params.extra} {input} --threads {threads}"
 
 
 # Run cd-hit to cluster similar contigs
@@ -116,35 +103,18 @@ rule cd_hit:
       clstr = "output/cdhit/{group}_cdhit.fa.clstr"
     params:
       extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
+    shadow:
+      "full"
     singularity:
       "shub://avilab/singularity-cdhit"
     shell:
       "psi-cd-hit.pl -i {input} -o {output.repres} {params.extra}"
 
 
-localrules: cleanup
-rule cleanup:
-    input:
-      contigs = rules.assemble.output.contigs,
-      repres = rules.cd_hit.output.repres,
-      clstr = rules.cd_hit.output.clstr
-    output:
-      contigs = "output/contigs/{group}_final-contigs.fa",
-      repres = "output/contigs/{group}_cdhit.fa",
-      clstr = "output/contigs/{group}_cdhit.fa.clstr"
-    shell:
-      """
-      mv {input.contigs} {output.contigs}
-      mv {input.repres} {output.repres}
-      mv {input.clstr} {output.clstr}
-      rm -rf $(dirname {input})
-      """
-
-
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-      rules.cleanup.output.repres
+      rules.cd_hit.output.repres
     output:
       temp("output/RM/{group}_tantan.fasta")
     params:
@@ -223,7 +193,7 @@ rule split_fasta:
 rule preprocess_stats:
     input:
       expand("output/preprocess/{{group}}-{run}_{file}.fq", run = RUN, file = ["trimmed", "unmapped"]),
-      rules.cleanup.output.contigs,
+      rules.assemble.output.contigs,
       rules.cd_hit.output.repres,
       rules.tantan.output,
       rules.tantan_good.output,
