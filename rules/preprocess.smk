@@ -216,4 +216,4 @@ rule host_bam_stats:
       extra = "-f 4",
       region = ""
     wrapper:
-        "0.42.0/bio/samtools/stats"
+      "0.42.0/bio/samtools/stats"
