@@ -78,7 +78,7 @@ rule blastx_virus:
       out = temp("output/blast/{group}_blastx-virus_{n}.tsv")
     params:
       program = "blastx",
-      task = "Blastx-fast",
+      task = "blastx-fast",
       db = "nr_v5",
       evalue = 1e-2,
       max_hsps = 50,
