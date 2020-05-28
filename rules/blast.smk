@@ -24,56 +24,103 @@ def concatenate_tables(input, sep="\s+", cols_to_integer=None):
 # Output directory can be changed.
 # Additional negative taxids (all listed taxids except viruses) can be added via params.
 # Shadow=full ensures that only required outputs will be saved. 
-rule taxids_list:
+rule get_virus_taxids:
+    output: 
+        "output/blast/10239.taxids"
+    params:
+       taxid = 10239
+    conda:
+        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
+    resources:
+        runtime = 20
+    shell:
+       "get_species_taxids.sh -t {params.taxid} > {output}"
+
+
+rule megablast_virus:
+    input:
+        query = "output/{run}/repmaskedgood_{n}.fa",
+        taxidlist = "output/blast/10239.taxids"
     output:
-      viruses = "output/blast/viruses.taxids"
-    params: 
-      viruses = VIRUSES_TAXID
+        out = temp("output/{run}/megablast-virus_{n}.tsv")
+    params:
+        program = "blastn",
+        task = "megablast",
+        db = "nt_v5",
+        word_size = 16,
+        evalue = 1e-6,
+        max_hsps = 1,
+        outfmt = "'6 qseqid sacc staxid pident length evalue'"
+    threads: 8
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 26000
     wrapper:
-        WRAPPER_PREFIX + "master/blast/taxidslist"
+        BLAST_QUERY
+
+# Filter blastn hits for the cutoff value.
+rule parse_megablast_virus:
+    input:
+        query = "output/{run}/repmaskedgood_{n}.fa",
+        blast_result = rules.megablast_virus.output.out
+    output:
+        mapped = temp("output/{run}/megablast-virus_{n}_mapped.tsv"),
+        unmapped = temp("output/{run}/megablast-virus_{n}_unmapped.fa")
+    params:
+        e_cutoff = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 4000
+    wrapper:
+        PARSE_BLAST
 
 
-# Blast input, output, and params keys must match commandline blast option names. 
-# Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a 
-# for all available options.
+# Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = "output/{run}/repmaskedgood_{n}.fa",
-      taxidlist = "output/blast/viruses.taxids"
+        query = rules.parse_megablast_virus.output.unmapped,
+        taxidlist = "output/blast/10239.taxids"
     output:
-      out = temp("output/{run}/blastn-virus_{n}.tsv")
+        out = temp("output/{run}/blastn-virus_{n}.tsv")
     params:
-      program = "blastn",
-      db = "nt_v5",
-      evalue = 1e-6,
-      max_hsps = 1,
-      outfmt = "'6 qseqid sacc staxid pident length evalue'"
-    threads: 8
+        program = "blastn",
+        db = "nt_v5",
+        word_size = 11,
+        evalue = 1e-6,
+        max_hsps = 1,
+        outfmt = rules.megablast_virus.params.outfmt
+    threads: 4
+    resources:
+        runtime = lambda wildcards, attempt: (attempt * 120) + 840,
+        mem_mb = 26000
     wrapper:
-      BLAST_QUERY
-
+        BLAST_QUERY
 
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-      query = "output/{run}/repmaskedgood_{n}.fa",
-      blast_result = rules.blastn_virus.output.out
+        query = rules.parse_megablast_virus.output.unmapped,
+        blast_result = rules.blastn_virus.output.out
     output:
-      mapped = temp("output/{run}/blastn-virus_{n}_mapped.tsv"),
-      unmapped = temp("output/{run}/blastn-virus_{n}_unmapped.fa")
+        mapped = temp("output/{run}/blastn-virus_{n}_mapped.tsv"),
+        unmapped = temp("output/{run}/blastn-virus_{n}_unmapped.fa")
     params:
-      e_cutoff = 1e-6,
-      outfmt = rules.blastn_virus.params.outfmt
+        e_cutoff = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 4000
     wrapper:
-      PARSE_BLAST
+        PARSE_BLAST
 
 
 # Blastx unmapped reads against nr virus database.
 rule blastx_virus:
     input:
       query = rules.parse_blastn_virus.output.unmapped,
-      taxidlist = "output/blast/viruses.taxids"
+      taxidlist = "output/blast/10239.taxids"
     output:
       out = temp("output/{run}/blastx-virus_{n}.tsv")
     params:
@@ -111,7 +158,7 @@ rule classify_all:
   output:
     temp("output/{run}/all_{n}.csv")
   params:
-    pp_sway = 1, 
+    pp_sway = 0.5, 
     ranks_of_interest = RANKS_OF_INTEREST,
     dbfile = TAXON_DB
   wrapper:
