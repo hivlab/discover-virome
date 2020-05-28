@@ -67,7 +67,6 @@ TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
 WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers/"
-BWA_UNMAPPED = WRAPPER_PREFIX + "master/unmapped"
 BLAST_QUERY = WRAPPER_PREFIX + "master/blast/query"
 PARSE_BLAST = WRAPPER_PREFIX + "master/blast/parse"
 BLAST_TAXONOMY = WRAPPER_PREFIX + "master/blast/taxonomy"

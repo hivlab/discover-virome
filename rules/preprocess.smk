@@ -246,7 +246,7 @@ rule coverage:
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
-      WRAPPER_PREFIX + "master/bbmap/bbwrap"
+      WRAPPER_PREFIX + "master/bbtools/bbwrap"
 
 
 # Tantan mask of low complexity DNA sequences
