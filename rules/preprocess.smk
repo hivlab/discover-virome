@@ -227,6 +227,9 @@ rule assemble:
         "output/{run}/log/assemble.log"
     shadow: 
       "minimal"
+    resources:
+        runtime = 1440,
+        mem_mb = 96000
     wrapper:
       WRAPPER_PREFIX + "master/assembly/megahit"
 
@@ -245,6 +248,9 @@ rule coverage:
       statsfile = "output/{run}/mapcontigs.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
+    resources:
+        runtime = lambda wildcards, attempt: 120 + (attempt * 60),
+        mem_mb = 24000
     wrapper:
       WRAPPER_PREFIX + "master/bbtools/bbwrap"
 
@@ -311,7 +317,7 @@ rule repeatmasker:
         extra = "-qq"
     threads: 4
     resources:
-        runtime = lambda wildcards, attempt: attempt * 1440,
+        runtime = 1440,
         mem_mb = 16000
     singularity:
         "shub://tpall/repeatmasker-singularity"
