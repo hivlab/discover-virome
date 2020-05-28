@@ -68,8 +68,6 @@ HOST_GENOME = os.getenv("REF_GENOME_HUMAN_MASKED")
 REF_BACTERIA = os.getenv("REF_BACTERIA")
 # file_exists(REF_BACTERIA)
 TAXON_DB = os.getenv("TAXON_DB")
-RRNA_DB = os.getenv("SILVA")
-CPNDB = os.getenv("CPNDB")
 
 # Wrappers
 WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers/"

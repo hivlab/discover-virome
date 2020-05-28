@@ -9,14 +9,14 @@ samples: samples.tsv
 remote: False
 
 # Onsuccess notification email address
-email: tapa741@gmail.com
+email: your@email.addr
 
 # Remote FTP credentials
 username: anonymous
 password: your@email.addr
 
 # Option to save time by not running blastx
-run_blastx: True
+run_blastx: False
 
 # Upload results to zenodo
 # For upload, setup ZENODO_PAT environment variable for access_token

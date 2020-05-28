@@ -30,7 +30,7 @@ rule taxids_list:
     params: 
       viruses = VIRUSES_TAXID
     wrapper:
-        wrapper_prefix + "master/blast/taxidslist"
+        WRAPPER_PREFIX + "master/blast/taxidslist"
 
 
 # Blast input, output, and params keys must match commandline blast option names. 
@@ -39,15 +39,15 @@ rule taxids_list:
 # Blast against nt virus database.
 rule blastn_virus:
     input:
-      query = "output/RM/{group}_repmaskedgood_{n}.fa",
+      query = "output/{run}/repmaskedgood_{n}.fa",
       taxidlist = "output/blast/viruses.taxids"
     output:
-      out = temp("output/blast/{group}_blastn-virus_{n}.tsv")
+      out = temp("output/{run}/blastn-virus_{n}.tsv")
     params:
       program = "blastn",
       db = "nt_v5",
-      evalue = 1e-4,
-      max_hsps = 50,
+      evalue = 1e-6,
+      max_hsps = 1,
       outfmt = "'6 qseqid sacc staxid pident length evalue'"
     threads: 8
     wrapper:
@@ -57,13 +57,13 @@ rule blastn_virus:
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-      query = "output/RM/{group}_repmaskedgood_{n}.fa",
+      query = "output/{run}/repmaskedgood_{n}.fa",
       blast_result = rules.blastn_virus.output.out
     output:
-      mapped = temp("output/blast/{group}_blastn-virus_{n}_mapped.tsv"),
-      unmapped = temp("output/blast/{group}_blastn-virus_{n}_unmapped.fa")
+      mapped = temp("output/{run}/blastn-virus_{n}_mapped.tsv"),
+      unmapped = temp("output/{run}/blastn-virus_{n}_unmapped.fa")
     params:
-      e_cutoff = 1e-5,
+      e_cutoff = 1e-6,
       outfmt = rules.blastn_virus.params.outfmt
     wrapper:
       PARSE_BLAST
@@ -75,13 +75,13 @@ rule blastx_virus:
       query = rules.parse_blastn_virus.output.unmapped,
       taxidlist = "output/blast/viruses.taxids"
     output:
-      out = temp("output/blast/{group}_blastx-virus_{n}.tsv")
+      out = temp("output/{run}/blastx-virus_{n}.tsv")
     params:
       program = "blastx",
       task = "blastx-fast",
       db = "nr_v5",
       evalue = 1e-2,
-      max_hsps = 50,
+      max_hsps = 1,
       outfmt = rules.blastn_virus.params.outfmt
     threads: 8
     wrapper:
@@ -94,8 +94,8 @@ rule parse_blastx_virus:
       query = rules.blastx_virus.input.query,
       blast_result = rules.blastx_virus.output.out
     output:
-      mapped = temp("output/blast/{group}_blastx-virus_{n}_mapped.tsv"),
-      unmapped = temp("output/blast/{group}_blastx-virus_{n}_unmapped.fa")
+      mapped = temp("output/{run}/blastx-virus_{n}_mapped.tsv"),
+      unmapped = temp("output/{run}/blastx-virus_{n}_unmapped.fa")
     params:
       e_cutoff = 1e-3,
       outfmt = rules.blastn_virus.params.outfmt
@@ -107,9 +107,9 @@ rule parse_blastx_virus:
 # Saves hits with division id
 rule classify_all:
   input:
-    expand("output/blast/{{group}}_{blastresult}_{{n}}_mapped.tsv", blastresult = BLASTV)
+    expand("output/{{run}}/{blastresult}_{{n}}_mapped.tsv", blastresult = BLASTV)
   output:
-    temp("output/results/{group}_all_{n}.csv")
+    temp("output/{run}/all_{n}.csv")
   params:
     pp_sway = 1, 
     ranks_of_interest = RANKS_OF_INTEREST,
@@ -121,10 +121,10 @@ rule classify_all:
 # Split classification rule outputs into viruses and non-viral
 rule filter_viruses:
   input:
-    expand("output/results/{{group}}_all_{n}.csv", n = N)
+    expand("output/{{run}}/all_{n}.csv", n = N)
   output:
-    viral = "output/results/{group}_viruses.csv",
-    non_viral = "output/results/{group}_non-viral.csv"
+    viral = "output/{run}/viruses.csv",
+    non_viral = "output/{run}/non-viral.csv"
   params:
     ranks = RANKS_OF_INTEREST
   run:
@@ -138,20 +138,9 @@ rule filter_viruses:
 # Merge unassigned sequences
 rule merge_unassigned:
   input:
-    expand("output/blast/{{group}}_blast{type}_{n}_unmapped.fa", type = "x-virus" if config["run_blastx"] else "n-virus", n = N)
+    expand("output/{{run}}/blast{type}_{n}_unmapped.fa", type = "x-virus" if config["run_blastx"] else "n-virus", n = N)
   output:
-    "output/results/{group}_unassigned.fa"
+    "output/{run}/unassigned.fa"
   shell:
     "cat {input} > {output}"
 
-
-# Collect stats.
-rule blast_stats:
-  input:
-    expand("output/blast/{{group}}_{blastresult}_{n}_unmapped.fa", blastresult = BLASTV, n = N)
-  output:
-    "output/stats/{group}_blast.tsv"
-  params:
-    extra = "-T"
-  wrapper:
-    SEQ_STATS

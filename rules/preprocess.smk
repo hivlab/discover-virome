@@ -238,7 +238,7 @@ rule assemble:
 rule coverage:
     input:
       ref = rules.assemble.output.contigs, 
-      input = "output/{run}/unmapped.fq"
+      input = rules.concatenate.output[0]
     output:
       out = "output/{run}/final.contigs_aln.sam",
       covstats = "output/{run}/coverage.txt",
