@@ -29,12 +29,10 @@ properties:
   split_fasta:
     n_files:
       type: integer
-      default: 2
+      default: 20
       description: number of files to split fasta file before repeatmasker, defaults to 2
     required:
       - n_files
 
 required:
   - samples
-  - split_fasta
-
