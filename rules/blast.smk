@@ -77,7 +77,7 @@ rule parse_megablast_virus:
 
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. 
-Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
+# Please see https://www.ncbi.nlm.nih.gov/books/NBK279684/#appendices.Options_for_the_commandline_a for all available options.
 # Blast against nt virus database.
 rule blastn_virus:
     input:
