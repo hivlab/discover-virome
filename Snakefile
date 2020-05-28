@@ -65,8 +65,6 @@ def file_exists(file):
 # Path to reference genomes
 HOST_GENOME = os.getenv("REF_GENOME_HUMAN_MASKED")
 # file_exists(REF_GENOME)
-REF_BACTERIA = os.getenv("REF_BACTERIA")
-# file_exists(REF_BACTERIA)
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
