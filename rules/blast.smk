@@ -154,7 +154,7 @@ rule parse_blastx_virus:
 # Saves hits with division id
 rule classify_all:
   input:
-    expand("output/{{run}}/{blastresult}_{{n}}_mapped.tsv", blastresult = BLASTV)
+    expand("output/{{run}}/{blastresult}_{{n}}_mapped.tsv", blastresult = BLAST)
   output:
     temp("output/{run}/all_{n}.csv")
   params:
