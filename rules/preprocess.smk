@@ -1,79 +1,234 @@
 
-FTP = FTPRemoteProvider(username=config["username"], password=config["password"])
-
+FTP = FTPRemoteProvider(username = config["username"], password = config["password"])
 
 def get_fastq(wildcards):
     """Get fraction read file paths from samples.tsv"""
-    return list(SAMPLES.loc[(wildcards.group, wildcards.run), ["fq1", "fq2"]])
-
+    urls = RUNS.loc[wildcards.run, ['fq1', 'fq2']]
+    return list(urls)
 
 def get_frac(wildcards):
     """Get fraction of reads to be sampled from samples.tsv"""
-    return SAMPLES.loc[(wildcards.group, wildcards.run), ["frac"]][0]
+    frac = RUNS.loc[wildcards.run, ['frac']][0]
+    return frac
 
-
-rule preprocess:
+# Convert reads to interleaved format
+rule interleave:
     input:
-      sample = lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
+        lambda wildcards: FTP.remote(get_fastq(wildcards), immediate_close=True) if config["remote"] else get_fastq(wildcards)
     output:
-      adapters = temp("output/preprocess/{group}-{run}_adapters.fa"),
-      merged = temp("output/preprocess/{group}-{run}_merged.fq"),
-      unmerged = temp("output/preprocess/{group}-{run}_unmerged.fq"),
-      trimmed = temp("output/preprocess/{group}-{run}_trimmed.fq"),
-      sampled = temp("output/preprocess/{group}-{run}_sample.fq")
+        out = temp("output/{run}/interleaved.fq.gz"),
+        bhist = "output/{run}/bhist.txt",
+        qhist = "output/{run}/qhist.txt",
+        aqhist = "output/{run}/aqhist.txt",
+        bqhist = "output/{run}/bqhist.txt",
+        lhist = "output/{run}/lhist.txt",
+        gchist = "output/{run}/gchist.txt"
     params:
-      bbduk = "qtrim=r trimq=10 maq=10 minlen=100",
-      frac = 1, #lambda wildcards: get_frac(wildcards),
-      seed = config["seed"]
+        extra = "-Xmx4g"
+    resources:
+        runtime = 20,
+        mem_mb = 4000
+    log:
+        "output/{run}/log/interleave.txt"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/reformat"
+
+
+# Remove PCR and optical duplicates
+rule clumpify:
+    input:
+        input = rules.interleave.output.out
+    output:
+        out = temp("output/{run}/clumpify.fq.gz")
+    params:
+        extra = "dedupe optical -Xmx4g -da" # suppress assertions
+    resources:
+        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        mem_mb = 4000
+    log: 
+        "output/{run}/log/clumpify.log"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/clumpify"
+
+
+rule filterbytile:
+    input:
+        input = rules.clumpify.output.out
+    output:
+        out = temp("output/{run}/filterbytile.fq.gz")
+    params:
+        extra = "-Xmx4g -da"
+    resources:
+        runtime = 20,
+        mem_mb = 4000
+    log: 
+        "output/{run}/log/filterbytile.log"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/filterbytile"
+
+
+rule trim:
+    input:
+        input = rules.filterbytile.output.out
+    output:
+        out = temp("output/{run}/trimmed.fq.gz")
+    params:
+        extra = "ktrim=r k=23 mink=11 hdist=1 tbo tpe minlen=70 ref=adapters ftm=5 ordered -Xmx4g -da"
+    resources:
+        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        mem_mb = 4000
+    log: 
+        "output/{run}/log/trim.log"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/bbduk"
+
+
+rule artifacts:
+    input:
+        input = rules.trim.output.out
+    output:
+        out = "output/{run}/filtered.fq.gz"
+    params:
+        extra = "k=31 ref=artifacts,phix ordered cardinality -Xmx4g -da"
+    resources:
+        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        mem_mb = 4000
+    log: 
+        "output/{run}/log/artifacts.log"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/bbduk"
+
+
+# Remove host sequences
+rule maphost:
+    input:
+        input = rules.artifacts.output.out,
+        ref = HOST_GENOME
+    output:
+        outu = "output/{run}/unmaphost.fq.gz",
+        outm = "output/{run}/maphost.fq.gz",
+        statsfile = "output/{run}/maphost.txt"
+    params:
+        extra = "nodisk -Xmx24g"
+    log: 
+        "output/{run}/log/maphost.log"
+    resources:
+        runtime = lambda wildcards, attempt: 120 + (attempt * 60),
+        mem_mb = 24000
     threads: 4
     wrapper:
-      wrapper_prefix + "master/preprocess"
+        WRAPPER_PREFIX + "master/bbtools/bbwrap"
 
 
-# Map reads to host.
-rule bwa_mem_host:
+rule correct1:
     input:
-      reads = [rules.preprocess.output.sampled]
+        input = rules.maphost.output.outu
     output:
-      temp("output/mapped/{group}-{run}_host.bam")
+        out = temp("output/{run}/ecco.fq.gz")
     params:
-      db_prefix = HOST_GENOME,
-      extra = "-L 100,100 -k 15",
-      sorting = "none"
-    log:
-      "logs/{group}-{run}_bwa_mem_host.log"
-    threads: 2
+        extra = "ecco mix vstrict ordered -Xmx4g -da"
+    log: 
+        "output/{run}/log/correct1.log"
+    resources:
+        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
+        mem_mb = 4000
+    threads: 4
     wrapper:
-      "https://raw.githubusercontent.com/tpall/snakemake-wrappers/bug/snakemake_issue145/bio/bwa/mem"
+        WRAPPER_PREFIX + "master/bbtools/bbmerge"
 
 
-# Extract unmapped reads and convert to fasta.
-rule unmapped_host:
+rule correct2:
     input:
-      rules.bwa_mem_host.output
+        input = rules.correct1.output.out
     output:
-      fastq = temp("output/preprocess/{group}-{run}_unmapped.fq"),
-      fasta = temp("output/preprocess/{group}-{run}_unmapped.fa")
+        out = temp("output/{run}/eccc.fq.gz")
     params:
-      reformat_fastq_extra = "-Xmx8000m",
-      reformat_fasta_extra = "uniquenames -Xmx8000m"
+        extra = "passes=4 reorder -Xmx16g -da"
+    log: 
+        "output/{run}/log/correct2.log"
+    resources:
+        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
+        mem_mb = 16000
     wrapper:
-      BWA_UNMAPPED
+        WRAPPER_PREFIX + "master/bbtools/clumpify"
+
+
+rule correct3:
+    input:
+        input = rules.correct2.output.out
+    output:
+        out = temp("output/{run}/ecct.fq.gz")
+    params:
+        extra = "ecc k=62 ordered -Xmx16g -da"
+    log: 
+        "output/{run}/log/correct3.log"
+    resources:
+        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
+        mem_mb = 16000
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/tadpole"
+
+
+rule merge:
+    input:
+        input = rules.correct3.output.out
+    output:
+        out = temp("output/{run}/merged.fq.gz"),
+        outu = temp("output/{run}/unmerged.fq.gz"),
+        ihist = "output/{run}/ihist.txt"
+    params:
+        extra = "strict k=93 extend2=80 rem ordered -Xmx16g"
+    log: 
+        "output/{run}/log/merge.log"
+    resources:
+        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        mem_mb = 16000
+    threads: 4
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/bbmerge"
+
+
+rule qtrim:
+    input:
+        input = rules.merge.output.outu
+    output:
+        out = temp("output/{run}/qtrimmed.fq.gz")
+    params:
+        extra = "qtrim=r trimq=10 minlen=70 ordered -Xmx4g"
+    resources:
+        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        mem_mb = 4000
+    log: 
+        "output/{run}/log/qtrim.log"
+    wrapper:
+        WRAPPER_PREFIX + "master/bbtools/bbduk"
+
+
+rule concatenate:
+    input:
+      rules.merge.output.out, rules.qtrim.output.out
+    output:
+      temp("output/{run}/concatenated.fq.gz")
+    resources:
+        runtime = 10
+    shell:
+      "cat {input} > {output}"
 
 
 rule assemble:
     input: 
-      se = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN)
+      se = rules.concatenate.output[0]
     output: 
-      contigs = "output/{group}/final.contigs.fa"
+      contigs = "output/{run}/final.contigs.fa"
     params:
       extra = "--min-contig-len 1000"
     threads: 4
-    log: "logs/{group}_assemble.log"
+    log: 
+        "output/{run}/log/assemble.log"
     shadow: 
-      "full"
+      "minimal"
     wrapper:
-      wrapper_prefix + "release/metformin-pill/assembly/megahit"
+      WRAPPER_PREFIX + "master/assembly/megahit"
 
 
 # Calculate assembly coverage stats
@@ -83,44 +238,30 @@ rule assemble:
 rule coverage:
     input:
       ref = rules.assemble.output.contigs, 
-      input = expand("output/preprocess/{{group}}-{run}_unmapped.fq", run = RUN) 
+      input = "output/{run}/unmapped.fq"
     output:
-      out = temp("output/{group}/final.contigs_aln.sam"),
-      covstats = "output/stats/{group}_coverage.txt",
-      basecov = "output/stats/{group}_basecov.txt"
+      out = "output/{run}/final.contigs_aln.sam",
+      covstats = "output/{run}/coverage.txt",
+      statsfile = "output/{run}/mapcontigs.txt"
     params: 
       extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
     wrapper:
-      wrapper_prefix + "master/bbmap/bbwrap"
-
-
-# Run cd-hit to cluster similar contigs
-rule cd_hit:
-    input:
-      rules.assemble.output.contigs
-    output:
-      repres = temp("output/cdhit/{group}_cdhit.fa"),
-      clstr = "output/cdhit/{group}_cdhit.fa.clstr"
-    params:
-      extra = "-c 0.9 -G 1 -g 1 -prog megablast -s '-num_threads 4'"
-    shadow:
-      "full"
-    singularity:
-      "shub://avilab/singularity-cdhit"
-    shell:
-      "psi-cd-hit.pl -i {input} -o {output.repres} {params.extra}"
+      WRAPPER_PREFIX + "master/bbmap/bbwrap"
 
 
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-      rules.cd_hit.output.repres
+        rules.assemble.output.contigs
     output:
-      temp("output/RM/{group}_tantan.fasta")
+        temp("output/{run}/tantan.fa")
     params:
-      extra = "-x N" # mask low complexity using N
+        extra = "-x N" # mask low complexity using N
+    resources:
+        runtime = 120,
+        mem_mb = 8000
     wrapper:
-      wrapper_prefix + "master/tantan"
+        WRAPPER_PREFIX + "master/tantan"
 
 
 # Filter tantan output
@@ -128,14 +269,30 @@ rule tantan:
 # 2) Sequences with >= 40% of total length of being masked
 rule tantan_good:
     input:
-      masked = rules.tantan.output
+        masked = rules.tantan.output[0]
     output:
-      masked_filt = temp("output/RM/{group}_repeatmasker.fa")
+        masked_filt = temp("output/{run}/tantangood.fa")
     params:
-      min_length = 50,
-      por_n = 40
+        min_length = 50,
+        por_n = 40
+    resources:
+        runtime = 120
     wrapper:
-      LN_FILTER
+        WRAPPER_PREFIX + "master/filter/masked"
+
+
+# Split reads to smaller chunks for RepeatMasker
+rule split_fasta:
+    input:
+        rules.tantan_good.output.masked_filt
+    output:
+        temp(expand("output/{{run}}/repeatmasker_{n}.fa", n = N))
+    params:
+        config["split_fasta"]["n_files"]
+    resources:
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30) 
+    wrapper:
+        WRAPPER_PREFIX + "master/split-fasta"
 
 
 # Repeatmasker
@@ -144,76 +301,69 @@ rule tantan_good:
 # If no repetitive sequences were detected symlink output to input file
 rule repeatmasker:
     input:
-      fa = rules.tantan_good.output
+        fa = "output/{run}/repeatmasker_{n}.fa"
     output:
-      masked = temp("output/RM/{group}_repeatmasker.fa.masked"),
-      out = temp("output/RM/{group}_repeatmasker.fa.out"),
-      cat = temp("output/RM/{group}_repeatmasker.fa.cat"),
-      tbl = "output/RM/{group}_repeatmasker.fa.tbl"
+        masked = temp("output/{run}/repeatmasker_{n}.fa.masked"),
+        out = temp("output/{run}/repeatmasker_{n}.fa.out"),
+        cat = temp("output/{run}/repeatmasker_{n}.fa.cat"),
+        tbl = "output/{run}/repeatmasker_{n}.fa.tbl"
     params:
-      extra = "-qq"
-    threads: 8
+        extra = "-qq"
+    threads: 4
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 1440,
+        mem_mb = 16000
     singularity:
-      "shub://tpall/repeatmasker-singularity"
+        "shub://tpall/repeatmasker-singularity"
     script:
-      RM
+        WRAPPER_PREFIX + "master/repeatmasker/wrapper.py"
 
 
 # Filter repeatmasker output
-# 1) Sequences > 50 nt of consecutive sequence without N
-# 2) Sequences with >= 40% of total length of being masked
+# 1) Sequences > min_length nt of consecutive sequence without N
+# 2) Sequences with >= % of total length of being masked
 # input, output, and params names must match function arguments
 rule repeatmasker_good:
     input:
-      masked = rules.repeatmasker.output.masked,
-      original = rules.tantan_good.output
+        masked = rules.repeatmasker.output.masked,
+        original = rules.repeatmasker.input.fa
     output:
-      masked_filt = temp("output/RM/{group}_repmaskedgood.fa"),
-      original_filt = temp("output/RM/{group}_unmaskedgood.fa")
+        masked_filt = temp("output/{run}/repmaskedgood_{n}.fa"),
+        original_filt = temp("output/{run}/unmaskedgood_{n}.fa")
     params:
-      min_length = 50,
-      por_n = 40
+        min_length = 100,
+        por_n = 30
+    resources:
+        runtime = 120
     wrapper:
-      LN_FILTER
+        WRAPPER_PREFIX + "master/filter/masked"
 
-
-# Split reads to smaller chunks
-rule split_fasta:
+# Read QC stats
+rule fastqc:
     input:
-      rules.repeatmasker_good.output.masked_filt
+        rules.interleave.output.out
     output:
-      temp(expand("output/RM/{{group}}_repmaskedgood_{n}.fa", n = N))
-    params:
-      config["split_fasta"]["n_files"]
+        html = "output/{run}/fastqc.html",
+        zip = "output/{run}/fastqc.zip"
+    resources:
+        runtime = 120,
+        mem_mb = 4000    
     wrapper:
-      wrapper_prefix + "master/split-fasta"
+        "0.27.1/bio/fastqc"
 
 
-# Collect stats from preprocess outputs.
-rule preprocess_stats:
+rule multiqc:
     input:
-      expand("output/preprocess/{{group}}-{run}_{file}.fq", run = RUN, file = ["trimmed", "unmapped"]),
-      rules.assemble.output.contigs,
-      rules.cd_hit.output.repres,
-      rules.tantan.output,
-      rules.tantan_good.output,
-      rules.repeatmasker_good.output
+        "output/{run}/fastqc.zip",
+        "output/{run}/maphost.txt",
+        "output/{run}/coverage.txt",
+        "output/{run}/mapcontigs.txt"
     output:
-      "output/stats/{group}_preprocess-stats.tsv"
-    params:
-      extra = "-T"
+        report("output/{run}/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
+    log:
+        "output/{run}/log/multiqc.log"
+    resources:
+        runtime = 120,
+        mem_mb = 4000    
     wrapper:
-      SEQ_STATS
-
-
-# host mapping stats.
-rule host_bam_stats:
-    input:
-      rules.bwa_mem_host.output
-    output:
-      "output/stats/{group}-{run}_host-bam-stats.txt"
-    params:
-      extra = "-f 4",
-      region = ""
-    wrapper:
-      "0.42.0/bio/samtools/stats"
+      WRAPPER_PREFIX + "master/multiqc"
