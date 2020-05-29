@@ -21,7 +21,7 @@ rule interleave:
     log:
         "output/{run}/log/interleave.txt"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/reformat"
+        f"{WRAPPER_PREFIX}/master/bbtools/reformat"
 
 
 # Remove PCR and optical duplicates
@@ -38,7 +38,7 @@ rule clumpify:
     log: 
         "output/{run}/log/clumpify.log"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/clumpify"
+        f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
 
 
 rule filterbytile:
@@ -54,7 +54,7 @@ rule filterbytile:
     log: 
         "output/{run}/log/filterbytile.log"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/filterbytile"
+        f"{WRAPPER_PREFIX}/master/bbtools/filterbytile"
 
 
 rule trim:
@@ -70,7 +70,7 @@ rule trim:
     log: 
         "output/{run}/log/trim.log"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
 
 
 rule artifacts:
@@ -86,7 +86,7 @@ rule artifacts:
     log: 
         "output/{run}/log/artifacts.log"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
 
 
 # Remove host sequences
@@ -107,7 +107,7 @@ rule maphost:
         mem_mb = 24000
     threads: 4
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbwrap"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
 
 rule correct1:
@@ -124,7 +124,7 @@ rule correct1:
         mem_mb = 16000
     threads: 4
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbmerge"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
 
 
 rule correct2:
@@ -140,7 +140,7 @@ rule correct2:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/clumpify"
+        f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
 
 
 rule correct3:
@@ -156,7 +156,7 @@ rule correct3:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/tadpole"
+        f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
 
 
 rule merge:
@@ -175,7 +175,7 @@ rule merge:
         mem_mb = 16000
     threads: 4
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbmerge"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
 
 
 rule qtrim:
@@ -191,7 +191,7 @@ rule qtrim:
     log: 
         "output/{run}/log/qtrim.log"
     wrapper:
-        f"{WRAPPER_PREFIX}master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
 
 
 rule concatenate:
@@ -222,7 +222,7 @@ rule assemble:
         runtime = 2400,
         mem_mb = 96000
     wrapper:
-      f"{WRAPPER_PREFIX}master/assembly/megahit"
+      f"{WRAPPER_PREFIX}/master/assembly/megahit"
 
 
 # Calculate assembly coverage stats
@@ -243,7 +243,7 @@ rule coverage:
         runtime = lambda wildcards, attempt: 120 + (attempt * 60),
         mem_mb = 24000
     wrapper:
-      f"{WRAPPER_PREFIX}master/bbtools/bbwrap"
+      f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
 
 # Tantan mask of low complexity DNA sequences
@@ -258,7 +258,7 @@ rule tantan:
         runtime = 120,
         mem_mb = 8000
     wrapper:
-        f"{WRAPPER_PREFIX}master/tantan"
+        f"{WRAPPER_PREFIX}/master/tantan"
 
 
 # Filter tantan output
@@ -275,7 +275,7 @@ rule tantan_good:
     resources:
         runtime = 120
     wrapper:
-        f"{WRAPPER_PREFIX}master/filter/masked"
+        f"{WRAPPER_PREFIX}/master/filter/masked"
 
 
 # Split reads to smaller chunks for RepeatMasker
@@ -290,7 +290,7 @@ rule split_fasta:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 4000
     wrapper:
-        f"{WRAPPER_PREFIX}master/split-fasta"
+        f"{WRAPPER_PREFIX}/master/split-fasta"
 
 
 # Repeatmasker
@@ -314,7 +314,7 @@ rule repeatmasker:
     singularity:
         "shub://tpall/repeatmasker-singularity"
     script:
-        f"{WRAPPER_PREFIX}master/repeatmasker/wrapper.py"
+        f"{WRAPPER_PREFIX}/master/repeatmasker/wrapper.py"
 
 
 # Filter repeatmasker output
@@ -334,7 +334,7 @@ rule repeatmasker_good:
     resources:
         runtime = 120
     wrapper:
-        f"{WRAPPER_PREFIX}master/filter/masked"
+        f"{WRAPPER_PREFIX}/master/filter/masked"
 
 # Read QC stats
 rule fastqc:
@@ -364,4 +364,4 @@ rule multiqc:
         runtime = 120,
         mem_mb = 4000    
     wrapper:
-        f"{WRAPPER_PREFIX}master/multiqc"
+        f"{WRAPPER_PREFIX}/master/multiqc"

@@ -57,11 +57,11 @@ HOST_GENOME = os.getenv("REF_GENOME_HUMAN_MASKED")
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
-WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers/"
-BLAST_QUERY =  f"{WRAPPER_PREFIX}master/blast/query"
-PARSE_BLAST = f"{WRAPPER_PREFIX}master/blast/parse"
-BLAST_TAXONOMY = f"{WRAPPER_PREFIX}master/blast/taxonomy"
-SUBSET_FASTA = f"{WRAPPER_PREFIX}master/subset_fasta"
+WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers"
+BLAST_QUERY =  f"{WRAPPER_PREFIX}/master/blast/query"
+PARSE_BLAST = f"{WRAPPER_PREFIX}/master/blast/parse"
+BLAST_TAXONOMY = f"{WRAPPER_PREFIX}/master/blast/taxonomy"
+SUBSET_FASTA = f"{WRAPPER_PREFIX}/master/subset_fasta"
 
 # Rules
 include: "rules/common.smk"
