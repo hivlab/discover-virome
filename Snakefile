@@ -40,7 +40,7 @@ if config["zenodo"]["deposition_id"]:
     # Load zenodo remote provider module
     from snakemake.remote.zenodo import RemoteProvider as ZENRemoteProvider
     # Setup Zenodo RemoteProvider
-    ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.environ["ZENODO_PAT"])
+    ZEN = ZENRemoteProvider(deposition = config["zenodo"]["deposition_id"], access_token = os.getenv("ZENODO_PAT"))
     # Append uploads
     ZENOUTPUTS = ZEN.remote(expand("output/{run}/counts.tgz", run = RUN_IDS))
     OUTPUTS = OUTPUTS + ZENOUTPUTS
@@ -52,26 +52,18 @@ rule all:
     input:
         OUTPUTS
 
-# Check file exists
-def file_exists(file):
-    try:
-        with open(file, 'r') as fh:
-            print("{} is set up correctly".format(file))
-    except FileNotFoundError:
-        ("Could not find {}").format(file)
-
 # Path to reference genomes
 HOST_GENOME = os.getenv("REF_GENOME_HUMAN_MASKED")
-# file_exists(REF_GENOME)
 TAXON_DB = os.getenv("TAXON_DB")
 
 # Wrappers
 WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers/"
-BLAST_QUERY = WRAPPER_PREFIX + "master/blast/query"
-PARSE_BLAST = WRAPPER_PREFIX + "master/blast/parse"
-BLAST_TAXONOMY = WRAPPER_PREFIX + "master/blast/taxonomy"
-SUBSET_FASTA = WRAPPER_PREFIX + "master/subset_fasta"
+BLAST_QUERY =  f"{WRAPPER_PREFIX}master/blast/query"
+PARSE_BLAST = f"{WRAPPER_PREFIX}master/blast/parse"
+BLAST_TAXONOMY = f"{WRAPPER_PREFIX}master/blast/taxonomy"
+SUBSET_FASTA = f"{WRAPPER_PREFIX}master/subset_fasta"
 
 # Rules
+include: "rules/common.smk"
 include: "rules/preprocess.smk"
 include: "rules/blast.smk"

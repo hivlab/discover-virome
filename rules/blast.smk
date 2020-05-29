@@ -1,23 +1,6 @@
 
-# Helper function to import tables
-def safely_read_csv(path, **kwargs):
-    try:
-        return pd.read_csv(path, **kwargs)
-    except pd.errors.EmptyDataError:
-        pass
-
-
 RANKS_OF_INTEREST = ["superkingdom", "order", "family", "genus", "species"]
 VIRUSES_TAXID = 10239
-
-def concatenate_tables(input, sep="\s+", cols_to_integer=None):
-    frames = [safely_read_csv(f, sep=sep) for f in input]
-    frames_concatenated = pd.concat(frames, keys=input, sort=False)
-    if cols_to_integer:
-        frames_concatenated[cols_to_integer] = frames_concatenated[
-            cols_to_integer
-        ].apply(lambda x: pd.Series(x, dtype="Int64"))
-    return frames_concatenated
 
 
 # Creates to required outputs viruses.taxids and negative.taxids.
