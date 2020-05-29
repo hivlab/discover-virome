@@ -26,7 +26,7 @@ rule interleave:
     params:
         extra = "-Xmx4g"
     resources:
-        runtime = 20,
+        runtime = 120,
         mem_mb = 4000
     log:
         "output/{run}/log/interleave.txt"
@@ -43,8 +43,8 @@ rule clumpify:
     params:
         extra = "dedupe optical -Xmx4g -da" # suppress assertions
     resources:
-        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
-        mem_mb = 4000
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 16000
     log: 
         "output/{run}/log/clumpify.log"
     wrapper:
@@ -59,8 +59,8 @@ rule filterbytile:
     params:
         extra = "-Xmx4g -da"
     resources:
-        runtime = 20,
-        mem_mb = 4000
+        runtime = 120,
+        mem_mb = 16000
     log: 
         "output/{run}/log/filterbytile.log"
     wrapper:
@@ -75,8 +75,8 @@ rule trim:
     params:
         extra = "ktrim=r k=23 mink=11 hdist=1 tbo tpe minlen=70 ref=adapters ftm=5 ordered -Xmx4g -da"
     resources:
-        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
-        mem_mb = 4000
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 16000
     log: 
         "output/{run}/log/trim.log"
     wrapper:
@@ -91,8 +91,8 @@ rule artifacts:
     params:
         extra = "k=31 ref=artifacts,phix ordered cardinality -Xmx4g -da"
     resources:
-        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
-        mem_mb = 4000
+        runtime = lambda wildcards, attempt: 90 + (attempt * 20),
+        mem_mb = 16000
     log: 
         "output/{run}/log/artifacts.log"
     wrapper:
@@ -130,8 +130,8 @@ rule correct1:
     log: 
         "output/{run}/log/correct1.log"
     resources:
-        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
-        mem_mb = 4000
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 16000
     threads: 4
     wrapper:
         WRAPPER_PREFIX + "master/bbtools/bbmerge"
@@ -147,7 +147,7 @@ rule correct2:
     log: 
         "output/{run}/log/correct2.log"
     resources:
-        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
     wrapper:
         WRAPPER_PREFIX + "master/bbtools/clumpify"
@@ -163,7 +163,7 @@ rule correct3:
     log: 
         "output/{run}/log/correct3.log"
     resources:
-        runtime = lambda wildcards, attempt: 60 + (attempt * 20),
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
     wrapper:
         WRAPPER_PREFIX + "master/bbtools/tadpole"
@@ -181,7 +181,7 @@ rule merge:
     log: 
         "output/{run}/log/merge.log"
     resources:
-        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
     threads: 4
     wrapper:
@@ -196,8 +196,8 @@ rule qtrim:
     params:
         extra = "qtrim=r trimq=10 minlen=70 ordered -Xmx4g"
     resources:
-        runtime = lambda wildcards, attempt: 20 + (attempt * 20),
-        mem_mb = 4000
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 16000
     log: 
         "output/{run}/log/qtrim.log"
     wrapper:
@@ -210,7 +210,8 @@ rule concatenate:
     output:
       temp("output/{run}/concatenated.fq.gz")
     resources:
-        runtime = 10
+        runtime = 120,
+        mem_mb = 4000
     shell:
       "cat {input} > {output}"
 
@@ -228,7 +229,7 @@ rule assemble:
     shadow: 
       "minimal"
     resources:
-        runtime = 1440,
+        runtime = 2400,
         mem_mb = 96000
     wrapper:
       WRAPPER_PREFIX + "master/assembly/megahit"
@@ -296,7 +297,8 @@ rule split_fasta:
     params:
         config["split_fasta"]["n_files"]
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30) 
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 4000
     wrapper:
         WRAPPER_PREFIX + "master/split-fasta"
 
@@ -315,7 +317,7 @@ rule repeatmasker:
         tbl = "output/{run}/repeatmasker_{n}.fa.tbl"
     params:
         extra = "-qq"
-    threads: 4
+    threads: 8
     resources:
         runtime = 1440,
         mem_mb = 16000
