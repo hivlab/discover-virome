@@ -103,9 +103,9 @@ rule maphost:
     log: 
         "output/{run}/log/maphost.log"
     resources:
-        runtime = lambda wildcards, attempt: 120 + (attempt * 60),
-        mem_mb = 24000
-    threads: 4
+        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb = 80000
+    threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}master/bbtools/bbwrap"
 
@@ -121,8 +121,8 @@ rule correct1:
         "output/{run}/log/correct1.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 16000
-    threads: 4
+        mem_mb = 8000
+    threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}master/bbtools/bbmerge"
 
@@ -173,7 +173,7 @@ rule merge:
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 16000
-    threads: 4
+    threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}master/bbtools/bbmerge"
 
@@ -196,33 +196,33 @@ rule qtrim:
 
 rule concatenate:
     input:
-      rules.merge.output.out, rules.qtrim.output.out
+        rules.merge.output.out, rules.qtrim.output.out
     output:
-      temp("output/{run}/concatenated.fq.gz")
+        temp("output/{run}/concatenated.fq.gz")
     resources:
         runtime = 120,
         mem_mb = 4000
     shell:
-      "cat {input} > {output}"
+        "cat {input} > {output}"
 
 
 rule assemble:
     input: 
-      se = rules.concatenate.output[0]
+        se = rules.concatenate.output[0]
     output: 
-      contigs = "output/{run}/final.contigs.fa"
+        contigs = "output/{run}/assemble/final.contigs.fa"
     params:
-      extra = "--min-contig-len 1000"
-    threads: 4
+        extra = "--min-contig-len 1000"
+    threads: 8
     log: 
         "output/{run}/log/assemble.log"
     shadow: 
-      "minimal"
+        "minimal"
     resources:
-        runtime = 2400,
-        mem_mb = 96000
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 8000
     wrapper:
-      f"{WRAPPER_PREFIX}master/assembly/megahit"
+        f"{WRAPPER_PREFIX}master/assembly/megahit"
 
 
 # Calculate assembly coverage stats
@@ -231,19 +231,19 @@ rule assemble:
 # Key "input" will be parsed to "in", "input1" to "in1" etc.
 rule coverage:
     input:
-      ref = rules.assemble.output.contigs, 
-      input = rules.concatenate.output[0]
+        ref = rules.assemble.output.contigs, 
+        input = rules.concatenate.output[0]
     output:
-      out = "output/{run}/final.contigs_aln.sam",
-      covstats = "output/{run}/coverage.txt",
-      statsfile = "output/{run}/mapcontigs.txt"
+        out = "output/{run}/final.contigs_aln.sam",
+        covstats = "output/{run}/coverage.txt",
+        statsfile = "output/{run}/mapcontigs.txt"
     params: 
-      extra = "kfilter=22 subfilter=15 maxindel=80 nodisk"
+        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 nodisk -Xmx{resources.mem_mb / 1000:.0f}g"
     resources:
-        runtime = lambda wildcards, attempt: 120 + (attempt * 60),
-        mem_mb = 24000
+        runtime = 1440,
+        mem_mb = 4000
     wrapper:
-      f"{WRAPPER_PREFIX}master/bbtools/bbwrap"
+        f"{WRAPPER_PREFIX}master/bbtools/bbwrap"
 
 
 # Tantan mask of low complexity DNA sequences
