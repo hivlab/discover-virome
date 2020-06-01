@@ -222,11 +222,7 @@ rule assemble:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 8000
     wrapper:
-<<<<<<< HEAD
-        f"{WRAPPER_PREFIX}master/assembly/megahit"
-=======
       f"{WRAPPER_PREFIX}/master/assembly/megahit"
->>>>>>> 83b338e2ba9bbc688b2e8c69fa0d9d2cddc7fce3
 
 
 # Calculate assembly coverage stats
