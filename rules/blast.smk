@@ -166,8 +166,10 @@ rule filter_viruses:
         mem_mb = 8000
     run:
         tab = concatenate_tables(input, sep = ",", cols_to_integer = params.ranks)
-        vir = tab[tab.superkingdom == VIRUSES_TAXID]
-        non_vir = tab[tab.superkingdom != VIRUSES_TAXID]
+        mask = tab.superkingdom == VIRUSES_TAXID
+        mask = mask.fillna(False)
+        vir = tab[mask]
+        non_vir = tab[~mask]
         vir.to_csv(output.viral, index = False)
         non_vir.to_csv(output.non_viral, index = False)
 
