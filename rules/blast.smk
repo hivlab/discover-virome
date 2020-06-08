@@ -32,8 +32,7 @@ rule megablast_virus:
         db = "nt_v5",
         word_size = 16,
         evalue = 1e-6,
-        max_hsps = 1,
-        outfmt = "'6 qseqid sacc staxid pident length evalue'"
+        outfmt = "'6 qseqid sacc staxid pident length qstart qend sstart send evalue'"
     threads: 8
     resources:
         runtime = lambda wildcards, attempt: attempt * 120,
@@ -44,7 +43,7 @@ rule megablast_virus:
 # Filter blastn hits for the cutoff value.
 rule parse_megablast_virus:
     input:
-        query = "output/{run}/repmaskedgood_{n}.fa",
+        query = rules.megablast_virus.input.query,
         blast_result = rules.megablast_virus.output.out
     output:
         mapped = temp("output/{run}/megablast-virus_{n}_mapped.tsv"),
@@ -73,7 +72,6 @@ rule blastn_virus:
         db = "nt_v5",
         word_size = 11,
         evalue = 1e-6,
-        max_hsps = 1,
         outfmt = rules.megablast_virus.params.outfmt
     threads: 4
     resources:
@@ -85,7 +83,7 @@ rule blastn_virus:
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
     input:
-        query = rules.parse_megablast_virus.output.unmapped,
+        query = rules.blastn_virus.input.query,
         blast_result = rules.blastn_virus.output.out
     output:
         mapped = temp("output/{run}/blastn-virus_{n}_mapped.tsv"),
@@ -99,11 +97,83 @@ rule parse_blastn_virus:
     wrapper:
         PARSE_BLAST
 
+rule megablast_nt:
+    input:
+        query = rules.parse_blastn_virus.output.unmapped
+    output:
+        out = temp("output/{run}/megablast-nt_{n}.tsv")
+    params:
+        program = "blastn",
+        task = "megablast",
+        db = "nt_v5",
+        word_size = 16,
+        evalue = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    threads: 8
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 30000
+    wrapper:
+        BLAST_QUERY
+
+# Filter blastn hits for the cutoff value.
+rule parse_megablast_nt:
+    input:
+        query = rules.megablast_nt.input.query,
+        blast_result = rules.megablast_nt.output.out
+    output:
+        mapped = temp("output/{run}/megablast-nt_{n}_mapped.tsv"),
+        unmapped = temp("output/{run}/megablast-nt_{n}_unmapped.fa")
+    params:
+        e_cutoff = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 4000
+    wrapper:
+        PARSE_BLAST
+
+
+rule blastn_nt:
+    input:
+        query = rules.parse_megablast_nt.output.unmapped
+    output:
+        out = temp("output/{run}/blastn-nt_{n}.tsv")
+    params:
+        program = "blastn",
+        db = "nt_v5",
+        word_size = 11,
+        evalue = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    threads: 4
+    resources:
+        runtime = 400,
+        mem_mb = 60000
+    wrapper:
+        BLAST_QUERY
+
+# Filter blastn hits for the cutoff value.
+rule parse_blastn_nt:
+    input:
+        query = rules.blastn_nt.input.query,
+        blast_result = rules.blastn_nt.output.out
+    output:
+        mapped = temp("output/{run}/blastn-nt_{n}_mapped.tsv"),
+        unmapped = temp("output/{run}/blastn-nt_{n}_unmapped.fa")
+    params:
+        e_cutoff = 1e-6,
+        outfmt = rules.megablast_virus.params.outfmt
+    resources:
+        runtime = lambda wildcards, attempt: attempt * 120,
+        mem_mb = 4000
+    wrapper:
+        PARSE_BLAST
+
 
 # Blastx unmapped reads against nr virus database.
 rule blastx_virus:
     input:
-        query = rules.parse_blastn_virus.output.unmapped,
+        query = rules.parse_blastn_nt.output.unmapped,
         taxidlist = "output/blast/10239.taxids"
     output:
         out = temp("output/{run}/blastx-virus_{n}.tsv")

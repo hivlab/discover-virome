@@ -31,7 +31,7 @@ wildcard_constraints:
 
 # Main output files
 RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa"]
-BLAST = ["megablast-virus", "blastn-virus", "blastx-virus"] if config["run_blastx"] else ["megablast-virus", "blastn-virus"]
+BLAST = ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt", "blastx-virus"] if config["run_blastx"] else ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt"]
 STATS = expand(["output/{run}/multiqc.html"], run = RUN_IDS)
 OUTPUTS = expand("output/{run}/{result}", run = RUN_IDS, result = RESULTS) + STATS
 
