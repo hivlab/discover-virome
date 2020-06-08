@@ -247,7 +247,7 @@ rule filter_viruses:
 # Merge unassigned sequences
 rule merge_unassigned:
     input:
-        expand("output/{{run}}/blast{type}_{n}_unmapped.fa", type = "x-virus" if config["run_blastx"] else "n-virus", n = N)
+        expand("output/{{run}}/blast{type}_{n}_unmapped.fa", type = "x-virus" if config["run_blastx"] else "n-nt", n = N)
     output:
         "output/{run}/unassigned.fa"
     shell:
