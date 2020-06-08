@@ -112,7 +112,7 @@ rule megablast_nt:
     threads: 8
     resources:
         runtime = lambda wildcards, attempt: attempt * 120,
-        mem_mb = 30000
+        mem_mb = 96000
     wrapper:
         BLAST_QUERY
 
@@ -148,7 +148,7 @@ rule blastn_nt:
     threads: 4
     resources:
         runtime = 400,
-        mem_mb = 60000
+        mem_mb = 96000
     wrapper:
         BLAST_QUERY
 
