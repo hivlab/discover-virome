@@ -17,7 +17,7 @@ rule get_virus_taxids:
     resources:
         runtime = 120
     shell:
-       "get_species_taxids.sh -t {params.taxid} > {output}"
+       "(get_species_taxids.sh -t {params.taxid} > {output} || true)"
 
 
 rule megablast_virus:
