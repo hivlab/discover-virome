@@ -19,10 +19,10 @@ rule fix_fasta:
         "output/{run}/assemble/final.contigs.fa"
     output:
         "output/{run}/contigs-fixed.fa"
-    shell:
-        """
-        sed -r 's/^(>[a-z0-9_]+).+/\1/' {input} > {output}
-        """
+    conda:
+        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
+    script:
+        "scripts/fix_fasta.py"
 
 # Map reads to contigs
 rule coverage:
