@@ -10,7 +10,7 @@ WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers"
 RUNS = ["V554"]
 
 rule all:
-    "output/{run}/final.contigs_aln.bam"
+    expand("output/{run}/final.contigs_aln.bam", run = RUNS)
 
 # Fix fasta headers by removing everything after contig id
 rule fix_fasta:
