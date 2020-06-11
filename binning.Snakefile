@@ -37,7 +37,7 @@ rule coverage:
         extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 bamscript=bs.sh -Xmx{resources.mem_mb / 1000:.0f}g"
     resources:
         runtime = 1440,
-        mem_mb = 16000
+        mem_mb = 8000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
