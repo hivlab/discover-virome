@@ -4,7 +4,7 @@ rule tantan:
     input:
         rules.assemble.output.contigs
     output:
-        temp("output/{run}/tantan.fa")
+        temp("output/assemble/tantan.fa")
     params:
         extra = "-x N" # mask low complexity using N
     resources:
@@ -21,7 +21,7 @@ rule tantan_good:
     input:
         masked = rules.tantan.output[0]
     output:
-        masked_filt = temp("output/{run}/tantangood.fa")
+        masked_filt = temp("output/assemble/tantangood.fa")
     params:
         min_length = 50,
         por_n = 40
@@ -36,7 +36,7 @@ rule split_fasta:
     input:
         rules.tantan_good.output.masked_filt
     output:
-        temp(expand("output/{{run}}/repeatmasker_{n}.fa", n = N))
+        temp(expand("output/assemble/repeatmasker_{n}.fa", n = N))
     params:
         config["split_fasta"]["n_files"]
     resources:
@@ -52,12 +52,12 @@ rule split_fasta:
 # If no repetitive sequences were detected symlink output to input file
 rule repeatmasker:
     input:
-        fa = "output/{run}/repeatmasker_{n}.fa"
+        fa = "output/assemble/repeatmasker_{n}.fa"
     output:
-        masked = temp("output/{run}/repeatmasker_{n}.fa.masked"),
-        out = temp("output/{run}/repeatmasker_{n}.fa.out"),
-        cat = temp("output/{run}/repeatmasker_{n}.fa.cat"),
-        tbl = "output/{run}/repeatmasker_{n}.fa.tbl"
+        masked = temp("output/assemble/repeatmasker_{n}.fa.masked"),
+        out = temp("output/assemble/repeatmasker_{n}.fa.out"),
+        cat = temp("output/assemble/repeatmasker_{n}.fa.cat"),
+        tbl = "output/assemble/repeatmasker_{n}.fa.tbl"
     params:
         extra = "-qq"
     threads: 8
@@ -79,8 +79,8 @@ rule repeatmasker_good:
         masked = rules.repeatmasker.output.masked,
         original = rules.repeatmasker.input.fa
     output:
-        masked_filt = temp("output/{run}/repmaskedgood_{n}.fa"),
-        original_filt = temp("output/{run}/unmaskedgood_{n}.fa")
+        masked_filt = temp("output/assemble/repmaskedgood_{n}.fa"),
+        original_filt = temp("output/assemble/unmaskedgood_{n}.fa")
     params:
         min_length = 100,
         por_n = 30

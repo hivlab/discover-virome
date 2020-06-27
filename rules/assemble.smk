@@ -13,19 +13,19 @@ rule concatenate:
 
 rule assemble:
     input: 
-        se = rules.concatenate.output[0]
+        se = expand("output/{run}/concatenated.fq.gz", run = RUN_IDS)
     output: 
-        contigs = "output/{run}/assemble/final.contigs.fa"
+        contigs = "output/assemble/final.contigs.fa"
     params:
         extra = "--min-contig-len 1000"
     threads: 8
     log: 
-        "output/{run}/log/assemble.log"
+        "output/assemble/log/assemble.log"
     shadow: 
         "minimal"
     resources:
-        runtime = lambda wildcards, attempt: attempt * 120,
-        mem_mb = 8000
+        runtime = 1440,
+        mem_mb = 96000
     wrapper:
       f"{WRAPPER_PREFIX}/master/assembly/megahit"
 
@@ -37,15 +37,15 @@ rule assemble:
 rule coverage:
     input:
         ref = rules.assemble.output.contigs, 
-        input = rules.concatenate.output[0]
+        input = expand("output/{run}/concatenated.fq.gz", run = RUN_IDS)
     output:
-        out = "output/{run}/final.contigs_aln.sam",
-        covstats = "output/{run}/coverage.txt",
-        statsfile = "output/{run}/mapcontigs.txt"
+        out = "output/assemble/final.contigs_aln.sam",
+        covstats = "output/assemble/coverage.txt",
+        statsfile = "output/assemble/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 nodisk -Xmx{resources.mem_mb / 1000:.0f}g"
+        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 strictmaxindel minid=0.9 -Xmx{resources.mem_mb / 1000:.0f}g"
     resources:
         runtime = 1440,
-        mem_mb = 4000
+        mem_mb = 16000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"

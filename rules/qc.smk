@@ -15,17 +15,17 @@ rule fastqc:
 
 rule multiqc:
     input:
-        "output/{run}/fastqc.zip",
-        "output/{run}/maphost.txt",
-        "output/{run}/coverage.txt",
-        "output/{run}/mapcontigs.txt"
+        expand("output/{run}/fastqc.zip", run = RUN_IDS),
+        expand("output/{run}/maphost.txt", run = RUN_IDS),
+        "output/assemble/coverage.txt",
+        "output/assemble/mapcontigs.txt"
     output:
         report("output/{run}/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
     log:
         "output/{run}/log/multiqc.log"
     resources:
         runtime = 120,
-        mem_mb = 4000    
+        mem_mb = 8000    
     wrapper:
         f"{WRAPPER_PREFIX}/master/multiqc"
 
