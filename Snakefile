@@ -66,4 +66,7 @@ SUBSET_FASTA = f"{WRAPPER_PREFIX}/master/subset_fasta"
 # Rules
 include: "rules/common.smk"
 include: "rules/preprocess.smk"
+include: "rules/assemble.smk"
+include: "rules/mask.smk"
+include: "rules/qc.smk"
 include: "rules/blast.smk"
