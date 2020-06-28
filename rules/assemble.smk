@@ -17,7 +17,7 @@ rule assemble:
     output: 
         contigs = "output/assemble/final.contigs.fa"
     params:
-        extra = "--min-contig-len 1000"
+        extra = lambda wildcards, resources: f"--min-contig-len 1000 -m {resources.mem_mb * 1048576}"
     threads: 8
     log: 
         "output/assemble/log/assemble.log"
