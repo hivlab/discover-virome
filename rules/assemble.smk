@@ -20,12 +20,12 @@ rule assemble:
         extra = lambda wildcards, resources: f"--min-contig-len 1000 -m {resources.mem_mb * 1048576}"
     threads: 8
     log: 
-        "output/assemble/log/assemble.log"
+        "output/assemble/assemble.log"
     shadow: 
         "minimal"
     resources:
-        runtime = 1440,
-        mem_mb = 96000
+        runtime = lambda wildcards, attempt: attempt * 600,
+        mem_mb = 36000
     wrapper:
       f"{WRAPPER_PREFIX}/master/assembly/megahit"
 
