@@ -24,8 +24,8 @@ rule assemble:
     shadow: 
         "minimal"
     resources:
-        runtime = 1440,
-        mem_mb = 96000
+        runtime = lambda wildcards, attempt: attempt * 600,
+        mem_mb = 36000
     wrapper:
       f"{WRAPPER_PREFIX}/master/assembly/megahit"
 
