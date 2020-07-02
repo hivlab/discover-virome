@@ -16,9 +16,7 @@ rule fastqc:
 rule multiqc:
     input:
         expand("output/{run}/fastqc.zip", run = RUN_IDS),
-        expand("output/{run}/maphost.txt", run = RUN_IDS),
-        "output/assemble/coverage.txt",
-        "output/assemble/mapcontigs.txt"
+        expand("output/{run}/maphost.txt", run = RUN_IDS)
     output:
         report("output/{run}/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
     log:
