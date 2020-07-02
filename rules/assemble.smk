@@ -38,7 +38,7 @@ rule fix_fasta:
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
     script:
-        "scripts/fix_fasta.py"
+        "../scripts/fix_fasta.py"
 
 
 # Calculate assembly coverage stats
