@@ -32,7 +32,7 @@ wildcard_constraints:
 # Main output files
 RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa", "final.contigs_aln.bam"]
 BLAST = ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt", "blastx-virus"] if config["run_blastx"] else ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt"]
-STATS = expand(["output/{run}/multiqc.html"], run = RUN_IDS) + "output/assemble/coverage.txt" + "output/assemble/mapcontigs.txt"
+STATS = expand(["output/{run}/multiqc.html"], run = RUN_IDS) + ["output/assemble/coverage.txt", "output/assemble/mapcontigs.txt"]
 OUTPUTS = expand("output/assemble/{result}", result = RESULTS) + STATS
 
 # Remote outputs
