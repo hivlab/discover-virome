@@ -2,7 +2,7 @@
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-        rules.assemble.output.contigs
+        rules.fix_fasta.output[0]
     output:
         temp("output/assemble/tantan.fa")
     params:
