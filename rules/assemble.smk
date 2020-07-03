@@ -45,18 +45,32 @@ rule fix_fasta:
 # nodisk keeps index in memory, otherwise index will be written once to project root (ref/1) from first run to be processed 
 # and reused for other unrelated runs.
 # Key "input" will be parsed to "in", "input1" to "in1" etc.
-rule coverage:
+rule mapcontigs:
     input:
         ref = rules.fix_fasta.output[0], 
-        input = expand("output/{run}/concatenated.fq.gz", run = RUN_IDS)
+        input = "output/{run}/concatenated.fq.gz"
     output:
-        out = "output/assemble/final.contigs_aln.bam",
-        covstats = "output/assemble/coverage.txt",
-        statsfile = "output/assemble/mapcontigs.txt"
+        out = "output/{run}/final.contigs_aln.sam",
+        statsfile = "output/{run}/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 strictmaxindel minid=0.9 bamscript=bs.sh -Xmx{resources.mem_mb / 1000:.0f}g"
+        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 strictmaxindel minid=0.9 -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL=ILLUMINA RGID={wildcards.run} RGSM={wildcards.run}"
     resources:
         runtime = 1440,
         mem_mb = 16000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
+
+rule samtools_sort:
+    input:
+        rules.mapcontigs.output.out
+    output:
+        "output/{run}/contigs_sorted.bam"
+    params:
+        ""
+    resources:
+        runtime = 120,
+        mem_mb = 4000
+    threads: 4 # Samtools takes additional threads through its option -@
+    wrapper:
+        "0.50.4/bio/samtools/sort"
+

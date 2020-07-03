@@ -30,10 +30,10 @@ wildcard_constraints:
     n = "\d+"
 
 # Main output files
-RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa", "final.contigs_aln.bam"]
+RESULTS = ["viruses.csv", "non-viral.csv", "unassigned.fa", "contigs-fixed.fa"]
 BLAST = ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt", "blastx-virus"] if config["run_blastx"] else ["megablast-virus", "blastn-virus", "megablast-nt", "blastn-nt"]
-STATS = expand(["output/{run}/multiqc.html"], run = RUN_IDS) + ["output/assemble/coverage.txt", "output/assemble/mapcontigs.txt"]
-OUTPUTS = expand("output/assemble/{result}", result = RESULTS) + STATS
+STATS = expand(["output/{run}/multiqc.html", "output/{run}/mapcontigs.txt"], run = RUN_IDS)
+OUTPUTS = expand("output/assemble/{result}", result = RESULTS) + expand("output/{run}/contigs_sorted.bam", run = RUN_IDS) + STATS
 
 # Remote outputs
 if config["zenodo"]["deposition_id"]:
