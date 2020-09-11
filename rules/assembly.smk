@@ -3,7 +3,7 @@ rule concatenate:
     input:
         rules.merge.output.out, rules.qtrim.output.out
     output:
-        temp("output/{run}/concatenated.fq.gz")
+        temp("output/{sample}/{run}/concatenated.fq.gz")
     resources:
         runtime = 120,
         mem_mb = 4000
@@ -11,16 +11,16 @@ rule concatenate:
         "cat {input} > {output}"
 
 
-rule assemble:
+rule assembly:
     input: 
-        se = expand("output/{run}/concatenated.fq.gz", run = RUN_IDS)
+        se = lambda wildcards: expand("output/{{sample}}/{run}/concatenated.fq.gz", run = samples[wildcards.sample])
     output: 
-        contigs = "output/assemble/final.contigs.fa"
+        contigs = "output/{sample}/assembly/final.contigs.fa"
     params:
         extra = lambda wildcards, resources: f"--min-contig-len 1000 -m {resources.mem_mb * 1048576}"
     threads: 8
     log: 
-        "output/assemble/assemble.log"
+        "output/{sample}/log/assembly.log"
     shadow: 
         "minimal"
     resources:
@@ -32,9 +32,9 @@ rule assemble:
 
 rule fix_fasta:
     input: 
-        rules.assemble.output.contigs
+        rules.assembly.output.contigs
     output:
-        "output/assemble/contigs-fixed.fa"
+        "output/{sample}/contigs-fixed.fa"
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
     script:
@@ -48,12 +48,12 @@ rule fix_fasta:
 rule mapcontigs:
     input:
         ref = rules.fix_fasta.output[0], 
-        input = "output/{run}/concatenated.fq.gz"
+        input = "output/{sample}/{run}/concatenated.fq.gz"
     output:
-        out = "output/{run}/final.contigs_aln.sam",
-        statsfile = "output/{run}/mapcontigs.txt"
+        out = "output/{sample}/{run}/mapcontigs.sam",
+        statsfile = "output/{sample}/{run}/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 strictmaxindel minid=0.9 -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL=ILLUMINA RGID={wildcards.run} RGSM={wildcards.run}"
+        extra = lambda wildcards, resources: f"maxindel=200 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL={PLATFORM} RGID={wildcards.run} RGSM={wildcards.sample}"
     resources:
         runtime = 120,
         mem_mb = 4000
@@ -64,7 +64,7 @@ rule samtools_sort:
     input:
         rules.mapcontigs.output.out
     output:
-        "output/{run}/contigs_sorted.bam"
+        "output/{sample}/{run}/sorted.bam"
     params:
         ""
     resources:
@@ -74,3 +74,28 @@ rule samtools_sort:
     wrapper:
         "0.50.4/bio/samtools/sort"
 
+
+rule samtools_merge:
+    input:
+        lambda wildcards: expand("output/{{sample}}/{run}/sorted.bam", run = samples[wildcards.sample])
+    output:
+        "output/{sample}/merged.bam"
+    params:
+        ""
+    threads:  8  
+    wrapper:
+        "0.62.0/bio/samtools/merge"
+
+
+rule genomecov:
+    input:
+        ibam = rules.samtools_merge.output[0]
+    output:
+        "output/{sample}/genomecov.bg"
+    params:
+        extra = "-bg"
+    resources:
+        runtime = 120,
+        mem_mb = lambda wildcards, attempt: attempt * 8000
+    wrapper: 
+        f"{WRAPPER_PREFIX}/master/bedtools/genomecov"
