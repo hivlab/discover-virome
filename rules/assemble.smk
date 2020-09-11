@@ -55,8 +55,8 @@ rule mapcontigs:
     params: 
         extra = lambda wildcards, resources: f"mapper=bbmappacbio maxindel=80 strictmaxindel minid=0.9 -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL=ILLUMINA RGID={wildcards.run} RGSM={wildcards.run}"
     resources:
-        runtime = 1440,
-        mem_mb = 16000
+        runtime = 120,
+        mem_mb = 4000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
