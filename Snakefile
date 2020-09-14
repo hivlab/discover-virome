@@ -43,8 +43,7 @@ onsuccess:
 
 rule all:
     input: 
-        "output/multiqc.html",
-        expand(["output/{sample}/merged.bam", "output/{sample}/genomecov.bg"], sample = list(samples.keys())),
+        expand(["output/{sample}/merged.bam", "output/{sample}/contigs-fixed.fa", "output/{sample}/genomecov.bg"], sample = list(samples.keys())),
         expand("output/{sample}/{run}/qtrimmed.fq.gz", zip, sample = SAMPLE, run = RUN)
         
 

@@ -35,10 +35,43 @@ rule fix_fasta:
         rules.assembly.output.contigs
     output:
         "output/{sample}/contigs-fixed.fa"
+    params:
+        lambda wildcards: wildcards.sample
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
     script:
         "../scripts/fix_fasta.py"
+
+
+checkpoint concatcontigs:
+    input:
+        lambda wildcards: expand("output/{sample}/contigs-fixed.fa", run = samples[wildcards.sample])
+    output:
+        temp("output/concatcontigs.fa")
+    resources:
+        runtime = 120,
+        mem_mb = 4000
+    shell:
+        "cat {input} > {output}"
+
+
+# Run cd-hit to find and cluster duplicate sequences
+rule cd_hit:
+    input:
+        rules.concatcontigs.output[0]
+    output:
+        repres = temp("output/cdhit.fa"),
+        clstr = temp("output/cdhit.fa.clstr")
+    params:
+        extra = "-c 0.984 -G 0 -n 10 -d 0 -aS 0.984 -r 1 -M 0"
+    log:
+        "output/log/cdhit.log"
+    threads: 4
+    resources:
+        runtime = 2880,
+        mem_mb = 14000
+    wrapper:
+        f"{WRAPPER_PREFIX}/master/cdhit"
 
 
 # Calculate assembly coverage stats

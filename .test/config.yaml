@@ -10,7 +10,10 @@ remote: False
 
 # Remote FTP credentials
 username: anonymous
-password: your@email.addr
+password: tapa741@gmail.com
+
+# Sequencing platform
+platform: ILLUMINA
 
 # Option to save time by not running blastx
 run_blastx: False
