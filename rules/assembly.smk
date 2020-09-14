@@ -17,7 +17,7 @@ rule assembly:
     output: 
         contigs = "output/{sample}/assembly/final.contigs.fa"
     params:
-        extra = lambda wildcards, resources: f"--min-contig-len 1000 -m {resources.mem_mb * 1048576}"
+        extra = lambda wildcards, resources: f"--presets meta-large --min-contig-len 1000 --verbose -m {resources.mem_mb * 1048576}"
     threads: 8
     log: 
         "output/{sample}/log/assembly.log"
@@ -41,37 +41,6 @@ rule fix_fasta:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
     script:
         "../scripts/fix_fasta.py"
-
-
-checkpoint concatcontigs:
-    input:
-        lambda wildcards: expand("output/{sample}/contigs-fixed.fa", run = samples[wildcards.sample])
-    output:
-        temp("output/concatcontigs.fa")
-    resources:
-        runtime = 120,
-        mem_mb = 4000
-    shell:
-        "cat {input} > {output}"
-
-
-# Run cd-hit to find and cluster duplicate sequences
-rule cd_hit:
-    input:
-        rules.concatcontigs.output[0]
-    output:
-        repres = temp("output/cdhit.fa"),
-        clstr = temp("output/cdhit.fa.clstr")
-    params:
-        extra = "-c 0.984 -G 0 -n 10 -d 0 -aS 0.984 -r 1 -M 0"
-    log:
-        "output/log/cdhit.log"
-    threads: 4
-    resources:
-        runtime = 2880,
-        mem_mb = 14000
-    wrapper:
-        f"{WRAPPER_PREFIX}/master/cdhit"
 
 
 # Calculate assembly coverage stats
@@ -120,6 +89,17 @@ rule samtools_merge:
         "0.62.0/bio/samtools/merge"
 
 
+rule samtools_index:
+    input:
+        "output/{sample}/merged.bam"
+    output:
+        "output/{sample}/merged.bam.bai"
+    params:
+        "" # optional params string
+    wrapper:
+        "0.65.0/bio/samtools/index"
+
+
 rule genomecov:
     input:
         ibam = rules.samtools_merge.output[0]
@@ -132,3 +112,37 @@ rule genomecov:
         mem_mb = lambda wildcards, attempt: attempt * 8000
     wrapper: 
         f"{WRAPPER_PREFIX}/master/bedtools/genomecov"
+
+
+# Variant calling
+# "Removes any sites with estimated probability of not being polymorphic 
+# less than phred 20 (aka 0.01), or probability of polymorphism > 0.99"
+# from FreeBayes user manual.
+rule lofreq:
+    input:
+        ref = rules.fix_fasta.output[0],
+        bam = rules.samtools_merge.output[0]
+    output:
+        "output/{sample}/lofreq.vcf" 
+    params:
+        extra="--call-indels --min-cov 50 --max-depth 1000000 --min-bq 30 --min-alt-bq 30 --def-alt-bq 0 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter"
+    resources:
+        runtime = 120,
+        mem_mb = 4000
+    threads: 1
+    wrapper:
+        f"{WRAPPER_PREFIX}/master/lofreq/call"
+
+
+rule vcffilter:
+    input:
+        "output/{sample}/lofreq.vcf"
+    output:
+        "output/{sample}/filtered.vcf"
+    params:
+        extra = "-f 'QUAL > 30 & AF > 0.5'"
+    resources:
+        runtime = 120,
+        mem_mb = 4000
+    wrapper:
+        f"{WRAPPER_PREFIX}/master/vcflib/vcffilter"

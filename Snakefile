@@ -43,8 +43,9 @@ onsuccess:
 
 rule all:
     input: 
-        expand(["output/{sample}/merged.bam", "output/{sample}/contigs-fixed.fa", "output/{sample}/genomecov.bg"], sample = list(samples.keys())),
-        expand("output/{sample}/{run}/qtrimmed.fq.gz", zip, sample = SAMPLE, run = RUN)
+        "output/multiqc.html",
+        expand(["output/{sample}/merged.bam", "output/{sample}/contigs-fixed.fa", "output/{sample}/genomecov.bg", "output/{sample}/filtered.vcf"], sample = list(samples.keys())),
+        expand(["output/{sample}/{run}/qtrimmed.fq.gz", "output/{sample}/{run}/fastqc.html"], zip, sample = SAMPLE, run = RUN)
         
 
 def get_fastq(wildcards):

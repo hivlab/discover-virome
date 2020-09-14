@@ -14,11 +14,11 @@ rule fastqc:
 
 
 # Host mapping stats
-rule bamstats:
+rule samtools_stats:
     input:
         rules.samtools_merge.output[0]
     output:
-        "output/{sample}/bamstats.txt"
+        "output/{sample}/samtools-stats.txt"
     resources:
         runtime = 120,
         mem_mb = 8000
@@ -26,10 +26,30 @@ rule bamstats:
         "0.42.0/bio/samtools/stats"
 
 
+rule samtools_flagstat:
+    input:
+        rules.samtools_merge.output[0]
+    output:
+        "output/{sample}/samtools-flagstats.txt"
+    wrapper:
+        "0.65.0/bio/samtools/flagstat"
+
+
+rule samtools_idxstats:
+    input:
+        bam = rules.samtools_merge.output[0],
+        idx = rules.samtools_index.output[0]
+    output:
+        "output/{sample}/samtools-idxstats.txt"
+    log:
+        "output/{sample}/log/idxstats.log"
+    wrapper:
+        "0.65.0/bio/samtools/idxstats"
+
+
 rule multiqc:
     input:
-        expand(["output/{sample}/{run}/fastqc.zip",], zip, sample = SAMPLE, run = RUN),
-        expand(["output/{sample}/bamstats.txt"], sample = samples.keys())
+        expand(["output/{sample}/samtools-stats.txt", "output/{sample}/samtools-flagstats.txt", "output/{sample}/samtools-idxstats.txt"], sample = samples.keys())
     output:
         report("output/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
     params:
@@ -40,4 +60,4 @@ rule multiqc:
         runtime = 120,
         mem_mb = 4000    
     wrapper:
-      f"{WRAPPER_PREFIX}/master/multiqc"
+        "0.65.0/bio/multiqc"
