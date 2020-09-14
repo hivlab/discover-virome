@@ -3,7 +3,7 @@ rule concatenate:
     input:
         rules.merge.output.out, rules.qtrim.output.out
     output:
-        temp("output/{sample}/{run}/concatenated.fq.gz")
+        temp("output/{group}/{run}/concatenated.fq.gz")
     resources:
         runtime = 120,
         mem_mb = 4000
@@ -13,14 +13,14 @@ rule concatenate:
 
 rule assembly:
     input: 
-        se = lambda wildcards: expand("output/{{sample}}/{run}/concatenated.fq.gz", run = samples[wildcards.sample])
+        se = lambda wildcards: expand("output/{{group}}/{run}/concatenated.fq.gz", run = groups[wildcards.group])
     output: 
-        contigs = "output/{sample}/assembly/final.contigs.fa"
+        contigs = "output/{group}/assembly/final.contigs.fa"
     params:
         extra = lambda wildcards, resources: f"--presets meta-large --min-contig-len 1000 --verbose -m {resources.mem_mb * 1048576}"
     threads: 8
     log: 
-        "output/{sample}/log/assembly.log"
+        "output/{group}/log/assembly.log"
     shadow: 
         "minimal"
     resources:
@@ -34,9 +34,9 @@ rule fix_fasta:
     input: 
         rules.assembly.output.contigs
     output:
-        "output/{sample}/contigs-fixed.fa"
+        "output/{group}/contigs-fixed.fa"
     params:
-        lambda wildcards: wildcards.sample
+        lambda wildcards: wildcards.group
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
     script:
@@ -50,12 +50,12 @@ rule fix_fasta:
 rule mapcontigs:
     input:
         ref = rules.fix_fasta.output[0], 
-        input = "output/{sample}/{run}/concatenated.fq.gz"
+        input = "output/{group}/{run}/concatenated.fq.gz"
     output:
-        out = "output/{sample}/{run}/mapcontigs.sam",
-        statsfile = "output/{sample}/{run}/mapcontigs.txt"
+        out = "output/{group}/{run}/mapcontigs.sam",
+        statsfile = "output/{group}/{run}/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"maxindel=200 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL={PLATFORM} RGID={wildcards.run} RGSM={wildcards.sample}"
+        extra = lambda wildcards, resources: f"maxindel=200 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL={PLATFORM} RGID={wildcards.run} RGSM={wildcards.group}"
     resources:
         runtime = 120,
         mem_mb = 4000
@@ -66,7 +66,7 @@ rule samtools_sort:
     input:
         rules.mapcontigs.output.out
     output:
-        "output/{sample}/{run}/sorted.bam"
+        "output/{group}/{run}/sorted.bam"
     params:
         ""
     resources:
@@ -79,9 +79,9 @@ rule samtools_sort:
 
 rule samtools_merge:
     input:
-        lambda wildcards: expand("output/{{sample}}/{run}/sorted.bam", run = samples[wildcards.sample])
+        lambda wildcards: expand("output/{{group}}/{run}/sorted.bam", run = groups[wildcards.group])
     output:
-        "output/{sample}/merged.bam"
+        "output/{group}/merged.bam"
     params:
         ""
     threads:  8  
@@ -91,9 +91,9 @@ rule samtools_merge:
 
 rule samtools_index:
     input:
-        "output/{sample}/merged.bam"
+        "output/{group}/merged.bam"
     output:
-        "output/{sample}/merged.bam.bai"
+        "output/{group}/merged.bam.bai"
     params:
         "" # optional params string
     wrapper:
@@ -104,7 +104,7 @@ rule genomecov:
     input:
         ibam = rules.samtools_merge.output[0]
     output:
-        "output/{sample}/genomecov.bg"
+        "output/{group}/genomecov.bg"
     params:
         extra = "-bg"
     resources:
@@ -123,7 +123,7 @@ rule lofreq:
         ref = rules.fix_fasta.output[0],
         bam = rules.samtools_merge.output[0]
     output:
-        "output/{sample}/lofreq.vcf" 
+        "output/{group}/lofreq.vcf" 
     params:
         extra="--call-indels --min-cov 50 --max-depth 1000000 --min-bq 30 --min-alt-bq 30 --def-alt-bq 0 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter"
     resources:
@@ -136,9 +136,9 @@ rule lofreq:
 
 rule vcffilter:
     input:
-        "output/{sample}/lofreq.vcf"
+        "output/{group}/lofreq.vcf"
     output:
-        "output/{sample}/filtered.vcf"
+        "output/{group}/filtered.vcf"
     params:
         extra = "-f 'QUAL > 30 & AF > 0.5'"
     resources:

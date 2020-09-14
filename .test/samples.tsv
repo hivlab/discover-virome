@@ -1,4 +1,4 @@
-sample  run fq1 fq2
+group  run fq1 fq2
 6V3 SRR5557999A  reads/SRR5557999A_1.fq reads/SRR5557999A_2.fq
 6V3 SRR5557999B  reads/SRR5557999B_1.fq reads/SRR5557999B_2.fq
 46V3 SRR5558000A  reads/SRR5558000A_1.fq reads/SRR5558000A_2.fq

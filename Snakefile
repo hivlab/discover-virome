@@ -9,17 +9,17 @@ import pandas as pd
 from snakemake.utils import validate, makedirs
 
 
-# Load configuration file with sample and path info
+# Load configuration file with group and path info
 configfile: "config.yaml"
 # validate(config, "schemas/config.schema.yaml")
 
 
-# Load runs and groups
-df = pd.read_csv("samples.tsv", sep="\s+", dtype=str).set_index(["sample","run"], drop=False)
+# Load samples
+df = pd.read_csv("samples.tsv", sep="\s+", dtype=str).set_index(["group","run"], drop=False)
 validate(df, "schemas/samples.schema.yaml")
-samples = df.groupby(level=0).apply(lambda df: df.xs(df.name)["run"].tolist()).to_dict()
-SAMPLE = [sample for sample,run in df.index.tolist()]
-RUN = [run for sample,run in df.index.tolist()]
+groups = df.groupby(level=0).apply(lambda df: df.xs(df.name)["run"].tolist()).to_dict()
+GROUP = [group for group,run in df.index.tolist()]
+RUN = [run for group,run in df.index.tolist()]
 PLATFORM = config["platform"]
 
 # Path to reference genomes
@@ -44,13 +44,13 @@ onsuccess:
 rule all:
     input: 
         "output/multiqc.html",
-        expand(["output/{sample}/merged.bam", "output/{sample}/contigs-fixed.fa", "output/{sample}/genomecov.bg", "output/{sample}/filtered.vcf"], sample = list(samples.keys())),
-        expand(["output/{sample}/{run}/qtrimmed.fq.gz", "output/{sample}/{run}/fastqc.html"], zip, sample = SAMPLE, run = RUN)
+        expand(["output/{group}/merged.bam", "output/{group}/contigs-fixed.fa", "output/{group}/genomecov.bg", "output/{group}/filtered.vcf"], group = list(groups.keys())),
+        expand(["output/{group}/{run}/qtrimmed.fq.gz", "output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN)
         
 
 def get_fastq(wildcards):
     fq_cols = [col for col in df.columns if "fq" in col]
-    fqs = df.loc[(wildcards.sample, wildcards.run), fq_cols].dropna()
+    fqs = df.loc[(wildcards.group, wildcards.run), fq_cols].dropna()
     assert len(fq_cols) in [1, 2], "Enter one or two FASTQ file paths"
     if len(fq_cols) == 2:
         return {"in1": fqs[0], "in2": fqs[1]}
