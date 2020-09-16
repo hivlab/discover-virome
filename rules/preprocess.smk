@@ -101,7 +101,7 @@ rule maphost:
     log: 
         "output/{group}/{run}/log/maphost.log"
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 80000
     threads: 8
     wrapper:
