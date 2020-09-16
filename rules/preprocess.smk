@@ -97,7 +97,7 @@ rule maphost:
         outm = "output/{group}/{run}/maphost.fq.gz",
         statsfile = "output/{group}/{run}/maphost.txt"
     params:
-        extra = lambda wildcards, resources: f"nodisk -Xmx{resources.mem_mb / 1000:.0f}g"
+        extra = lambda wildcards, resources: f"nodisk -Xmx{resources.mem_mb}m"
     log: 
         "output/{group}/{run}/log/maphost.log"
     resources:
@@ -114,7 +114,7 @@ rule correct1:
     output:
         out = temp("output/{group}/{run}/ecco.fq.gz")
     params:
-        extra = lambda wildcards, resources: f"ecco mix vstrict ordered -Xmx{resources.mem_mb / 1000:.0f}g -da"
+        extra = lambda wildcards, resources: f"ecco mix vstrict ordered -Xmx{resources.mem_mb}m -da"
     log: 
         "output/{group}/{run}/log/correct1.log"
     resources:
@@ -131,12 +131,12 @@ rule correct2:
     output:
         out = temp("output/{group}/{run}/eccc.fq.gz")
     params:
-        extra = lambda wildcards, resources: f"passes=4 reorder -Xmx{resources.mem_mb / 1000:.0f}g -da"
+        extra = lambda wildcards, resources: f"passes=4 reorder -Xmx{resources.mem_mb}m -da"
     log: 
         "output/{group}/{run}/log/correct2.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 32000
+        mem_mb = 7 * input.input.size_mb
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
 
@@ -147,12 +147,12 @@ rule correct3:
     output:
         out = temp("output/{group}/{run}/ecct.fq.gz")
     params:
-        extra = lambda wildcards, resources: f"ecc k=62 ordered -Xmx{resources.mem_mb / 1000:.0f}g -da"
+        extra = lambda wildcards, resources: f"ecc k=62 ordered -Xmx{resources.mem_mb}m -da"
     log: 
         "output/{group}/{run}/log/correct3.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 32000
+        mem_mb = 13 * input.input.size_mb
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
 
@@ -165,12 +165,12 @@ rule merge:
         outu = temp("output/{group}/{run}/unmerged.fq.gz"),
         ihist = "output/{group}/{run}/ihist.txt"
     params:
-        extra = lambda wildcards, resources: f"strict k=93 extend2=80 rem ordered -Xmx{resources.mem_mb / 1000:.0f}g"
+        extra = lambda wildcards, resources: f"strict k=93 extend2=80 rem ordered -Xmx{resources.mem_mb}m"
     log: 
         "output/{group}/{run}/log/merge.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 32000
+        mem_mb = 13 * input.input.size_mb
     threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
