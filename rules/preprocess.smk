@@ -136,7 +136,7 @@ rule correct2:
         "output/{group}/{run}/log/correct2.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 7 * input.size_mb
+        mem_mb = lambda wildcards, input: 7 * input.input.size_mb
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
 
@@ -152,7 +152,7 @@ rule correct3:
         "output/{group}/{run}/log/correct3.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 13 * input.size_mb
+        mem_mb = lambda wildcards, input: 13 * input.input.size_mb
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
 
@@ -170,7 +170,7 @@ rule merge:
         "output/{group}/{run}/log/merge.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 13 * input.size_mb
+        mem_mb = lambda wildcards, input: 13 * input.input.size_mb
     threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
