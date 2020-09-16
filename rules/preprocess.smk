@@ -147,7 +147,7 @@ rule correct3:
     output:
         out = temp("output/{group}/{run}/ecct.fq.gz")
     params:
-        extra = lambda wildcards, resources: f"ecc k=62 ordered -Xmx{resources.mem_mb}m -da"
+        extra = lambda wildcards, resources: f"mode=correct k=62 ordered -Xmx{resources.mem_mb}m -da"
     log: 
         "output/{group}/{run}/log/correct3.log"
     resources:
