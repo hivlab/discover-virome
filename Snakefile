@@ -7,6 +7,10 @@ __license__ = "MIT"
 import os
 import pandas as pd
 from snakemake.utils import validate, makedirs
+from snakemake.utils import min_version
+
+# Check for minimal version
+min_version("5.12.3")
 
 
 # Load configuration file with group and path info
@@ -46,18 +50,9 @@ rule all:
         "output/multiqc.html",
         expand(["output/{group}/contigs-fixed.fa"], group = list(groups.keys())),
         expand(["output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN)
-        
-
-def get_fastq(wildcards):
-    fq_cols = [col for col in df.columns if "fq" in col]
-    fqs = df.loc[(wildcards.group, wildcards.run), fq_cols].dropna()
-    assert len(fq_cols) in [1, 2], "Enter one or two FASTQ file paths"
-    if len(fq_cols) == 2:
-        return {"in1": fqs[0], "in2": fqs[1]}
-    else:
-        return {"input": fqs[0]}
 
 
+include: "rules/common.smk"
 include: "rules/preprocess.smk"
 include: "rules/assembly.smk"
 include: "rules/qc.smk"
