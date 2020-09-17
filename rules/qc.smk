@@ -15,7 +15,7 @@ rule fastqc:
 
 rule multiqc:
     input:
-        expand(["output/{group}/samtools-stats.txt", "output/{group}/samtools-flagstats.txt", "output/{group}/samtools-idxstats.txt"], group = groups.keys())
+        expand(["output/{group}/{run}/bhist.txt", "output/{group}/{run}/qhist.txt", "output/{group}/{run}/aqhist.txt", "output/{group}/{run}/bqhist.txt", "output/{group}/{run}/lhist.txt", "output/{group}/{run}/gchist.txt", "output/{group}/{run}/maphost.txt"], group = groups.keys())
     output:
         report("output/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
     params:
