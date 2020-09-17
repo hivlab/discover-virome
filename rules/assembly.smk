@@ -58,7 +58,7 @@ rule mapcontigs:
         extra = lambda wildcards, resources: f"maxindel=200 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb / 1000:.0f}g RGLB=lib1 RGPL={PLATFORM} RGID={wildcards.run} RGSM={wildcards.group}"
     resources:
         runtime = 120,
-        mem_mb = 4000
+        mem_mb = 40000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
@@ -71,7 +71,7 @@ rule samtools_sort:
         ""
     resources:
         runtime = 120,
-        mem_mb = 4000
+        mem_mb = 16000
     threads: 4 # Samtools takes additional threads through its option -@
     wrapper:
         "0.50.4/bio/samtools/sort"
@@ -84,6 +84,9 @@ rule samtools_merge:
         "output/{group}/merged.bam"
     params:
         ""
+    resources:
+        runtime = 120,
+        mem_mb = 16000
     threads:  8  
     wrapper:
         "0.62.0/bio/samtools/merge"
@@ -96,6 +99,9 @@ rule samtools_index:
         "output/{group}/merged.bam.bai"
     params:
         "" # optional params string
+    resources:
+        runtime = 120,
+        mem_mb = 16000
     wrapper:
         "0.65.0/bio/samtools/index"
 
