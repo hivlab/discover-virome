@@ -14,7 +14,7 @@ rule mapcontigs:
     params: 
         extra = lambda wildcards, resources: f"maxindel=80 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb}m bamscript=bs.sh"
     resources:
-        runtime = 120,
+        runtime = lambda wildcards, attempt: attempt * 240,
         mem_mb = 40000
     wrapper:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
