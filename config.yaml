@@ -1,28 +1,11 @@
-# Set seed for replicability
-seed: 561837
-
 # Path or URL to sample sheet (TSV format, required columns: sample, fq1, fq2, frac)
 # sample - unique sample name
 # run - sequencing run
 # fq1 and fq2 - paths to paired-end fastq file
 samples: samples.tsv
-remote: False
 
 # Onsuccess notification email address
 email: your@email.addr
 
-# Remote FTP credentials
-username: anonymous
-password: your@email.addr
-
-# Option to save time by not running blastx
-run_blastx: False
-
-# Upload results to zenodo
-# For upload, setup ZENODO_PAT environment variable for access_token
-zenodo:
-    deposition_id:
-
-# Split fasta
-split_fasta:
-    n_files: 1
+# Number of splits for blast
+splits: 1

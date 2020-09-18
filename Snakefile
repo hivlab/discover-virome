@@ -14,7 +14,7 @@ min_version("5.12.3")
 
 # Load configuration file with group and path info
 configfile: "config.yaml"
-# validate(config, "schemas/config.schema.yaml")
+validate(config, "schemas/config.schema.yaml")
 
 # Load samples
 def run_index_dict(df, level=0):
@@ -33,37 +33,33 @@ samples = run_index_dict(df, level=1)
 GROUP = [group for group,sample,run in df.index.tolist()]
 SAMPLE = [sample for group,sample,run in df.index.tolist()]
 RUN = [run for group,sample,run in df.index.tolist()]
-PLATFORM = config["platform"]
+N = list(range(0, config["splits"], 1))
 
 # Path to reference genomes
 HOST_GENOME = os.getenv("REF_GENOME_HUMAN_MASKED")
 TAXON_DB = os.getenv("TAXON_DB")
 
-
-# Wrappers
-# Wrappers repo: https://github.com/avilab/virome-wrappers
+# Wrappers Github repo: https://github.com/avilab/virome-wrappers
 WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers"
-
 
 # Report
 report: "report/workflow.rst"
 
-
 onsuccess:
-    email = config["password"]
+    email = config["email"]
     shell("mail -s 'Forkflow finished successfully' {email} < {log}")
-
 
 rule all:
     input: 
         "output/multiqc.html",
-        expand(["output/{group}/contigs-fixed.fa"], group = list(groups.keys())),
+        expand(["output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(groups.keys())),
         expand(["output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN),
         expand(["output/{group}/{sample}/mapcontigs_sorted.bam", "output/{group}/{sample}/genomecov.bg", "output/{group}/{sample}/filtered.vcf"], zip, group = GROUP, sample = SAMPLE)
-
 
 include: "rules/common.smk"
 include: "rules/preprocess.smk"
 include: "rules/assembly.smk"
 include: "rules/mapping.smk"
 include: "rules/qc.smk"
+include: "rules/mask.smk"
+include: "rules/blast.smk"

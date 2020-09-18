@@ -1,38 +1,18 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 description: snakemake configuration file
 properties:
-  seed:
-    type: integer
-    default: 11
-    description: an integer, seed for fastq sample
   samples:
     type: string
     description: path to samples.tsv file
-  remote:
-    type: boolean
-    default: false
-    description: boolean that indicates whether to download remote files via FTP
-  username:
+  email:
     type: string
-    description: username for remote file FTP download
-  password:
-    type: string
-    description: password for remote file FTP download
-  run_blastx:
-    type: boolean
-    default: false
-    description: boolean that switches in/out option to save time by not running blastx
-  zenodo:
-    deposition_id:
-      type: ["string", "null"]
-      default: null
-  split_fasta:
-    n_files:
-      type: integer
-      default: 20
-      description: number of files to split fasta file before repeatmasker, defaults to 2
-    required:
-      - n_files
+    description: email address
+  splits:
+    type: integer
+    default: 1
+    description: number of files to split fasta file before repeatmasker and blast, defaults to 1
 
 required:
   - samples
+  - email
+  - splits

@@ -9,9 +9,9 @@ VIRUSES_TAXID = 10239
 # Shadow=full ensures that only required outputs will be saved. 
 rule get_virus_taxids:
     output: 
-        "output/blast/10239.taxids"
+        f"output/blast/{VIRUSES_TAXID}.taxids"
     params:
-       taxid = 10239
+       taxid = VIRUSES_TAXID
     conda:
         "https://raw.githubusercontent.com/avilab/virome-wrappers/master/blast/query/environment.yaml"
     resources:
@@ -22,10 +22,10 @@ rule get_virus_taxids:
 
 rule megablast_virus:
     input:
-        query = "output/assemble/repmaskedgood_{n}.fa",
-        taxidlist = "output/blast/10239.taxids"
+        query = "output/{group}/splits/repmaskedgood_{n}.fa",
+        taxidlist = rules.get_virus_taxids.output[0]
     output:
-        out = temp("output/assemble/megablast-virus_{n}.tsv")
+        out = temp("output/{group}/splits/megablast-virus_{n}.tsv")
     params:
         program = "blastn",
         task = "megablast",
@@ -38,7 +38,7 @@ rule megablast_virus:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 26000
     wrapper:
-        BLAST_QUERY
+        f"{WRAPPER_PREFIX}/master/blast/query"
 
 # Filter blastn hits for the cutoff value.
 rule parse_megablast_virus:
@@ -46,8 +46,8 @@ rule parse_megablast_virus:
         query = rules.megablast_virus.input.query,
         blast_result = rules.megablast_virus.output.out
     output:
-        mapped = temp("output/assemble/megablast-virus_{n}_mapped.tsv"),
-        unmapped = temp("output/assemble/megablast-virus_{n}_unmapped.fa")
+        mapped = temp("output/{group}/splits/megablast-virus_{n}_mapped.tsv"),
+        unmapped = temp("output/{group}/splits/megablast-virus_{n}_unmapped.fa")
     params:
         e_cutoff = 1e-6,
         outfmt = rules.megablast_virus.params.outfmt
@@ -55,7 +55,7 @@ rule parse_megablast_virus:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 4000
     wrapper:
-        PARSE_BLAST
+        f"{WRAPPER_PREFIX}/master/blast/parse"
 
 
 # Blastn, megablast and blastx input, output, and params keys must match commandline blast option names. 
@@ -66,7 +66,7 @@ rule blastn_virus:
         query = rules.parse_megablast_virus.output.unmapped,
         taxidlist = "output/blast/10239.taxids"
     output:
-        out = temp("output/assemble/blastn-virus_{n}.tsv")
+        out = temp("output/{group}/splits/blastn-virus_{n}.tsv")
     params:
         program = "blastn",
         db = "nt_v5",
@@ -78,7 +78,7 @@ rule blastn_virus:
         runtime = lambda wildcards, attempt: 840 + (attempt * 120),
         mem_mb = 26000
     wrapper:
-        BLAST_QUERY
+        f"{WRAPPER_PREFIX}/master/blast/query"
 
 # Filter blastn hits for the cutoff value.
 rule parse_blastn_virus:
@@ -86,8 +86,8 @@ rule parse_blastn_virus:
         query = rules.blastn_virus.input.query,
         blast_result = rules.blastn_virus.output.out
     output:
-        mapped = temp("output/assemble/blastn-virus_{n}_mapped.tsv"),
-        unmapped = temp("output/assemble/blastn-virus_{n}_unmapped.fa")
+        mapped = temp("output/{group}/splits/blastn-virus_{n}_mapped.tsv"),
+        unmapped = temp("output/{group}/splits/blastn-virus_{n}_unmapped.fa")
     params:
         e_cutoff = 1e-6,
         outfmt = rules.megablast_virus.params.outfmt
@@ -95,13 +95,13 @@ rule parse_blastn_virus:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 4000
     wrapper:
-        PARSE_BLAST
+        f"{WRAPPER_PREFIX}/master/blast/parse"
 
 rule megablast_nt:
     input:
         query = rules.parse_blastn_virus.output.unmapped
     output:
-        out = temp("output/assemble/megablast-nt_{n}.tsv")
+        out = temp("output/{group}/splits/megablast-nt_{n}.tsv")
     params:
         program = "blastn",
         task = "megablast",
@@ -114,7 +114,7 @@ rule megablast_nt:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 96000
     wrapper:
-        BLAST_QUERY
+        f"{WRAPPER_PREFIX}/master/blast/query"
 
 # Filter blastn hits for the cutoff value.
 rule parse_megablast_nt:
@@ -122,8 +122,8 @@ rule parse_megablast_nt:
         query = rules.megablast_nt.input.query,
         blast_result = rules.megablast_nt.output.out
     output:
-        mapped = temp("output/assemble/megablast-nt_{n}_mapped.tsv"),
-        unmapped = temp("output/assemble/megablast-nt_{n}_unmapped.fa")
+        mapped = temp("output/{group}/splits/megablast-nt_{n}_mapped.tsv"),
+        unmapped = temp("output/{group}/splits/megablast-nt_{n}_unmapped.fa")
     params:
         e_cutoff = 1e-6,
         outfmt = rules.megablast_virus.params.outfmt
@@ -131,104 +131,35 @@ rule parse_megablast_nt:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 4000
     wrapper:
-        PARSE_BLAST
-
-
-rule blastn_nt:
-    input:
-        query = rules.parse_megablast_nt.output.unmapped
-    output:
-        out = temp("output/assemble/blastn-nt_{n}.tsv")
-    params:
-        program = "blastn",
-        db = "nt_v5",
-        word_size = 11,
-        evalue = 1e-6,
-        outfmt = rules.megablast_virus.params.outfmt
-    threads: 4
-    resources:
-        runtime = 400,
-        mem_mb = 96000
-    wrapper:
-        BLAST_QUERY
-
-# Filter blastn hits for the cutoff value.
-rule parse_blastn_nt:
-    input:
-        query = rules.blastn_nt.input.query,
-        blast_result = rules.blastn_nt.output.out
-    output:
-        mapped = temp("output/assemble/blastn-nt_{n}_mapped.tsv"),
-        unmapped = temp("output/assemble/blastn-nt_{n}_unmapped.fa")
-    params:
-        e_cutoff = 1e-6,
-        outfmt = rules.megablast_virus.params.outfmt
-    resources:
-        runtime = lambda wildcards, attempt: attempt * 120,
-        mem_mb = 4000
-    wrapper:
-        PARSE_BLAST
-
-
-# Blastx unmapped reads against nr virus database.
-rule blastx_virus:
-    input:
-        query = rules.parse_blastn_nt.output.unmapped,
-        taxidlist = "output/blast/10239.taxids"
-    output:
-        out = temp("output/assemble/blastx-virus_{n}.tsv")
-    params:
-        program = "blastx",
-        task = "blastx-fast",
-        db = "nr_v5",
-        evalue = 1e-2,
-        max_hsps = 1,
-        outfmt = rules.blastn_virus.params.outfmt
-    threads: 8
-    wrapper:
-        BLAST_QUERY
-
-
-# Filter blastn hits for the cutoff value.
-rule parse_blastx_virus:
-    input:
-        query = rules.blastx_virus.input.query,
-        blast_result = rules.blastx_virus.output.out
-    output:
-        mapped = temp("output/assemble/blastx-virus_{n}_mapped.tsv"),
-        unmapped = temp("output/assemble/blastx-virus_{n}_unmapped.fa")
-    params:
-        e_cutoff = 1e-3,
-        outfmt = rules.blastn_virus.params.outfmt
-    wrapper:
-        PARSE_BLAST
+        f"{WRAPPER_PREFIX}/master/blast/parse"
 
 
 # Filter sequences by division id.
 # Saves hits with division id
+BLAST = ["megablast-virus", "blastn-virus", "megablast-nt"]
 rule classify_all:
     input:
-        expand("output/assemble/{blastresult}_{{n}}_mapped.tsv", blastresult = BLAST)
+        expand("output/{{group}}/splits/{blastresult}_{{n}}_mapped.tsv", blastresult = BLAST)
     output:
-        temp("output/assemble/all_{n}.csv")
+        temp("output/{group}/splits/all_{n}.csv")
     params:
-        pp_sway = 0.5, 
+        pp_sway = 1, 
         ranks_of_interest = RANKS_OF_INTEREST,
         dbfile = TAXON_DB
     resources:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = 8000
     wrapper:
-        BLAST_TAXONOMY
+        f"{WRAPPER_PREFIX}/master/blast/taxonomy"
 
 
-# Split classification rule outputs into viruses and non-viral
+# Split classification results into viruses and non-viral
 rule filter_viruses:
     input:
-        expand("output/assemble/all_{n}.csv", n = N)
+        expand("output/{{group}}/splits/all_{n}.csv", n = N)
     output:
-        viral = "output/assemble/viruses.csv",
-        non_viral = "output/assemble/non-viral.csv"
+        viral = "output/{group}/viruses.csv",
+        non_viral = "output/{group}/non-viral.csv"
     params:
         ranks = RANKS_OF_INTEREST
     resources:
@@ -247,8 +178,8 @@ rule filter_viruses:
 # Merge unassigned sequences
 rule merge_unassigned:
     input:
-        expand("output/assemble/blast{type}_{n}_unmapped.fa", type = "x-virus" if config["run_blastx"] else "n-nt", n = N)
+        expand("output/{{group}}/splits/{blastresult}_{n}_unmapped.fa", blastresult = BLAST, n = N)
     output:
-        "output/assemble/unassigned.fa"
+        "output/{group}/unassigned.fa"
     shell:
         "cat {input} > {output}"
