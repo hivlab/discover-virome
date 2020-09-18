@@ -38,7 +38,8 @@ rule split_fasta:
     output:
         temp(expand("output/{{group}}/splits/repeatmasker_{n}.fa", n = N))
     params:
-        config["splits"]
+        splits = config["splits"],
+        start = min(N)
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 4000
