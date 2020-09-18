@@ -12,7 +12,7 @@ rule mapcontigs:
         sorted = "output/{group}/{sample}/mapcontigs_sorted.bam",
         statsfile = "output/{group}/{sample}/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"maxindel=200 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb}m bamscript=bs.sh"
+        extra = lambda wildcards, resources: f"maxindel=80 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb}m bamscript=bs.sh"
     resources:
         runtime = 120,
         mem_mb = 40000
@@ -20,18 +20,21 @@ rule mapcontigs:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
 
-rule genomecov:
+rule pileup:
     input:
-        ibam = rules.mapcontigs.output.sorted
+        input = rules.mapcontigs.output.sorted,
+        ref = rules.fix_fasta.output[0]
     output:
-        "output/{group}/{sample}/genomecov.bg"
+        out = "output/{group}/{sample}/covstats.txt",
+        rpkm = "output/{group}/{sample}/rpkm.txt",
+        bincov = "output/{group}/{sample}/bincov.txt"
     params:
-        extra = "-bg"
+        extra = "headerpound=f -Xmx{resources.mem_mb}m"
     resources:
-        runtime = 120,
+        runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = lambda wildcards, attempt: attempt * 8000
     wrapper: 
-        f"{WRAPPER_PREFIX}/master/bedtools/genomecov"
+        f"{WRAPPER_PREFIX}/master/bbtools/pileup"
 
 
 # Variant calling

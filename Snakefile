@@ -54,7 +54,7 @@ rule all:
         "output/multiqc.html",
         expand(["output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(groups.keys())),
         expand(["output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN),
-        expand(["output/{group}/{sample}/mapcontigs_sorted.bam", "output/{group}/{sample}/genomecov.bg", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
+        expand(["output/{group}/{sample}/mapcontigs_sorted.bam", "output/{group}/{sample}/covstats.txt", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
 
 include: "rules/common.smk"
 include: "rules/preprocess.smk"
