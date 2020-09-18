@@ -29,7 +29,7 @@ rule pileup:
         rpkm = "output/{group}/{sample}/rpkm.txt",
         bincov = "output/{group}/{sample}/bincov.txt"
     params:
-        extra = "headerpound=f -Xmx{resources.mem_mb}m"
+        extra = lambda wildcards, resources: f"headerpound=f -Xmx{resources.mem_mb}m"
     resources:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = lambda wildcards, attempt: attempt * 8000
