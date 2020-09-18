@@ -35,9 +35,6 @@ rule genomecov:
 
 
 # Variant calling
-# "Removes any sites with estimated probability of not being polymorphic 
-# less than phred 20 (aka 0.01), or probability of polymorphism > 0.99"
-# from FreeBayes user manual.
 rule lofreq:
     input:
         ref = rules.fix_fasta.output[0],
@@ -45,25 +42,11 @@ rule lofreq:
     output:
         "output/{group}/{sample}/lofreq.vcf" 
     params:
-        extra="--call-indels --min-cov 50 --max-depth 1000000 --min-bq 30 --min-alt-bq 30 --def-alt-bq 0 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter"
+        extra="--call-indels --min-cov 10 --max-depth 1000000 --min-bq 30 --min-alt-bq 30 --def-alt-bq 0 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter"
     resources:
         runtime = 120,
         mem_mb = 4000
     threads: 1
     wrapper:
         f"{WRAPPER_PREFIX}/master/lofreq/call"
-
-
-rule vcffilter:
-    input:
-        rules.lofreq.output[0]
-    output:
-        "output/{group}/{sample}/filtered.vcf"
-    params:
-        extra = "-f 'QUAL > 30'"
-    resources:
-        runtime = 120,
-        mem_mb = 4000
-    wrapper:
-        f"{WRAPPER_PREFIX}/master/vcflib/vcffilter"
 
