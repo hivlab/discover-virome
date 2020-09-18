@@ -4,7 +4,10 @@ type: object
 properties:
   group:
     type: string
-    description: grouping identifier
+    description: co-assembly group identifier
+  sample:
+    type: string
+    description: mapping group/biological sample identifier
   run:
     type: string
     description: sequencing run name/identifier
@@ -21,6 +24,7 @@ properties:
 
 required:
   - group
+  - sample
   - run
   - fq1
   - fq2

@@ -12,18 +12,27 @@ from snakemake.utils import min_version
 # Check for minimal version
 min_version("5.12.3")
 
-
 # Load configuration file with group and path info
 configfile: "config.yaml"
 # validate(config, "schemas/config.schema.yaml")
 
-
 # Load samples
-df = pd.read_csv("samples.tsv", sep="\s+", dtype=str).set_index(["group","run"], drop=False)
+def run_index_dict(df, level=0):
+    L = [{k: v.to_list()} for k,v in list(df.groupby(level=level)["run"])]
+    return {k: v for d in L for k, v in d.items()}
+
+df = pd.read_csv("samples.tsv", sep="\s+", dtype=str).set_index(["group","sample","run"], drop=False).sort_index()
 validate(df, "schemas/samples.schema.yaml")
-groups = df.groupby(level=0).apply(lambda df: df.xs(df.name)["run"].tolist()).to_dict()
-GROUP = [group for group,run in df.index.tolist()]
-RUN = [run for group,run in df.index.tolist()]
+
+# Sequencing run groups for contigs co-assembly
+groups = run_index_dict(df, level=0)
+
+# Sequencing run groups/biosamples for contigs mapping
+samples = run_index_dict(df, level=1)
+
+GROUP = [group for group,sample,run in df.index.tolist()]
+SAMPLE = [sample for group,sample,run in df.index.tolist()]
+RUN = [run for group,sample,run in df.index.tolist()]
 PLATFORM = config["platform"]
 
 # Path to reference genomes
@@ -49,10 +58,12 @@ rule all:
     input: 
         "output/multiqc.html",
         expand(["output/{group}/contigs-fixed.fa"], group = list(groups.keys())),
-        expand(["output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN)
+        expand(["output/{group}/{run}/fastqc.html"], zip, group = GROUP, run = RUN),
+        expand(["output/{group}/{sample}/mapcontigs_sorted.bam", "output/{group}/{sample}/genomecov.bg", "output/{group}/{sample}/filtered.vcf"], zip, group = GROUP, sample = SAMPLE)
 
 
 include: "rules/common.smk"
 include: "rules/preprocess.smk"
 include: "rules/assembly.smk"
+include: "rules/mapping.smk"
 include: "rules/qc.smk"
