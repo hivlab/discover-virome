@@ -170,7 +170,7 @@ rule merge:
         "output/{group}/{run}/log/merge.log"
     resources:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = lambda wildcards, input: round(4000 + 5 * input.size_mb)
+        mem_mb = lambda wildcards, input: round(32000 + 6 * input.size_mb)
     threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
