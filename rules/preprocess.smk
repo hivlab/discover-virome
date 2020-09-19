@@ -151,7 +151,7 @@ rule correct3:
     log: 
         "output/{group}/{run}/log/correct3.log"
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = lambda wildcards, input: round(8000 + 6 * input.size_mb)
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
