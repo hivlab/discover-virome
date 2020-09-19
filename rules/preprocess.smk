@@ -118,7 +118,7 @@ rule correct1:
     log: 
         "output/{group}/{run}/log/correct1.log"
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime = 120,
         mem_mb = 8000
     threads: 8
     wrapper:
@@ -135,7 +135,7 @@ rule correct2:
     log: 
         "output/{group}/{run}/log/correct2.log"
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime = 120,
         mem_mb = lambda wildcards, input: round(4000 + 3 * input.size_mb)
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
@@ -151,8 +151,8 @@ rule correct3:
     log: 
         "output/{group}/{run}/log/correct3.log"
     resources:
-        runtime = lambda wildcards, attempt: attempt * 120,
-        mem_mb = lambda wildcards, input: round(8000 + 6 * input.size_mb)
+        runtime = 120,
+        mem_mb = lambda wildcards, input: round(32000 + 2 * input.size_mb)
     wrapper:
         f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
 
