@@ -3,7 +3,7 @@ rule concatenate:
     input:
         rules.merge.output.out, rules.qtrim.output.out
     output:
-        temp("output/{group}/{run}/concatenated.fq.gz")
+        "output/{group}/{run}/concatenated.fq.gz"
     resources:
         runtime = 120,
         mem_mb = 4000

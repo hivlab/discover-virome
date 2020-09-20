@@ -8,7 +8,7 @@ rule mapcontigs:
         ref = rules.fix_fasta.output[0], 
         input = lambda wildcards: expand("output/{{group}}/{run}/concatenated.fq.gz", run = samples[wildcards.sample])
     output:
-        out = "output/{group}/{sample}/mapcontigs.bam",
+        out = temp("output/{group}/{sample}/mapcontigs.bam"),
         sorted = "output/{group}/{sample}/mapcontigs_sorted.bam",
         statsfile = "output/{group}/{sample}/mapcontigs.txt"
     params: 
