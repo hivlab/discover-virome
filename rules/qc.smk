@@ -24,6 +24,6 @@ rule multiqc:
         "output/multiqc.log"
     resources:
         runtime = 120,
-        mem_mb = 4000    
+        mem_mb = 16000    
     wrapper:
         "0.65.0/bio/multiqc"
