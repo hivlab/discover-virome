@@ -25,7 +25,7 @@ rule assembly:
         "minimal"
     resources:
         runtime = lambda wildcards, input: round(609 + 0.03 * input.size_mb),
-        mem_mb = lambda wildcards, input: round(6000 + 1.5 * input.size_mb)
+        mem_mb = lambda wildcards, input: round(16000 + 0.07 * input.size_mb ^ 2)
     wrapper:
       f"{WRAPPER_PREFIX}/master/assembly/megahit"
 
