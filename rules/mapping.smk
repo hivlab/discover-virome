@@ -59,7 +59,7 @@ rule pileup:
 rule lofreq:
     input:
         ref = rules.fix_fasta.output[0],
-        bam = rules.mapcontigs.output.sorted
+        bam = rules.sort_and_index.output.sorted
     output:
         "output/{group}/{sample}/lofreq.vcf" 
     params:
