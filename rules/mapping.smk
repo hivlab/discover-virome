@@ -9,10 +9,11 @@ rule mapcontigs:
         input = lambda wildcards: expand("output/{{group}}/{run}/concatenated.fq.gz", run = samples[wildcards.sample])
     output:
         out = temp("output/{group}/{sample}/mapcontigs.bam"),
-        sorted = "output/{group}/{sample}/mapcontigs_sorted.bam",
         statsfile = "output/{group}/{sample}/mapcontigs.txt"
     params: 
-        extra = lambda wildcards, resources: f"maxindel=80 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb}m bamscript=bs.sh"
+        extra = lambda wildcards, resources: f"maxindel=80 strictmaxindel minid=0.9 maxlen=600 nodisk -Xmx{resources.mem_mb}m"
+    shadow: 
+        "minimal"
     resources:
         runtime = lambda wildcards, attempt: attempt * 240,
         mem_mb = 40000
@@ -20,9 +21,26 @@ rule mapcontigs:
       f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
 
 
+rule sort_and_index:
+    input:
+        rules.mapcontigs.output.out
+    output:
+        sorted = "output/{group}/{sample}/mapcontigs_sorted.bam",
+        index = "output/{group}/{sample}/mapcontigs_sorted.bam.bai"  
+    params:
+        lambda wildcards, resources: f"-m {resources.mem_mb}M"
+    threads:
+        4
+    resources:
+        mem_mb = 16000,
+        runtime = lambda wildcards, attempt: attempt * 240
+    wrapper:
+        f"{WRAPPER_PREFIX}/master/samtools/sort_and_index"
+
+
 rule pileup:
     input:
-        input = rules.mapcontigs.output.sorted,
+        input = rules.sort_and_index.output.sorted,
         ref = rules.fix_fasta.output[0]
     output:
         out = "output/{group}/{sample}/covstats.txt",
