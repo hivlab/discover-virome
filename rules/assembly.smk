@@ -27,7 +27,7 @@ rule assembly:
         runtime = lambda wildcards, input: round(600 + 0.06 * input.size_mb),
         mem_mb = lambda wildcards, input: round(20000 + 2.22 * input.size_mb)
     wrapper:
-      f"{WRAPPER_PREFIX}/master/assembly/megahit"
+      f"{WRAPPER_PREFIX}/v0.2/assembly/megahit"
 
 
 rule fix_fasta:
@@ -38,7 +38,7 @@ rule fix_fasta:
     params:
         lambda wildcards: wildcards.group
     conda:
-        "https://raw.githubusercontent.com/avilab/virome-wrappers/master/subset_fasta/environment.yaml"
+        f"{WRAPPER_PREFIX}/v0.2/subset_fasta/environment.yaml"
     script:
         "../scripts/fix_fasta.py"
 

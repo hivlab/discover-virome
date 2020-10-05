@@ -11,7 +11,7 @@ rule tantan:
         runtime = 120,
         mem_mb = 8000
     wrapper:
-        f"{WRAPPER_PREFIX}/master/tantan"
+        f"{WRAPPER_PREFIX}/v0.2/tantan"
 
 
 # Filter tantan output
@@ -28,7 +28,7 @@ rule tantan_good:
     resources:
         runtime = 120
     wrapper:
-        f"{WRAPPER_PREFIX}/master/filter/masked"
+        f"{WRAPPER_PREFIX}/v0.2/filter/masked"
 
 
 # Split reads to smaller chunks for RepeatMasker
@@ -44,7 +44,7 @@ rule split_fasta:
         runtime = lambda wildcards, attempt: 90 + (attempt * 30),
         mem_mb = 4000
     wrapper:
-        f"{WRAPPER_PREFIX}/master/split-fasta"
+        f"{WRAPPER_PREFIX}/v0.2/split-fasta"
 
 
 # Repeatmasker
@@ -68,7 +68,7 @@ rule repeatmasker:
     singularity:
         "shub://tpall/repeatmasker-singularity"
     script:
-        f"{WRAPPER_PREFIX}/master/repeatmasker/wrapper.py"
+        f"{WRAPPER_PREFIX}/v0.2/repeatmasker/wrapper.py"
 
 
 # Filter repeatmasker output
@@ -88,4 +88,4 @@ rule repeatmasker_good:
     resources:
         runtime = 120
     wrapper:
-        f"{WRAPPER_PREFIX}/master/filter/masked"
+        f"{WRAPPER_PREFIX}/v0.2/filter/masked"

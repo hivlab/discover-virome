@@ -1,3 +1,5 @@
+![status](https://img.shields.io/badge/status-under%20development-yellow)
+
 # Discover virome
 
 Snakemake workflow for virome quantitation using assembled metagenomes.

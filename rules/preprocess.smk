@@ -19,7 +19,7 @@ rule interleave:
     log:
         "output/{group}/{run}/log/interleave.txt"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/reformat"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/reformat"
 
 
 # Remove PCR and optical duplicates
@@ -36,7 +36,7 @@ rule clumpify:
     log: 
         "output/{group}/{run}/log/clumpify.log"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/clumpify"
 
 
 rule filterbytile:
@@ -52,7 +52,7 @@ rule filterbytile:
     log: 
         "output/{group}/{run}/log/filterbytile.log"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/filterbytile"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/filterbytile"
 
 
 rule trim:
@@ -68,7 +68,7 @@ rule trim:
     log: 
         "output/{group}/{run}/log/trim.log"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbduk"
 
 
 rule artifacts:
@@ -84,7 +84,7 @@ rule artifacts:
     log: 
         "output/{group}/{run}/log/artifacts.log"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbduk"
 
 
 # Remove host sequences
@@ -105,7 +105,7 @@ rule maphost:
         mem_mb = 80000
     threads: 8
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbwrap"
 
 
 rule correct1:
@@ -122,7 +122,7 @@ rule correct1:
         mem_mb = 8000
     threads: 8
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbmerge"
 
 
 rule correct2:
@@ -138,7 +138,7 @@ rule correct2:
         runtime = 120,
         mem_mb = lambda wildcards, input: round(4000 + 3 * input.size_mb)
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/clumpify"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/clumpify"
 
 
 rule correct3:
@@ -154,7 +154,7 @@ rule correct3:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = lambda wildcards, input: round(32000 + 6 * input.size_mb)
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/tadpole"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/tadpole"
 
 
 rule merge:
@@ -173,7 +173,7 @@ rule merge:
         mem_mb = lambda wildcards, input: round(32000 + 6 * input.size_mb)
     threads: 8
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbmerge"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbmerge"
 
 
 rule qtrim:
@@ -189,5 +189,5 @@ rule qtrim:
     log: 
         "output/{group}/{run}/log/qtrim.log"
     wrapper:
-        f"{WRAPPER_PREFIX}/master/bbtools/bbduk"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbduk"
 

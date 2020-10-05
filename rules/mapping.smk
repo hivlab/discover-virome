@@ -18,7 +18,7 @@ rule mapcontigs:
         runtime = lambda wildcards, attempt: attempt * 240,
         mem_mb = 40000
     wrapper:
-      f"{WRAPPER_PREFIX}/master/bbtools/bbwrap"
+      f"{WRAPPER_PREFIX}/v0.2/bbtools/bbwrap"
 
 
 rule sort_and_index:
@@ -35,7 +35,7 @@ rule sort_and_index:
         mem_mb = 16000,
         runtime = lambda wildcards, attempt: attempt * 240
     wrapper:
-        f"{WRAPPER_PREFIX}/master/samtools/sort_and_index"
+        f"{WRAPPER_PREFIX}/v0.2/samtools/sort_and_index"
 
 
 rule pileup:
@@ -52,7 +52,7 @@ rule pileup:
         runtime = lambda wildcards, attempt: attempt * 120,
         mem_mb = lambda wildcards, attempt: attempt * 8000
     wrapper: 
-        f"{WRAPPER_PREFIX}/master/bbtools/pileup"
+        f"{WRAPPER_PREFIX}/v0.2/bbtools/pileup"
 
 
 # Variant calling
@@ -69,5 +69,5 @@ rule lofreq:
         mem_mb = 4000
     threads: 1
     wrapper:
-        f"{WRAPPER_PREFIX}/master/lofreq/call"
+        f"{WRAPPER_PREFIX}/v0.2/lofreq/call"
 
