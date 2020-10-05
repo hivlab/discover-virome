@@ -5,7 +5,7 @@ rule fastqc:
         rules.interleave.output.out
     output:
         html = "output/{group}/{run}/fastqc.html",
-        zip = "output/{group}/{run}/fastqc.zip"
+        zip = temp("output/{group}/{run}/fastqc.zip")
     resources:
         runtime = 120,
         mem_mb = 4000    

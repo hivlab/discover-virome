@@ -3,7 +3,7 @@ rule concatenate:
     input:
         rules.merge.output.out, rules.qtrim.output.out
     output:
-        "output/{group}/{run}/concatenated.fq.gz"
+        temp("output/{group}/{run}/concatenated.fq.gz")
     resources:
         runtime = 120,
         mem_mb = 4000
@@ -15,7 +15,7 @@ rule assembly:
     input: 
         se = lambda wildcards: expand("output/{{group}}/{run}/concatenated.fq.gz", run = groups[wildcards.group])
     output: 
-        contigs = "output/{group}/assembly/final.contigs.fa"
+        contigs = temp("output/{group}/assembly/final.contigs.fa")
     params:
         extra = lambda wildcards, resources: f"--presets meta-large --min-contig-len 1000 --verbose -m {resources.mem_mb * 1048576}"
     threads: 8

@@ -25,8 +25,8 @@ rule sort_and_index:
     input:
         rules.mapcontigs.output.out
     output:
-        sorted = "output/{group}/{sample}/mapcontigs_sorted.bam",
-        index = "output/{group}/{sample}/mapcontigs_sorted.bam.bai"  
+        sorted = temp("output/{group}/{sample}/mapcontigs_sorted.bam"),
+        index = temp("output/{group}/{sample}/mapcontigs_sorted.bam.bai")  
     params:
         lambda wildcards, resources: f"-m {resources.mem_mb}M"
     threads:

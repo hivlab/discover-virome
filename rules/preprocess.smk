@@ -27,7 +27,7 @@ rule clumpify:
     input:
         input = rules.interleave.output.out
     output:
-        out = "output/{group}/{run}/clumpify.fq.gz"
+        out = temp("output/{group}/{run}/clumpify.fq.gz")
     params:
         extra = lambda wildcards, resources: f"dedupe optical -Xmx{resources.mem_mb / 1000:.0f}g -da"
     resources:
@@ -75,7 +75,7 @@ rule artifacts:
     input:
         input = rules.trim.output.out
     output:
-        out = "output/{group}/{run}/filtered.fq.gz"
+        out = temp("output/{group}/{run}/filtered.fq.gz")
     params:
         extra = lambda wildcards, resources: f"k=31 ref=artifacts,phix ordered cardinality -Xmx{resources.mem_mb / 1000:.0f}g -da"
     resources:
@@ -93,8 +93,8 @@ rule maphost:
         input = rules.artifacts.output.out,
         ref = HOST_GENOME
     output:
-        outu = "output/{group}/{run}/unmaphost.fq.gz",
-        outm = "output/{group}/{run}/maphost.fq.gz",
+        outu = temp("output/{group}/{run}/unmaphost.fq.gz"),
+        outm = temp("output/{group}/{run}/maphost.fq.gz"),
         statsfile = "output/{group}/{run}/maphost.txt"
     params:
         extra = lambda wildcards, resources: f"nodisk -Xmx{resources.mem_mb}m"
