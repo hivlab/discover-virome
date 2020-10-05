@@ -1,15 +1,14 @@
-
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-        rules.fix_fasta.output[0]
+        rules.fix_fasta.output[0],
     output:
-        temp("output/{group}/tantan.fa")
+        temp("output/{group}/tantan.fa"),
     params:
-        extra = "-x N" # mask low complexity using N
+        extra="-x N", # mask low complexity using N
     resources:
-        runtime = 120,
-        mem_mb = 8000
+        runtime=120,
+        mem_mb=8000,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/tantan"
 
@@ -19,14 +18,14 @@ rule tantan:
 # 2) Sequences with >= 40% of total length of being masked
 rule tantan_good:
     input:
-        masked = rules.tantan.output[0]
+        masked=rules.tantan.output[0],
     output:
-        masked_filt = temp("output/{group}/tantangood.fa")
+        masked_filt=temp("output/{group}/tantangood.fa"),
     params:
-        min_length = 50,
-        por_n = 40
+        min_length=50,
+        por_n=40,
     resources:
-        runtime = 120
+        runtime=120,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/filter/masked"
 
@@ -34,15 +33,15 @@ rule tantan_good:
 # Split reads to smaller chunks for RepeatMasker
 rule split_fasta:
     input:
-        rules.tantan_good.output.masked_filt
+        rules.tantan_good.output.masked_filt,
     output:
-        temp(expand("output/{{group}}/splits/repeatmasker_{n}.fa", n = N))
+        temp(expand("output/{{group}}/splits/repeatmasker_{n}.fa", n=N)),
     params:
-        splits = len(N),
-        start = min(N)
+        splits=len(N),
+        start=min(N),
     resources:
-        runtime = lambda wildcards, attempt: 90 + (attempt * 30),
-        mem_mb = 4000
+        runtime=lambda wildcards, attempt: 90 + (attempt * 30),
+        mem_mb=4000,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/split-fasta"
 
@@ -53,18 +52,18 @@ rule split_fasta:
 # If no repetitive sequences were detected symlink output to input file
 rule repeatmasker:
     input:
-        fa = "output/{group}/splits/repeatmasker_{n}.fa"
+        fa="output/{group}/splits/repeatmasker_{n}.fa",
     output:
-        masked = temp("output/{group}/splits/repeatmasker_{n}.fa.masked"),
-        out = temp("output/{group}/splits/repeatmasker_{n}.fa.out"),
-        cat = temp("output/{group}/splits/repeatmasker_{n}.fa.cat"),
-        tbl = "output/{group}/splits/repeatmasker_{n}.fa.tbl"
+        masked=temp("output/{group}/splits/repeatmasker_{n}.fa.masked"),
+        out=temp("output/{group}/splits/repeatmasker_{n}.fa.out"),
+        cat=temp("output/{group}/splits/repeatmasker_{n}.fa.cat"),
+        tbl="output/{group}/splits/repeatmasker_{n}.fa.tbl",
     params:
-        extra = "-qq"
+        extra="-qq",
     threads: 8
     resources:
-        runtime = 1440,
-        mem_mb = 16000
+        runtime=1440,
+        mem_mb=16000,
     singularity:
         "shub://tpall/repeatmasker-singularity"
     script:
@@ -77,15 +76,15 @@ rule repeatmasker:
 # input, output, and params names must match function arguments
 rule repeatmasker_good:
     input:
-        masked = rules.repeatmasker.output.masked,
-        original = rules.repeatmasker.input.fa
+        masked=rules.repeatmasker.output.masked,
+        original=rules.repeatmasker.input.fa,
     output:
-        masked_filt = temp("output/{group}/splits/repmaskedgood_{n}.fa"),
-        original_filt = temp("output/{group}/splits/unmaskedgood_{n}.fa")
+        masked_filt=temp("output/{group}/splits/repmaskedgood_{n}.fa"),
+        original_filt=temp("output/{group}/splits/unmaskedgood_{n}.fa"),
     params:
-        min_length = 100,
-        por_n = 30
+        min_length=100,
+        por_n=30,
     resources:
-        runtime = 120
+        runtime=120,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/filter/masked"
