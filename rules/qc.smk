@@ -2,7 +2,7 @@
 # QC stats
 rule fastqc:
     input:
-        unpack(get_fastq)
+        rules.interleave.output.out
     output:
         html = "output/{group}/{run}/fastqc.html",
         zip = "output/{group}/{run}/fastqc.zip"
@@ -15,7 +15,7 @@ rule fastqc:
 
 rule multiqc:
     input:
-        expand(["output/{group}/{run}/bhist.txt", "output/{group}/{run}/qhist.txt", "output/{group}/{run}/aqhist.txt", "output/{group}/{run}/bqhist.txt", "output/{group}/{run}/lhist.txt", "output/{group}/{run}/gchist.txt", "output/{group}/{run}/maphost.txt"], zip, group = GROUP, run = RUN)
+        expand(["output/{group}/{run}/fastqc.zip", "output/{group}/{run}/bhist.txt", "output/{group}/{run}/qhist.txt", "output/{group}/{run}/aqhist.txt", "output/{group}/{run}/bqhist.txt", "output/{group}/{run}/lhist.txt", "output/{group}/{run}/gchist.txt", "output/{group}/{run}/maphost.txt"], zip, group = GROUP, run = RUN)
     output:
         report("output/multiqc.html", caption = "report/multiqc.rst", category = "Quality control")
     params:

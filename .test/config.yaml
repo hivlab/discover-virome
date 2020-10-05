@@ -1,28 +1,10 @@
-# Set seed for fastq downsampling
-seed: 561837
-
 # Path or URL to sample sheet (TSV format, required columns: sample, fq1, fq2, frac)
 # sample - unique sample name
 # run - sequencing run
 # fq1 and fq2 - paths to paired-end fastq file
 samples: samples.tsv
-remote: False
 
-# Remote FTP credentials
-username: anonymous
-password: tapa741@gmail.com
-
-# Sequencing platform
-platform: ILLUMINA
-
-# Option to save time by not running blastx
-run_blastx: False
-
-# Upload results to zenodo
-# For upload, setup ZENODO_PAT environment variable for access_token
-zenodo:
-    deposition_id:
+email: tapa741@gmail.com
 
 # Split fasta
-split_fasta:
-    n_files: 1
+splits: 2
