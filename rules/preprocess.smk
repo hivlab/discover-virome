@@ -144,7 +144,7 @@ rule correct2:
     log:
         "output/{group}/{run}/log/correct2.log",
     resources:
-        runtime=120,
+        runtime=lambda wildcards, attempt: attempt * 120,
         mem_mb=lambda wildcards, input: round(4000 + 3 * input.size_mb),
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/bbtools/clumpify"
