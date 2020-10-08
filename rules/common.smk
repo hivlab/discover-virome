@@ -1,6 +1,8 @@
 # Input function
+import re
+
 def get_fastq(wildcards):
-    fq_cols = [col for col in df.columns if "fq" in col]
+    fq_cols = [col for col in df.columns if re.match("fq\d$", col)]
     fqs = (
         df.reset_index(level="sample", drop=True)
         .loc[(wildcards.group, wildcards.run), fq_cols]
