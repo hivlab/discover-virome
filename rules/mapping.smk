@@ -18,7 +18,7 @@ rule mapcontigs:
     shadow:
         "minimal"
     resources:
-        runtime=lambda wildcards, attempt: attempt * 240,
+        runtime=lambda wildcards, attempt: attempt * 480,
         mem_mb=40000,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/bbtools/bbwrap"
@@ -67,7 +67,7 @@ rule lofreq:
     params:
         extra="--call-indels --min-cov 10 --max-depth 1000000 --min-bq 30 --min-alt-bq 30 --def-alt-bq 0 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
     resources:
-        runtime=lambda wildcards, attempt: attempt * 240,
+        runtime=lambda wildcards, attempt: attempt * 480,
         mem_mb=4000,
     threads: 1
     wrapper:
