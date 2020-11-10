@@ -29,7 +29,7 @@ rule assembly:
     shadow:
         "minimal"
     resources:
-        runtime=lambda wildcards, input: round(1440 + 0.06 * input.size_mb),
+        runtime=lambda wildcards, input: round(2600 + 0.06 * input.size_mb),
         mem_mb=lambda wildcards, input: round(20000 + 2.22 * input.size_mb),
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/assembly/megahit"

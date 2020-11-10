@@ -13,7 +13,7 @@ rule interleave:
     params:
         extra=lambda wildcards, resources: f"-Xmx{resources.mem_mb / 1000:.0f}g",
     resources:
-        runtime=120,
+        runtime=360,
         mem_mb=4000,
     log:
         "output/{group}/{run}/log/interleave.txt",
@@ -32,7 +32,7 @@ rule clumpify:
             lambda wildcards, resources: f"dedupe optical -Xmx{resources.mem_mb / 1000:.0f}g -da"
         ),
     resources:
-        runtime=lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime=lambda wildcards, attempt: 180 + (attempt * 60),
         mem_mb=16000,
     log:
         "output/{group}/{run}/log/clumpify.log",
@@ -48,7 +48,7 @@ rule filterbytile:
     params:
         extra=lambda wildcards, resources: f"-Xmx{resources.mem_mb / 1000:.0f}g -da",
     resources:
-        runtime=120,
+        runtime=360,
         mem_mb=16000,
     log:
         "output/{group}/{run}/log/filterbytile.log",
@@ -66,7 +66,7 @@ rule trim:
             lambda wildcards, resources: f"ktrim=r k=23 mink=11 hdist=1 tbo tpe minlen=70 ref=adapters ftm=5 ordered -Xmx{resources.mem_mb / 1000:.0f}g -da"
         ),
     resources:
-        runtime=lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime=lambda wildcards, attempt: 180 + (attempt * 60),
         mem_mb=16000,
     log:
         "output/{group}/{run}/log/trim.log",
@@ -84,7 +84,7 @@ rule artifacts:
             lambda wildcards, resources: f"k=31 ref=artifacts,phix ordered cardinality -Xmx{resources.mem_mb / 1000:.0f}g -da"
         ),
     resources:
-        runtime=lambda wildcards, attempt: 90 + (attempt * 20),
+        runtime=lambda wildcards, attempt: 180 + (attempt * 60),
         mem_mb=16000,
     log:
         "output/{group}/{run}/log/artifacts.log",
@@ -106,7 +106,7 @@ rule maphost:
     log:
         "output/{group}/{run}/log/maphost.log",
     resources:
-        runtime=lambda wildcards, attempt: attempt * 120,
+        runtime=lambda wildcards, attempt: attempt * 360,
         mem_mb=80000,
     threads: 8
     wrapper:
@@ -125,7 +125,7 @@ rule correct1:
     log:
         "output/{group}/{run}/log/correct1.log",
     resources:
-        runtime=120,
+        runtime=360,
         mem_mb=8000,
     threads: 8
     wrapper:
@@ -144,7 +144,7 @@ rule correct2:
     log:
         "output/{group}/{run}/log/correct2.log",
     resources:
-        runtime=lambda wildcards, attempt: attempt * 240,
+        runtime=lambda wildcards, attempt: attempt * 720,
         mem_mb=lambda wildcards, input: round(4000 + 3 * input.size_mb),
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/bbtools/clumpify"
@@ -162,7 +162,7 @@ rule correct3:
     log:
         "output/{group}/{run}/log/correct3.log",
     resources:
-        runtime=lambda wildcards, attempt: attempt * 120,
+        runtime=lambda wildcards, attempt: attempt * 720,
         mem_mb=lambda wildcards, input: round(32000 + 6 * input.size_mb),
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/bbtools/tadpole"
@@ -182,7 +182,7 @@ rule merge:
     log:
         "output/{group}/{run}/log/merge.log",
     resources:
-        runtime=lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime=lambda wildcards, attempt: 180 + (attempt * 60),
         mem_mb=lambda wildcards, input: round(32000 + 6 * input.size_mb),
     threads: 8
     wrapper:
@@ -199,7 +199,7 @@ rule qtrim:
             lambda wildcards, resources: f"maq=10 qtrim=r trimq=10 ktrim=r k=23 mink=11 hdist=1 tbo tpe minlen=100 ref=adapters ftm=5 ordered qin=33 ordered -Xmx{resources.mem_mb / 1000:.0f}g"
         ),
     resources:
-        runtime=lambda wildcards, attempt: 90 + (attempt * 30),
+        runtime=lambda wildcards, attempt: 180 + (attempt * 60),
         mem_mb=16000,
     log:
         "output/{group}/{run}/log/qtrim.log",
