@@ -13,7 +13,7 @@ rule mapcontigs:
         statsfile="output/{group}/mapcontigs.txt",
     params:
         extra=(
-            lambda wildcards, resources: f"maxlen=600 nodisk -Xmx{resources.mem_mb}m RGLB=lib1 RGPL=illumina RGID={wildcards.group} RGSM={wildcards.group}"
+            lambda wildcards: f"maxlen=600 nodisk RGLB=lib1 RGPL=illumina RGID={wildcards.group} RGSM={wildcards.group}"
         ),
     shadow:
         "minimal"
@@ -21,7 +21,7 @@ rule mapcontigs:
         runtime=lambda wildcards, attempt: attempt * 480,
         mem_mb=40000,
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.2/bbtools/bbwrap"
+        f"{WRAPPER_PREFIX}/v0.5/bbtools/bbwrap"
 
 
 rule sort_and_index:
@@ -46,7 +46,7 @@ rule samtools_index:
     output:
         "output/{group}/contigs-fixed.fa.fai",
     params:
-        "" 
+        "",
     resources:
         runtime=120,
         mem_mb=4000,
@@ -89,7 +89,7 @@ rule indexfeaturefile:
         mem_mb=4000,
     threads: 1
     wrapper:
-        f"{WRAPPER_PREFIX}/master/gatk/indexfeaturefile"
+        f"{WRAPPER_PREFIX}/v0.5/gatk/indexfeaturefile"
 
 
 rule sequencedict:
@@ -103,7 +103,7 @@ rule sequencedict:
         runtime=120,
         mem_mb=4000,
     wrapper:
-        f"{WRAPPER_PREFIX}/master/picard/createsequencedictionary"
+        f"{WRAPPER_PREFIX}/v0.5/picard/createsequencedictionary"
 
 
 rule gatk_baserecalibrator:
@@ -134,13 +134,11 @@ rule applybqsr:
         recal_table=rules.gatk_baserecalibrator.output[0],
     output:
         bam="output/{group}/recalibrated.bam",
-    params:
-        java_opts=lambda wildcards, resources: f"-Xmx{resources.mem_mb / 1000:.0f}g", 
     resources:
         runtime=120,
         mem_mb=4000,
     wrapper:
-        "0.67.0/bio/gatk/applybqsr"
+        "0.68.0/bio/gatk/applybqsr"
 
 
 rule lofreq2:
@@ -196,7 +194,7 @@ rule polish:
     log:
         "output/{group}/log/polish.log",
     params:
-        mask=1
+        mask=1,
     resources:
         runtime=120,
         mem_mb=4000,
@@ -215,11 +213,9 @@ rule pileup:
         out="output/{group}/covstats.txt",
         basecov="output/{group}/basecov.txt",
     params:
-        extra=lambda wildcards, resources: f"-Xmx{resources.mem_mb}m concise",
+        extra="concise",
     resources:
         runtime=lambda wildcards, attempt: attempt * 120,
         mem_mb=lambda wildcards, attempt: attempt * 8000,
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.2/bbtools/pileup"
-
-
+        f"{WRAPPER_PREFIX}/v0.5/bbtools/pileup"
