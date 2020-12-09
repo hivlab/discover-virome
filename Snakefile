@@ -49,10 +49,14 @@ onsuccess:
     email = config["email"]
     shell("mail -s 'Forkflow finished successfully' {email} < {log}")
 
+wildcard_constraints:
+    group="[^/]"
+
+
 rule all:
     input: 
         expand(["output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(groups.keys())),
-        expand(["output/{group}/{sample}/covstats.txt", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
+#        expand(["output/{group}/{sample}/covstats.txt", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
 
 include: "rules/common.smk"
 include: "rules/preprocess.smk"
