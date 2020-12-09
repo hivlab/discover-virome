@@ -102,7 +102,7 @@ rule maphost:
         outm=temp("output/{group}/{run}/maphost.fq.gz"),
         statsfile="output/{group}/{run}/maphost.txt",
     params:
-        extra=lambda wildcards, resources: f"nodisk -Xmx{resources.mem_mb}m",
+        extra=lambda wildcards, resources: f"minratio=0.9 maxindel=3 bwr=0.16 bw=12 fast minhits=2 qtrim=r trimq=10 untrim idtag printunmappedcount kfilter=25 maxsites=1 k=14 nodisk -Xmx{resources.mem_mb}m",
     log:
         "output/{group}/{run}/log/maphost.log",
     resources:
