@@ -58,8 +58,8 @@ wildcard_constraints:
 
 rule all:
     input: 
-        expand(["output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(group_runs.keys())),
-#        expand(["output/{group}/{sample}/covstats.txt", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
+        expand(["output/{group}/lofreq.vcf", "output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(group_runs.keys())),
+        expand(["output/{group}/{sample}/covstats.txt"], zip, group = GROUP, sample = SAMPLE)
 
 include: "rules/common.smk"
 include: "rules/preprocess.smk"

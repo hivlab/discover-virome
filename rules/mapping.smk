@@ -26,9 +26,26 @@ rule mapcontigs:
         f"{WRAPPER_PREFIX}/v0.5/bbtools/bbwrap"
 
 
+rule realign:
+    input:
+        bam=rules.mapcontigs.output.out,
+        ref=rules.fix_fasta.output[0],
+    output:
+        temp("output/{group}/{sample}/realigned.bam"),
+    log:
+        "output/{group}/{sample}/log/realign.log",
+    params:
+        extra="--verbose",
+    resources:
+        runtime=120,
+        mem_mb=4000,
+    wrapper:
+        f"{WRAPPER_PREFIX}/v0.6/lofreq/viterbi"
+
+
 rule samtools_sort:
     input:
-        rules.mapcontigs.output.out
+        rules.realign.output[0],
     output:
         temp("output/{group}/{sample}/sorted.bam"),
     log:
@@ -54,8 +71,8 @@ rule samtools_merge:
     log:
         "output/{group}/log/samtools_merge.log",
     params:
-        ""
-    threads: 8
+        "-c",
+    threads: 8,
     resources:
         mem_mb=4000,
         runtime=120,
@@ -63,62 +80,24 @@ rule samtools_merge:
         "0.68.0/bio/samtools/merge"
 
 
-rule sort_and_index:
-    input:
-        rules.samtools_merge.output[0],
-    output:
-        sorted=temp("output/{group}/merged_sorted.bam"),
-        index=temp("output/{group}/merged_sorted.bam.bai"),
-    log:
-        "output/{group}/log/sort_and_index.log",
-    params:
-        lambda wildcards, resources: f"-m {resources.mem_mb}M",
-    threads: 4
-    resources:
-        mem_mb=16000,
-        runtime=lambda wildcards, attempt: attempt * 240,
-    wrapper:
-        f"{WRAPPER_PREFIX}/v0.2/samtools/sort_and_index"
-
-
-rule samtools_faidx:
-    input:
-        rules.fix_fasta.output[0],
-    output:
-        "output/{group}/contigs-fixed.fa.fai",
-    log:
-        "output/{group}/log/samtools_faidx.log",
-    params:
-        "",
-    resources:
-        runtime=120,
-        mem_mb=4000,
-    wrapper:
-        "0.68.0/bio/samtools/faidx"
-
-
 rule lofreq1:
     input:
-        rules.samtools_faidx.output[0],
         ref=rules.fix_fasta.output[0],
-        bam=rules.sort_and_index.output.sorted,
+        bam=rules.samtools_merge.output[0],
     output:
         "output/{group}/lofreq1.vcf",
     log:
         "output/{group}/log/lofreq1.log",
     params:
-        extra="--call-indels --min-cov 10 --max-depth 1000000  --min-bq 30 --min-alt-bq 30 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
+        extra="--min-cov 10 --max-depth 1000000  --min-bq 30 --min-alt-bq 30 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
     resources:
         runtime=120,
         mem_mb=4000,
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.2/lofreq/call"
+        f"{WRAPPER_PREFIX}/v0.6/lofreq/call"
 
 
 rule indexfeaturefile:
-    """
-    Index vcf vile.
-    """
     input:
         "output/{group}/lofreq1.vcf",
     output:
@@ -132,7 +111,7 @@ rule indexfeaturefile:
         mem_mb=4000,
     threads: 1
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.5/gatk/indexfeaturefile"
+        f"{WRAPPER_PREFIX}/v0.6.1/gatk/indexfeaturefile"
 
 
 rule sequencedict:
@@ -153,7 +132,7 @@ rule gatk_baserecalibrator:
     input:
         ref=rules.fix_fasta.output[0],
         dict=rules.sequencedict.output[0],
-        bam=rules.sort_and_index.output.sorted,
+        bam=rules.samtools_merge.output[0],
         known=rules.lofreq1.output[0],
         feature_index=rules.indexfeaturefile.output[0],
     output:
@@ -168,12 +147,9 @@ rule gatk_baserecalibrator:
 
 
 rule applybqsr:
-    """
-    Inserts indel qualities into BAM.
-    """
     input:
         ref=rules.fix_fasta.output[0],
-        bam=rules.sort_and_index.output.sorted,
+        bam=rules.samtools_merge.output[0],
         recal_table=rules.gatk_baserecalibrator.output[0],
     output:
         bam="output/{group}/recalibrated.bam",
@@ -200,7 +176,7 @@ rule indelqual:
         runtime=120,
         mem_mb=4000,
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.3/lofreq/indelqual"
+        f"{WRAPPER_PREFIX}/v0.6/lofreq/indelqual"
 
 
 rule lofreq2:
@@ -217,7 +193,7 @@ rule lofreq2:
         runtime=120,
         mem_mb=4000,
     wrapper:
-        f"{WRAPPER_PREFIX}/v0.2/lofreq/call"
+        f"{WRAPPER_PREFIX}/v0.6/lofreq/call"
 
 
 rule vcffilter:
@@ -256,15 +232,14 @@ rule polish:
 
 
 rule pileup:
-    """
-    Calculate coverage.
-    """
     input:
-        input=rules.mapcontigs.output.out,
+        input=rules.realign.output[0],
         ref=rules.fix_fasta.output[0],
     output:
         out="output/{group}/{sample}/covstats.txt",
         basecov="output/{group}/{sample}/basecov.txt",
+    log:
+        "output/{group}/{sample}/log/pileup.log",
     params:
         extra="concise",
     resources:
