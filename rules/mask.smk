@@ -1,7 +1,7 @@
 # Tantan mask of low complexity DNA sequences
 rule tantan:
     input:
-        rules.fix_fasta.output[0],
+        rules.polish.output.consensus,
     output:
         temp("output/{group}/tantan.fa"),
     params:

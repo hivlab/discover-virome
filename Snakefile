@@ -17,18 +17,21 @@ configfile: "config.yaml"
 validate(config, "schemas/config.schema.yaml")
 
 # Load samples
-def run_index_dict(df, level=0):
-    L = [{k: v.to_list()} for k,v in list(df.groupby(level=level)["run"])]
+def run_index_dict(df, level=0, slice="run"):
+    L = [{k: v.to_list()} for k,v in list(df.groupby(level=level)[slice])]
     return {k: v for d in L for k, v in d.items()}
 
 df = pd.read_csv("samples.tsv", sep="\s+", dtype=str).set_index(["group","sample","run"], drop=False).sort_index()
 validate(df, "schemas/samples.schema.yaml")
 
 # Sequencing run groups for contigs co-assembly
-groups = run_index_dict(df, level=0)
+group_runs = run_index_dict(df, level=0)
 
 # Sequencing run groups/biosamples for contigs mapping
-samples = run_index_dict(df, level=1)
+sample_runs = run_index_dict(df, level=1)
+
+# Samples in group
+group_samples = run_index_dict(df, level=0, slice = "sample")
 
 GROUP = [group for group,sample,run in df.index.tolist()]
 SAMPLE = [sample for group,sample,run in df.index.tolist()]
@@ -55,7 +58,7 @@ wildcard_constraints:
 
 rule all:
     input: 
-        expand(["output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(groups.keys())),
+        expand(["output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(group_runs.keys())),
 #        expand(["output/{group}/{sample}/covstats.txt", "output/{group}/{sample}/lofreq.vcf"], zip, group = GROUP, sample = SAMPLE)
 
 include: "rules/common.smk"

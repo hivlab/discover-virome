@@ -15,7 +15,7 @@ rule concatenate:
 rule assembly:
     input:
         se=lambda wildcards: expand(
-            "output/{{group}}/{run}/concatenated.fq.gz", run=groups[wildcards.group]
+            "output/{{group}}/{run}/concatenated.fq.gz", run=group_runs[wildcards.group]
         ),
     output:
         contigs=temp("output/{group}/assembly/final.contigs.fa"),
