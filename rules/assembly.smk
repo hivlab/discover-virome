@@ -19,18 +19,18 @@ rule assembly:
         ),
     output:
         contigs=temp("output/{group}/assembly/final.contigs.fa"),
+    log:
+        "output/{group}/log/assembly.log",
     params:
         extra=(
             lambda wildcards, resources: f"--presets meta-large --min-contig-len 1000 --verbose -m {resources.mem_mb * 1048576}"
         ),
-    threads: 8
-    log:
-        "output/{group}/log/assembly.log",
     shadow:
         "minimal"
     resources:
         runtime=lambda wildcards, input: round(2600 + 0.06 * input.size_mb),
         mem_mb=lambda wildcards, input: round(20000 + 2.22 * input.size_mb),
+    threads: 8
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/assembly/megahit"
 

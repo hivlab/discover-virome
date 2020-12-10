@@ -6,7 +6,8 @@ rule mapcontigs:
     input:
         ref=rules.fix_fasta.output[0],
         input=lambda wildcards: expand(
-            "output/{{group}}/{run}/concatenated.fq.gz", run=sample_runs[wildcards.sample]
+            "output/{{group}}/{run}/concatenated.fq.gz",
+            run=sample_runs[wildcards.sample],
         ),
     output:
         out=temp("output/{group}/{sample}/mapcontigs.bam"),
@@ -51,8 +52,8 @@ rule samtools_sort:
     log:
         "output/{group}/{sample}/log/samtools_sort.log",
     params:
-        extra = lambda wildcards, resources: f"-m {resources.mem_mb}M",
-        tmp_dir = "/tmp/"
+        extra=lambda wildcards, resources: f"-m {resources.mem_mb}M",
+        tmp_dir="/tmp/",
     threads: 8
     resources:
         mem_mb=16000,
@@ -64,7 +65,8 @@ rule samtools_sort:
 rule samtools_merge:
     input:
         lambda wildcards: expand(
-            "output/{{group}}/{sample}/sorted.bam", sample=group_samples[wildcards.group]
+            "output/{{group}}/{sample}/sorted.bam",
+            sample=group_samples[wildcards.group],
         ),
     output:
         temp("output/{group}/merged.bam"),
@@ -72,7 +74,7 @@ rule samtools_merge:
         "output/{group}/log/samtools_merge.log",
     params:
         "-c",
-    threads: 8,
+    threads: 8
     resources:
         mem_mb=4000,
         runtime=120,
@@ -169,7 +171,7 @@ rule indelqual:
     output:
         "output/{group}/indelqual.bam",
     log:
-        "output/{group}/log/indelqual.log",    
+        "output/{group}/log/indelqual.log",
     params:
         extra="--verbose",
     resources:
@@ -186,7 +188,7 @@ rule lofreq2:
     output:
         "output/{group}/lofreq.vcf",
     log:
-        "output/{group}/log/lofreq2.log", 
+        "output/{group}/log/lofreq2.log",
     params:
         extra="--call-indels --min-cov 10 --max-depth 1000000  --min-bq 30 --min-alt-bq 30 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
     resources:
