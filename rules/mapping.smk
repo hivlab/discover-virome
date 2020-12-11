@@ -27,26 +27,9 @@ rule mapcontigs:
         f"{WRAPPER_PREFIX}/v0.5/bbtools/bbwrap"
 
 
-rule realign:
-    input:
-        bam=rules.mapcontigs.output.out,
-        ref=rules.fix_fasta.output[0],
-    output:
-        temp("output/{group}/{sample}/realigned.bam"),
-    log:
-        "output/{group}/{sample}/log/realign.log",
-    params:
-        extra="--verbose",
-    resources:
-        runtime=120,
-        mem_mb=4000,
-    wrapper:
-        f"{WRAPPER_PREFIX}/v0.6/lofreq/viterbi"
-
-
 rule samtools_sort:
     input:
-        rules.realign.output[0],
+        rules.mapcontigs.output.out,
     output:
         temp("output/{group}/{sample}/sorted.bam"),
     log:
@@ -84,6 +67,7 @@ rule samtools_merge:
 
 rule lofreq1:
     input:
+        rules.samtools_faidx.output[0],
         ref=rules.fix_fasta.output[0],
         bam=rules.samtools_merge.output[0],
     output:
@@ -114,20 +98,6 @@ rule indexfeaturefile:
     threads: 1
     wrapper:
         f"{WRAPPER_PREFIX}/v0.6.1/gatk/indexfeaturefile"
-
-
-rule sequencedict:
-    input:
-        rules.fix_fasta.output[0],
-    output:
-        "output/{group}/contigs-fixed.dict",
-    log:
-        "output/{group}/log/sequencedict.log",
-    resources:
-        runtime=120,
-        mem_mb=4000,
-    wrapper:
-        f"{WRAPPER_PREFIX}/v0.5/picard/createsequencedictionary"
 
 
 rule gatk_baserecalibrator:
@@ -235,7 +205,7 @@ rule polish:
 
 rule pileup:
     input:
-        input=rules.realign.output[0],
+        input=rules.samtools_sort.output[0],
         ref=rules.fix_fasta.output[0],
     output:
         out="output/{group}/{sample}/covstats.txt",

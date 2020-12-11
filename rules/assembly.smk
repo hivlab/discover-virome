@@ -46,3 +46,33 @@ rule fix_fasta:
         f"{WRAPPER_PREFIX}/v0.2/subset_fasta/environment.yaml"
     script:
         "../scripts/fix_fasta.py"
+
+
+rule samtools_faidx:
+    input:
+        rules.fix_fasta.output[0],
+    output:
+        "output/{group}/contigs-fixed.fa.fai",
+    log:
+        "output/{group}/log/samtools_faidx.log",
+    params:
+        "",
+    resources:
+        runtime=120,
+        mem_mb=4000,
+    wrapper:
+        "0.68.0/bio/samtools/faidx"
+
+
+rule sequencedict:
+    input:
+        rules.fix_fasta.output[0],
+    output:
+        "output/{group}/contigs-fixed.dict",
+    log:
+        "output/{group}/log/sequencedict.log",
+    resources:
+        runtime=120,
+        mem_mb=4000,
+    wrapper:
+        f"{WRAPPER_PREFIX}/v0.5/picard/createsequencedictionary"
