@@ -75,7 +75,7 @@ rule lofreq1:
     log:
         "output/{group}/log/lofreq1.log",
     params:
-        extra="--min-cov 10 --max-depth 1000000  --min-bq 30 --min-alt-bq 30 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
+        extra="",
     resources:
         runtime=120,
         mem_mb=4000,
@@ -160,7 +160,7 @@ rule lofreq2:
     log:
         "output/{group}/log/lofreq2.log",
     params:
-        extra="--call-indels --min-cov 10 --max-depth 1000000  --min-bq 30 --min-alt-bq 30 --min-mq 20 --max-mq 255 --min-jq 0 --min-alt-jq 0 --def-alt-jq 0 --sig 0.01 --bonf dynamic --no-default-filter",
+        extra="",
     resources:
         runtime=120,
         mem_mb=4000,
@@ -174,7 +174,7 @@ rule vcffilter:
     output:
         "output/{group}/filtered.vcf",
     params:
-        extra="-f 'AF > 0.5'",
+        extra="-f 'AF > 0.9 & QUAL > 20'",
     resources:
         runtime=120,
         mem_mb=4000,
