@@ -1,6 +1,7 @@
 # Input function
 import re
 
+
 def get_fastq(wildcards):
     fq_cols = [col for col in df.columns if re.match("fq\d$", col)]
     fqs = (
