@@ -14,7 +14,7 @@ rule fastqc:
 
 rule multiqc:
     input:
-        expand(
+        lambda wildcards: expand(
             [
                 "output/{group}/{run}/fastqc.zip",
                 "output/{group}/{run}/bhist.txt",
@@ -25,9 +25,8 @@ rule multiqc:
                 "output/{group}/{run}/gchist.txt",
                 "output/{group}/{run}/maphost.txt",
             ],
-            zip,
-            group=GROUP,
-            run=RUN,
+            group=wildcards.group,
+            run=[run for group,sample,run in df.index.tolist() if group == wildcards.group],
         ),
     output:
         report(
@@ -41,6 +40,6 @@ rule multiqc:
         "output/{group}/multiqc.log",
     resources:
         runtime=120,
-        mem_mb=16000,
+        mem_mb=lambda wildcards, attempt: attempt * 16000,
     wrapper:
         "0.65.0/bio/multiqc"

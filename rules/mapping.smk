@@ -18,7 +18,7 @@ rule mapcontigs:
     shadow:
         "minimal"
     resources:
-        runtime=lambda wildcards, attempt: attempt * 480,
+        runtime=lambda wildcards, input, attempt: min(int((input.size // 1e9) * 45), 1440),
         mem_mb=40000,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/bbtools/bbwrap"

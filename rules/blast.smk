@@ -113,7 +113,7 @@ rule megablast_nt:
         outfmt=rules.megablast_virus.params.outfmt,
     threads: 8
     resources:
-        runtime=lambda wildcards, attempt: attempt * 1440,
+        runtime=lambda wildcards, attempt, input: int(attempt * 300 + 1e-5 * input.size),
         mem_mb=96000,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/blast/query"
