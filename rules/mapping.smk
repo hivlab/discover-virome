@@ -34,7 +34,7 @@ rule sort_and_index:
         lambda wildcards, resources: f"-m {resources.mem_mb}M",
     threads: 4
     resources:
-        mem_mb=16000,
+        mem_mb=lambda wildcards, attemp: attempt * 16000,
         runtime=lambda wildcards, attempt: attempt * 240,
     wrapper:
         f"{WRAPPER_PREFIX}/v0.2/samtools/sort_and_index"
