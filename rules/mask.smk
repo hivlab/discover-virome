@@ -62,7 +62,7 @@ rule repeatmasker:
         extra="-qq",
     threads: 8
     resources:
-        runtime=120,
+        runtime=lambda wildcards, attempt: attempt * 120,
         mem_mb=16000,
     singularity:
         "shub://tpall/repeatmasker-singularity"
