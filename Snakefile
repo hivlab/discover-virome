@@ -43,7 +43,7 @@ TAXON_DB = os.getenv("TAXON_DB")
 WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers"
 
 # Report
-report: "report/workflow.rst"
+report: "rules/report/workflow.rst"
 
 onsuccess:
     email = config["email"]
