@@ -45,10 +45,6 @@ WRAPPER_PREFIX = "https://raw.githubusercontent.com/avilab/virome-wrappers"
 # Report
 report: "report/workflow.rst"
 
-onsuccess:
-    email = config["email"]
-    shell("mail -s 'Forkflow finished successfully' {email} < {log}")
-
 rule all:
     input: 
         expand(["output/{group}/multiqc.html", "output/{group}/contigs-fixed.fa", "output/{group}/viruses.csv", "output/{group}/non-viral.csv", "output/{group}/unassigned.fa"], group = list(groups.keys())),
